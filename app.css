@@ -381,18 +381,19 @@ canvas#confetti{position:fixed;inset:0;pointer-events:none;z-index:99}
   .stage .actionbar .btn.lg{padding:12px 18px;font-size:16px}
 }
 /* ---- Mr. Arrieta character + logo ---- */
-.mascot{width:auto!important;height:170px;object-fit:contain;filter:drop-shadow(0 6px 0 rgba(0,0,0,.18));user-select:none}
+.mascot{width:auto!important;height:170px;object-fit:contain;user-select:none}
 .mascot-box .mascot{width:auto!important;height:240px}
 .final .mascot{height:150px}
 .modal .mascot{height:140px}
 .stage .mascot{height:150px}
 .res-mra,.player .card .mascot{height:200px}
-.brand .logo{height:44px;width:44px;border-radius:50%;border:2px solid #fff;display:block}
+.logo-pill{background:#fff;border-radius:12px;padding:4px 10px;display:inline-flex;align-items:center}
+.brand .logo{height:46px;width:auto;display:block}
 .topbar{padding:8px 16px}
 .phead .back{background:#fff;border:3px solid var(--k);border-radius:12px;height:44px;padding:0 12px;font-weight:800;font-family:var(--fh);flex:none}
 .phead .back:disabled{opacity:.35}
 .sheet .ic{font-size:0;flex:none}
-.sheet-mra{height:84px;width:auto;display:block;filter:drop-shadow(0 3px 0 rgba(0,0,0,.2))}
+.sheet-mra{height:84px;width:auto;display:block}
 .lesson-mra{display:flex;gap:14px;align-items:flex-start}
 .lesson-mra .lesson-img{height:150px;width:auto;flex:none}
 @media (max-width:600px){
@@ -403,3 +404,11 @@ canvas#confetti{position:fixed;inset:0;pointer-events:none;z-index:99}
   .sheet-mra{height:64px}
   .phead .back{padding:0 8px;font-size:13px}
 }
+
+.pending-card,.music-card,.remind-card{display:flex;gap:18px;align-items:center;margin-top:22px}
+.pending-card{border-color:#E11D48;box-shadow:6px 6px 0 #E11D48}
+.pending-card .mascot,.music-card .mascot{height:190px;flex:none}
+.pend-list{display:grid;gap:8px}
+.pend-list .partbtn small{white-space:normal}
+.remind-card{padding:14px 18px}
+@media (max-width:600px){.pending-card,.music-card{flex-direction:column;text-align:center}.pending-card .mascot,.music-card .mascot{height:140px}.remind-card{flex-direction:column;text-align:center}.brand .logo{height:36px}}

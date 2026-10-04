@@ -17,7 +17,7 @@
   /* ---------------- top bar ---------------- */
   function topbar() {
     const tb = $('#topbar');
-    tb.innerHTML = `<div class="brand" id="go-home"><img class="logo" src="mra-logo.png" alt="Mr. Arrieta"><small>MÓDULO 1 · A1</small></div><div class="sp"></div>
+    tb.innerHTML = `<div class="brand" id="go-home"><span class="logo-pill"><img class="logo" src="mra-brand.png" alt="mrarrieta.com"></span><small>MÓDULO 1 · A1</small></div><div class="sp"></div>
       <span class="pill y" title="Puntos de experiencia">⚡ ${S.xp} XP</span>
       <span class="pill hide-s" title="Días seguidos estudiando">🔥 ${S.streak.n || 0}</span>
       <button class="iconbtn" id="menu-b" title="Menú">☰</button>`;
@@ -29,11 +29,12 @@
       <button class="btn w block" data-a="home">🏠 Inicio</button>
       <button class="btn w block" data-a="progress">📊 Mi progreso</button>
       <button class="btn w block" data-a="unlock">🔑 Tengo un código de acceso</button>
+      <button class="btn w block" data-a="remind">🔔 Recordatorio diario</button>
       <button class="btn w block" data-a="name">✏️ Cambiar mi nombre</button>
       <button class="btn w block" data-a="sound">${S.sound ? '🔔 Sonidos: activados' : '🔕 Sonidos: desactivados'}</button>
       <button class="btn k block" data-a="close">Cerrar</button></div>`);
     $$('button', m).forEach(b => b.onclick = () => { const a = b.dataset.a; m.remove();
-      if (a === 'home' || a === 'progress') route(a); else if (a === 'unlock') unlockModal(); else if (a === 'name') onboarding(true); else if (a === 'sound') { S.sound = !S.sound; save(); M.toast(S.sound ? 'Sonidos activados 🔔' : 'Sonidos desactivados 🔕'); } });
+      if (a === 'home' || a === 'progress') route(a); else if (a === 'unlock') unlockModal(); else if (a === 'remind') reminderModal(); else if (a === 'name') onboarding(true); else if (a === 'sound') { S.sound = !S.sound; save(); M.toast(S.sound ? 'Sonidos activados 🔔' : 'Sonidos desactivados 🔕'); } });
   }
 
   /* ---------------- router ---------------- */
@@ -44,6 +45,7 @@
     if (name === 'progress') return progress();
     if (name === 'class') return runClass(arg);
     if (name === 'final') return finalTest();
+    if (name === 'hw') return homeworkOnly(arg);
   }
 
   /* ---------------- onboarding ---------------- */
@@ -85,8 +87,11 @@
           <div style="font-weight:800;color:var(--y);margin-top:4px">${tipOfDay()}</div>
         </div>
       </section>
+      ${pendingBlock()}
       <div class="sect-title"><h2>📚 Temas del Módulo 1</h2><div class="row"><button class="btn sm w" id="prog">📊 Mi progreso</button><button class="btn sm" id="code">🔑 Código de acceso</button></div></div>
       <div class="grid" id="tgrid"></div>
+      <div class="sect-title"><h2>🎵 Play & Learn</h2></div>
+      <div class="card music-card">${M.mascot('mascot', 'present')}<div class="grow"><h3 style="font-size:22px">Aprende inglés con música 🎶</h3><p class="muted" style="margin:6px 0 12px">Canciones con actividades: escucha, completa la letra, juega y canta. También aparece al final de cada clase.</p><a class="btn k" href="${esc((C.MUSIC || {})[1] || '#')}" target="_blank" rel="noopener" style="text-decoration:none">▶ Play & Learn</a></div></div>
       <div class="sect-title"><h2>🏆 Final Test</h2></div>
       <div class="card final">${M.mascot('mascot', 'point')}<div><h3>Well done! Get ready for the test.</h3><p style="margin:6px 0 0;color:#ddd">Examen final con preguntas de los 14 temas. Si apruebas con ${C.PASS_SCORE}% o más, obtienes tu certificado del Módulo 1 🎓</p>
         ${S.final ? `<p style="margin:8px 0 0;color:var(--y);font-weight:800">Tu mejor resultado: ${S.final.best}% ${S.final.best >= C.PASS_SCORE ? '✅ Aprobado' : ''}</p>` : ''}</div>
@@ -112,6 +117,63 @@
     if ($('#buy2')) $('#buy2').onclick = unlockModal;
     $('#prog').onclick = () => route('progress'); $('#code').onclick = unlockModal;
     $('#final-b').onclick = () => M.finalUnlocked() ? route('final') : unlockModal();
+    $$('[data-hw]', app).forEach(b => b.onclick = () => route('hw', b.dataset.hw));
+    if ($('#rem-b')) $('#rem-b').onclick = reminderModal;
+    dailyReminder();
+  }
+
+  /* ---------------- tareas pendientes + recordatorio diario ---------------- */
+  function pendingHW() { return M.allParts().filter(p => p.hw && S.parts[p.id] && S.parts[p.id].done && !(S.hw[p.id] && S.hw[p.id].score != null)); }
+  function pendingBlock() {
+    const pend = pendingHW();
+    if (!pend.length) return `<div class="card remind-card"><div class="grow"><b>🔔 ¿Quieres que te recuerde practicar todos los días?</b><div class="muted" style="font-size:14px">Agrega un recordatorio diario a tu celular en 10 segundos.</div></div><button class="btn sm" id="rem-b">Activar recordatorio</button></div>`;
+    return `<div class="card pending-card">${M.mascot('mascot', 'point')}<div class="grow"><span class="lbl r">Tarea pendiente</span>
+      <h3 style="font-size:22px;margin:8px 0 4px">${esc(S.name.split(' ')[0])}, tienes ${pend.length} ${pend.length === 1 ? 'tarea pendiente' : 'tareas pendientes'} ✍️</h3>
+      <p class="muted" style="margin:0 0 10px">Hacer tu tarea es lo que más te ayuda a recordar lo que aprendiste. ¡Solo te toma 5 minutos!</p>
+      <div class="pend-list">${pend.slice(0, 5).map(p => `<button class="partbtn" data-hw="${p.id}"><span class="t">${esc(p._t.title)} · Part ${p.part}<small>${esc(p.hw.es)}</small></span><span class="btn sm k" style="pointer-events:none">Hacer tarea →</span></button>`).join('')}</div>
+      <button class="btn sm w" id="rem-b" style="margin-top:10px">🔔 Recordarme todos los días</button></div></div>`;
+  }
+  function dailyReminder() {
+    const pend = pendingHW(); const t = new Date().toISOString().slice(0, 10);
+    if (!pend.length || S.remindDay === t) return;
+    S.remindDay = t; save();
+    if (window.Notification && Notification.permission === 'granted') { try { new Notification('📚 Mr. Arrieta', { body: `Tienes ${pend.length} tarea(s) pendiente(s) en el Módulo 1. ¡Vamos!`, icon: 'mra-point.webp' }); } catch (e) { } }
+    setTimeout(() => {
+      const m = M.modal(`<div class="center">${M.mascot('mascot', 'point')}</div><h3 class="center">¡Hola, ${esc(S.name.split(' ')[0])}! 👋</h3>
+        <p class="center" style="font-size:17px">Te recuerdo que tienes <b>${pend.length} ${pend.length === 1 ? 'tarea pendiente' : 'tareas pendientes'}</b>.<br>Hazla ahora y suma XP ⚡</p>
+        <div style="display:grid;gap:10px"><button class="btn k block lg" id="go">✍️ Hacer mi tarea ahora</button><button class="btn w block" id="later">Más tarde</button></div>`);
+      $('#go', m).onclick = () => { m.remove(); route('hw', pend[0].id); }; $('#later', m).onclick = () => m.remove();
+    }, 600);
+  }
+  function reminderModal() {
+    const url = location.href.split('#')[0].split('?')[0];
+    const m = M.modal(`<div class="center">${M.mascot('mascot', 'wink')}</div><h3 class="center">🔔 Recordatorio diario</h3>
+      <p class="muted center">Elige la hora y agrega el recordatorio a tu calendario. Te llegará una alerta todos los días para practicar y hacer tu tarea.</p>
+      <label style="font-weight:800">Hora</label><input type="time" class="inp" id="rt" value="${esc(S.remindTime || C.REMINDER_TIME || '19:00')}" style="margin:6px 0 12px">
+      <div style="display:grid;gap:10px"><a class="btn k block" id="gcal" target="_blank" rel="noopener" style="text-decoration:none">📅 Agregar a Google Calendar (Android)</a>
+      <button class="btn block" id="ics">📲 Descargar para iPhone / Outlook</button>
+      ${window.Notification && Notification.permission !== 'granted' ? '<button class="btn w block" id="notif">🔔 Activar avisos en este navegador</button>' : ''}
+      <button class="btn w block" id="close">Cerrar</button></div>`);
+    const build = () => { const [hh, mm] = ($('#rt', m).value || '19:00').split(':'); S.remindTime = `${hh}:${mm}`; save();
+      const d = new Date(); d.setDate(d.getDate() + (d.getHours() * 60 + d.getMinutes() >= (+hh) * 60 + (+mm) ? 1 : 0));
+      const ymd = d.toISOString().slice(0, 10).replace(/-/g, ''); const st = `${ymd}T${hh}${mm}00`; const en = `${ymd}T${hh}${String(Math.min(59, +mm + 15)).padStart(2, '0')}00`;
+      const title = '📚 Mr. Arrieta: practica inglés y haz tu tarea'; const det = `¡Es hora de practicar! Entra al Módulo 1: ${url}`;
+      $('#gcal', m).href = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&details=${encodeURIComponent(det)}&dates=${st}/${en}&recur=${encodeURIComponent('RRULE:FREQ=DAILY')}`;
+      return { st, en, title, det }; };
+    build(); $('#rt', m).onchange = build;
+    $('#ics', m).onclick = () => { const e = build(); const now = new Date().toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z';
+      const ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//mrarrieta.com//Modulo1//ES', 'BEGIN:VEVENT', 'UID:m1-' + Date.now() + '@mrarrieta.com', 'DTSTAMP:' + now, 'DTSTART:' + e.st, 'DTEND:' + e.en, 'RRULE:FREQ=DAILY', 'SUMMARY:' + e.title, 'DESCRIPTION:' + e.det, 'URL:' + url, 'BEGIN:VALARM', 'TRIGGER:PT0M', 'ACTION:DISPLAY', 'DESCRIPTION:' + e.title, 'END:VALARM', 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
+      const a2 = document.createElement('a'); a2.href = URL.createObjectURL(new Blob([ics], { type: 'text/calendar' })); a2.download = 'recordatorio-mrarrieta.ics'; a2.click(); M.toast('Ábrelo para agregarlo a tu calendario 📅'); };
+    if ($('#notif', m)) $('#notif', m).onclick = async () => { const r = await Notification.requestPermission(); M.toast(r === 'granted' ? '¡Avisos activados! 🔔' : 'No se activaron los avisos'); };
+    $('#close', m).onclick = () => m.remove();
+  }
+  async function homeworkOnly(id) {
+    const p = M.partById(id); if (!p || !p.hw) return route('home');
+    app.innerHTML = `<div class="player"><div class="phead"><button class="x" title="Salir">✕</button><div class="prog"><i style="width:50%"></i></div></div><div class="stage"></div></div>`;
+    $('.x', app).onclick = () => route('home');
+    const r = await homework($('.stage', app), p);
+    if (r && r.t) { M.addSkill('writing', r.c, r.t); const gain = r.c * 10 + 20; S.xp += gain; save(); sfx('win'); M.confetti(1500); M.toast(`¡Tarea entregada! +${gain} XP ⚡`); }
+    route('home');
   }
   function tipOfDay() { const t = ['Tip: escucha y repite en voz alta 🗣️', 'Tip: usa el botón 🐢 para escuchar lento', 'Tip: graba tu voz y compárala 🎙️', 'Tip: estudia 15 min cada día 🔥', 'Tip: escribe tus tareas en inglés ✍️']; return t[new Date().getDay() % t.length]; }
 

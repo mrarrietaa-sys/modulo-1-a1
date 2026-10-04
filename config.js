@@ -25,11 +25,19 @@ window.M1CONFIG = {
   BUY_MESSAGE: "¡Hola! Quiero desbloquear el Módulo 1 completo de mrarrieta.com 🚀",
 
   // Enlaces de MÚSICA ("Play & Learn") por tema. Déjalo vacío "" para ocultar la sección.
-  // Ejemplo: 1: "https://mrarrieta.com/music-greetings"
+  // Por defecto todos los temas abren tu app "Music & English A1" (Play & Learn).
   MUSIC: {
-    1: "", 2: "", 3: "", 4: "", 5: "", 6: "", 7: "",
-    8: "", 9: "", 10: "", 11: "", 12: "", 13: "", 14: ""
+    1: "https://mrarrietaa-sys.github.io/mrarrieta-learningre/", 2: "https://mrarrietaa-sys.github.io/mrarrieta-learningre/",
+    3: "https://mrarrietaa-sys.github.io/mrarrieta-learningre/", 4: "https://mrarrietaa-sys.github.io/mrarrieta-learningre/",
+    5: "https://mrarrietaa-sys.github.io/mrarrieta-learningre/", 6: "https://mrarrietaa-sys.github.io/mrarrieta-learningre/",
+    7: "https://mrarrietaa-sys.github.io/mrarrieta-learningre/", 8: "https://mrarrietaa-sys.github.io/mrarrieta-learningre/",
+    9: "https://mrarrietaa-sys.github.io/mrarrieta-learningre/", 10: "https://mrarrietaa-sys.github.io/mrarrieta-learningre/",
+    11: "https://mrarrietaa-sys.github.io/mrarrieta-learningre/", 12: "https://mrarrietaa-sys.github.io/mrarrieta-learningre/",
+    13: "https://mrarrietaa-sys.github.io/mrarrieta-learningre/", 14: "https://mrarrietaa-sys.github.io/mrarrieta-learningre/"
   },
+
+  // Hora sugerida para el recordatorio diario de tareas (formato 24 h)
+  REMINDER_TIME: "19:00",
 
   // Porcentaje mínimo para aprobar el examen final
   PASS_SCORE: 70

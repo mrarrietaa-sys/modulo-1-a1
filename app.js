@@ -8,7 +8,7 @@
   const app = $('#app');
   const SKILLS = [['listening', '🎧', 'Listening'], ['reading', '📖', 'Reading'], ['speaking', '🗣️', 'Speaking'], ['writing', '✍️', 'Writing']];
   const SKILL_TIPS = {
-    listening: 'Escucha cada audio 2 veces: la primera para entender la idea y la segunda para los detalles. Usa el botón 🐢 cuando lo necesites.',
+    listening: 'Escucha cada audio 2 veces: la primera para entender la idea y la segunda para los detalles. Puedes repetir cada audio las veces que quieras con 🔊.',
     reading: 'Lee en voz alta mientras escuchas la lectura. Subraya mentalmente las palabras que no conoces y búscalas en la Explanation.',
     speaking: 'Graba tu voz y compárala con el nativo. Exagera los sonidos que no existen en español (th, h aspirada, vocales largas).',
     writing: 'Escribe cada palabra nueva 3 veces y luego úsala en una oración. Revisa mayúsculas (I, países, días) y el punto final.'
@@ -38,6 +38,7 @@
   }
 
   /* ---------------- router ---------------- */
+  window.addEventListener('m1-open-part', e => route('class', e.detail));
   function route(name, arg) {
     stop(); window.scrollTo(0, 0); topbar();
     if (!S.name) return onboarding();
@@ -90,8 +91,6 @@
       ${pendingBlock()}
       <div class="sect-title"><h2>📚 Temas del Módulo 1</h2><div class="row"><button class="btn sm w" id="prog">📊 Mi progreso</button><button class="btn sm" id="code">🔑 Código de acceso</button></div></div>
       <div class="grid" id="tgrid"></div>
-      <div class="sect-title"><h2>🎵 Play & Learn</h2></div>
-      <div class="card music-card">${M.mascot('mascot', 'celebrate')}<div class="grow"><h3 style="font-size:22px">Una canción A1 en cada clase 🎶</h3><p class="muted" style="margin:6px 0 12px">Al final de cada clase escuchas una canción y haces su reto: palabras clave, escuchar y completar, gramática, ordenar frases y cantar. ¿Quieres más? Entra a todos los retos musicales.</p><a class="btn k" href="${esc((C.MUSIC || {})[1] || '#')}" target="_blank" rel="noopener" style="text-decoration:none">▶ Music & English A1</a></div></div>
       <div class="sect-title"><h2>🏆 Final Test</h2></div>
       <div class="card final">${M.mascot('mascot', 'point')}<div><h3>Well done! Get ready for the test.</h3><p style="margin:6px 0 0;color:#ddd">Examen final con preguntas de los 14 temas. Si apruebas con ${C.PASS_SCORE}% o más, obtienes tu certificado del Módulo 1 🎓</p>
         ${S.final ? `<p style="margin:8px 0 0;color:var(--y);font-weight:800">Tu mejor resultado: ${S.final.best}% ${S.final.best >= C.PASS_SCORE ? '✅ Aprobado' : ''}</p>` : ''}</div>
@@ -175,7 +174,7 @@
     if (r && r.t) { M.addSkill('writing', r.c, r.t); const gain = r.c * 10 + 20; S.xp += gain; save(); sfx('win'); M.confetti(1500); M.toast(`¡Tarea entregada! +${gain} XP ⚡`); }
     route('home');
   }
-  function tipOfDay() { const t = ['Tip: escucha y repite en voz alta 🗣️', 'Tip: usa el botón 🐢 para escuchar lento', 'Tip: graba tu voz y compárala 🎙️', 'Tip: estudia 15 min cada día 🔥', 'Tip: escribe tus tareas en inglés ✍️']; return t[new Date().getDay() % t.length]; }
+  function tipOfDay() { const t = ['Tip: escucha y repite en voz alta 🗣️', 'Tip: usa el 📖 diccionario cuando no entiendas algo', 'Tip: graba tu voz y compárala 🎙️', 'Tip: estudia 15 min cada día 🔥', 'Tip: escribe tus tareas en inglés ✍️']; return t[new Date().getDay() % t.length]; }
 
   /* ---------------- unlock ---------------- */
   function unlockModal() {
@@ -316,13 +315,13 @@
       const r = p.reading;
       const body = A.head(stage, { lbl: 'Reading', title: `📖 ${r.title}`, ins: 'Escucha y lee al mismo tiempo. Luego responde <b>YES</b> o <b>NO</b>.' });
       const sents = r.text.match(/[^.!?]+[.!?]+["”]?\s*/g) || [r.text];
-      const box = h(`<div class="reading">${photo(r.img)}<div><div class="row" style="margin-bottom:10px"><button class="btn k sm" id="rp">▶ Escuchar lectura</button><button class="slowbtn" id="rs">🐢 Lento</button></div><div class="txt">${sents.map(s => `<span class="s">${esc(s)}</span>`).join('')}</div></div></div>`);
+      const box = h(`<div class="reading">${photo(r.img)}<div><div class="row" style="margin-bottom:10px"><button class="btn k sm" id="rp">▶ Escuchar lectura</button></div><div class="txt">${sents.map(s => `<span class="s">${esc(s)}</span>`).join('')}</div></div></div>`);
       body.appendChild(box);
       // approximate karaoke highlight by character proportion
       const karaoke = async (rate) => { const a = new Audio(M.audioSrc(r.au)); a.playbackRate = rate; stop(); const spans = $$('.s', box); const lens = sents.map(s => s.length); const tot = lens.reduce((x, y) => x + y, 0);
         a.ontimeupdate = () => { if (!a.duration) return; const f = a.currentTime / a.duration * tot; let acc = 0; spans.forEach((sp, i) => { const on = f >= acc && f < acc + lens[i]; sp.classList.toggle('on', on); acc += lens[i]; }); };
         a.onended = () => spans.forEach(sp => sp.classList.remove('on')); a.play(); window.__ra = a; };
-      $('#rp', box).onclick = () => karaoke(1); $('#rs', box).onclick = () => karaoke(.75);
+      $('#rp', box).onclick = () => karaoke(1);
       body.appendChild(h(`<h3 style="margin-top:18px">Answer YES or NO</h3>`));
       const qs = r.q.map((q, i) => { const e = h(`<div class="yn"><p>${i + 1}) ${esc(q.s)}</p><div class="b"><button data-v="yes">YES</button><button data-v="no">NO</button></div></div>`); $$('button', e).forEach(b => b.onclick = () => { $$('button', e).forEach(x => x.classList.remove('sel')); b.classList.add('sel'); e._v = b.dataset.v; sfx('tap'); }); body.appendChild(e); return e; });
       const bar = h(`<div class="actionbar"><button class="btn k lg">Comprobar ✓</button></div>`); body.appendChild(bar);
@@ -440,7 +439,7 @@
       if (!stage.isConnected) return A.result(c, t, 'listening', missed);
       const it = lc[n];
       const body = A.head(stage, { lbl, title: it.type === 'order' ? 'Listen and order' : 'Listen and complete', ins: it.type === 'order' ? 'Escucha y ordena las palabras.' : 'Escucha la frase y elige la palabra que falta.', count: `${n + 1} / ${lc.length}` });
-      const pb = h('<div class="center"></div>'); pb.appendChild(A.playBtn(it.au)); pb.appendChild(A.slowBtn(it.au)); body.appendChild(pb);
+      const pb = h('<div class="center"></div>'); pb.appendChild(A.playBtn(it.au)); body.appendChild(pb);
       setTimeout(() => M.play(it.au), 350);
       let ok;
       if (it.type === 'blank') {

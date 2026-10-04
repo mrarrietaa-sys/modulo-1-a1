@@ -77,7 +77,7 @@
     const usePh = pool.filter(hasPhoto).length >= pool.length * .6;
     const items = sample(pool, Math.min(6, pool.length));
     const r = await qloop(stage, { lbl: 'Listening', title: 'Listen and choose', ins: 'Escucha el audio y elige la opción correcta.' }, items, async (body, it) => {
-      body.appendChild(playBtn(it.au)); const sl = h('<div class="center" style="margin-bottom:14px"></div>'); sl.appendChild(slowBtn(it.au)); body.appendChild(sl);
+      body.appendChild(playBtn(it.au));
       const opts = shuffle([it, ...sample(pool.filter(x => x.en !== it.en && x.img !== it.img), 3)]);
       const wrap = h(`<div class="opts"></div>`); body.appendChild(wrap);
       const big = p.letters || p.numbers;
@@ -85,7 +85,7 @@
       setTimeout(() => play(it.au), 350);
       const i = await choose(btns); const ok = opts[i] === it;
       btns[opts.indexOf(it)].classList.add('right'); if (!ok) btns[i].classList.add('wrong'); btns.forEach((b, k) => { if (opts[k] !== it && k !== i) b.classList.add('dim'); });
-      await feedback(ok, `${it.en} (${it.es})`, 'Escucha otra vez con el botón 🐢 para oír cada sonido.'); return ok;
+      await feedback(ok, `${it.en} (${it.es})`, 'Escucha otra vez con el botón 🔊 y fíjate en cada sonido.'); return ok;
     });
     return result(r.c, items.length, 'listening', r.missed);
   }
@@ -109,7 +109,7 @@
   /* ================= 4. LISTEN & TYPE (word / letter / number / sentence / phone / spelled name) ================= */
   function typeQ(body, { au, answer, img, hint, mode, showLen = true, numeric }) {
     return new Promise(res => {
-      body.appendChild(playBtn(au)); const sl = h('<div class="center" style="margin-bottom:12px"></div>'); sl.appendChild(slowBtn(au)); body.appendChild(sl);
+      body.appendChild(playBtn(au));
       if (img) body.appendChild(h(`<div class="mainph" style="max-width:300px">${photo(img)}</div>`));
       if (hint) body.appendChild(h(`<p class="center"><span class="hint">${hint}</span></p>`));
       const plain = answer.replace(/[^A-Za-z0-9 ]/g, '');
@@ -128,7 +128,7 @@
         const near = !ok && !numeric && M.lev(M.norm(v), M.norm(answer)) <= Math.max(1, Math.floor(answer.length / 8));
         inp.classList.add(ok ? 'right' : 'wrong'); inp.disabled = true; bar.remove();
         play(au);
-        let tip = near ? 'Estuviste muy cerca: revisa la ortografía letra por letra.' : 'Escucha de nuevo con 🐢 y escribe palabra por palabra.';
+        let tip = near ? 'Estuviste muy cerca: revisa la ortografía letra por letra.' : 'Escucha de nuevo con 🔊 y escribe palabra por palabra.';
         if (!ok && mode === 'sentence') tip = 'Revisa las palabras pequeñas (a, an, the, is, are) y los apóstrofes ( I\'m, it\'s ).';
         if (!ok && numeric) tip = 'Recuerda: <b>-teen</b> (13-19) se acentúa al final; <b>-ty</b> (30, 40...) al inicio.';
         if (ok && hints) { await sheet({ ok: true, title: good(), msg: 'Lo lograste con pista. ¡La próxima sin ayuda! 😉' }); res(true); return; }
@@ -460,7 +460,7 @@
       if (it.img) body.appendChild(h(`<div class="mainph" style="max-width:300px">${photo(it.img)}</div>`));
       const tgt = h(`<div class="target">${M.words(it.en).length ? esc(it.en) : ''}</div>`); body.appendChild(tgt);
       if (it.es) body.appendChild(h(`<p class="center muted" style="margin:-4px 0 10px">${esc(it.es)}</p>`));
-      const ctr = h(`<div class="row" style="justify-content:center;margin-bottom:6px"></div>`); ctr.appendChild(playBtn(it.au, false)); ctr.appendChild(slowBtn(it.au)); body.appendChild(ctr);
+      const ctr = h(`<div class="row" style="justify-content:center;margin-bottom:6px"></div>`); ctr.appendChild(playBtn(it.au, false)); body.appendChild(ctr);
       const mic = h(`<button class="mic" aria-label="Hablar">🎤</button>`); body.appendChild(mic);
       const st = h(`<p class="center" style="font-weight:700;margin:4px 0">${M.canSR ? 'Toca el micrófono y di la frase' : 'Tu navegador no reconoce voz: graba tu voz y compárala 👇'}</p>`); body.appendChild(st);
       const out = h(`<div></div>`); body.appendChild(out);
@@ -493,7 +493,7 @@
         let msg, ok = sc.score >= 85, mid = sc.score >= 60;
         if (ok) { msg = '🌟 ¡Excelente pronunciación! Suenas muy natural.'; sfx('ok'); praise(); }
         else if (mid) { msg = `👍 ¡Muy bien! Practica: <b>${esc(missedW.join(', '))}</b>. Escucha el modelo y repite despacio.`; sfx('ok'); }
-        else { msg = `💪 Escucha el modelo con 🐢, repite palabra por palabra y vuelve a intentar.${missedW.length ? ` Revisa: <b>${esc(missedW.slice(0, 4).join(', '))}</b>` : ''}`; sfx('bad'); }
+        else { msg = `💪 Escucha el modelo 🔊, repite palabra por palabra y vuelve a intentar.${missedW.length ? ` Revisa: <b>${esc(missedW.slice(0, 4).join(', '))}</b>` : ''}`; sfx('bad'); }
         out.querySelectorAll('.srbox').forEach(x => x.remove());
         out.prepend(h(`<div class="heardbox srbox"><div class="muted" style="font-size:13px">Escuché: “${esc(sc.heard)}”</div><div class="meter"><div class="bar"><i style="width:${sc.score}%;background:${ok ? 'var(--ok)' : mid ? 'var(--k)' : 'var(--bad)'}"></i></div><b>${sc.score}%</b></div><p style="margin:8px 0 0">${msg}</p></div>`));
         st.textContent = tries >= 3 || ok ? '' : 'Puedes intentarlo de nuevo 🎤';

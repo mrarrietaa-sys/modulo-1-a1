@@ -444,3 +444,45 @@ canvas#confetti{position:fixed;inset:0;pointer-events:none;z-index:99}
   .lesson-mra .lesson-img{height:150px}
   .sheet-mra{height:80px}
 }
+
+/* ---- Diccionario de Mr. Arrieta ---- */
+#dict-fab{position:fixed;left:18px;bottom:18px;z-index:60;display:flex;align-items:center;gap:6px;background:var(--y);color:var(--k);border:3px solid var(--k);border-radius:999px;padding:4px 16px 4px 4px;box-shadow:4px 4px 0 var(--k);font-family:var(--fh);font-weight:800;font-size:15px;cursor:pointer;transition:transform .1s}
+#dict-fab:hover{transform:translate(-1px,-1px) scale(1.03)}
+#dict-fab img{height:58px;width:46px;object-fit:cover;object-position:top;border-radius:50%;background:#fff;border:2px solid var(--k)}
+#dict{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.45);display:none;align-items:flex-end;justify-content:flex-start;padding:16px}
+#dict.on{display:flex}
+.dict-card{background:#fff;border:3px solid var(--k);border-radius:20px;box-shadow:6px 6px 0 var(--k);width:min(560px,100%);max-height:calc(100vh - 32px);overflow:auto;padding:16px;animation:dictIn .18s ease-out}
+@keyframes dictIn{from{transform:translateY(20px);opacity:0}to{transform:none;opacity:1}}
+.dict-hd{display:flex;gap:10px;align-items:center;margin-bottom:10px}
+.dict-hd img{height:92px;width:auto;flex:none}
+.dict-hd h3{margin:0;font-size:20px}.dict-hd p{margin:4px 0 0;color:#555;font-size:14px}
+.dict-x{margin-left:auto;align-self:flex-start;background:#fff;border:2px solid var(--k);border-radius:10px;width:36px;height:36px;font-weight:800;flex:none}
+.dict-form{display:flex;gap:8px}.dict-form .inp{flex:1;text-align:left;font-size:17px;padding:12px}
+.dict-mics{gap:8px;margin:10px 0 4px;flex-wrap:wrap}
+.dict-out{margin-top:10px}
+.dict-res{border:2px solid var(--k);border-radius:14px;padding:12px;margin-top:10px;background:#fff}
+.dict-word{display:flex;gap:12px;align-items:flex-start}
+.dict-ph{width:120px;flex:none;border-radius:10px;overflow:hidden;border:2px solid var(--k)}
+.dict-ph img{width:100%;height:90px;object-fit:cover;display:block}
+.dict-tag{display:inline-block;font-size:12px;font-weight:800;background:var(--y3);border:2px solid var(--k);border-radius:8px;padding:2px 8px}
+.dict-en{font-family:var(--fh);font-weight:800;font-size:26px;margin-top:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.dict-es{font-size:18px;color:#333;margin-top:2px}
+.dict-ex{margin-top:8px;display:grid;gap:8px;font-size:15px;background:var(--paper);border-radius:10px;padding:8px}
+.dict-ans{display:flex;align-items:center;gap:10px}.dict-ans img{height:110px;width:auto}
+.dict-think{display:flex;align-items:center;gap:12px;padding:10px}.dict-think img{height:110px}
+.dots i{display:inline-block;width:10px;height:10px;margin:0 3px;border-radius:50%;background:var(--k);animation:dot 1s infinite}
+.dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}
+@keyframes dot{0%,100%{opacity:.2;transform:translateY(0)}50%{opacity:1;transform:translateY(-6px)}}
+.dict-fb{margin-top:8px}
+.dict-hist{margin-top:12px}
+.chip.sm{font-size:13px;padding:4px 10px}
+.aud.sm{width:28px;height:28px;font-size:13px}
+@media (max-width:600px){
+  #dict-fab{left:10px;bottom:86px;padding:3px}
+  #dict-fab span{display:none}
+  #dict-fab img{height:50px;width:42px}
+  #dict{padding:8px}
+  .dict-hd img{height:70px}
+  .dict-word{flex-direction:column}.dict-ph{width:100%}.dict-ph img{height:150px}
+}
+@media print{#dict-fab{display:none}}

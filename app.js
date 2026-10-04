@@ -17,7 +17,7 @@
   /* ---------------- top bar ---------------- */
   function topbar() {
     const tb = $('#topbar');
-    tb.innerHTML = `<div class="brand" id="go-home">MRARRIETA.COM <small>MÓDULO 1 · A1</small></div><div class="sp"></div>
+    tb.innerHTML = `<div class="brand" id="go-home"><img class="logo" src="mra-logo.png" alt="Mr. Arrieta"><small>MÓDULO 1 · A1</small></div><div class="sp"></div>
       <span class="pill y" title="Puntos de experiencia">⚡ ${S.xp} XP</span>
       <span class="pill hide-s" title="Días seguidos estudiando">🔥 ${S.streak.n || 0}</span>
       <button class="iconbtn" id="menu-b" title="Menú">☰</button>`;
@@ -50,8 +50,8 @@
   function onboarding(edit) {
     topbar();
     app.innerHTML = `<div class="wrap" style="max-width:620px;padding-top:40px"><div class="card center">
-      ${M.mascot('mascot bounce')}
-      <div class="bubble" style="margin:6px auto 18px">Hi! Welcome! 👋</div>
+      ${M.mascot('mascot bounce', 'thumbs')}
+      <div class="bubble" style="margin:6px auto 18px">Hi! I'm Mr. Arrieta. Welcome! 👋</div>
       <h1 style="font-size:30px">${edit ? 'Cambia tu nombre' : '¡Bienvenido(a) al Módulo 1!'}</h1>
       <p class="muted" style="font-size:17px">${edit ? '' : 'Vas a aprender inglés <b>hablando</b>, escuchando, leyendo y escribiendo. Primero, ¿cómo te llamas?'}</p>
       <input class="inp" id="nm" placeholder="Escribe tu nombre" maxlength="30" value="${esc(S.name)}" style="margin:10px 0 16px">
@@ -81,14 +81,14 @@
         </div>
         <div class="mascot-box">
           <div class="bubble">${doneN ? 'Welcome back, my friend! 💪' : 'Welcome my friend. Let\'s start!'}</div>
-          ${M.mascot('mascot bounce')}
+          ${M.mascot('mascot bounce', doneN ? 'wink' : 'thumbs')}
           <div style="font-weight:800;color:var(--y);margin-top:4px">${tipOfDay()}</div>
         </div>
       </section>
       <div class="sect-title"><h2>📚 Temas del Módulo 1</h2><div class="row"><button class="btn sm w" id="prog">📊 Mi progreso</button><button class="btn sm" id="code">🔑 Código de acceso</button></div></div>
       <div class="grid" id="tgrid"></div>
       <div class="sect-title"><h2>🏆 Final Test</h2></div>
-      <div class="card final">${M.mascot('mascot')}<div><h3>Well done! Get ready for the test.</h3><p style="margin:6px 0 0;color:#ddd">Examen final con preguntas de los 14 temas. Si apruebas con ${C.PASS_SCORE}% o más, obtienes tu certificado del Módulo 1 🎓</p>
+      <div class="card final">${M.mascot('mascot', 'point')}<div><h3>Well done! Get ready for the test.</h3><p style="margin:6px 0 0;color:#ddd">Examen final con preguntas de los 14 temas. Si apruebas con ${C.PASS_SCORE}% o más, obtienes tu certificado del Módulo 1 🎓</p>
         ${S.final ? `<p style="margin:8px 0 0;color:var(--y);font-weight:800">Tu mejor resultado: ${S.final.best}% ${S.final.best >= C.PASS_SCORE ? '✅ Aprobado' : ''}</p>` : ''}</div>
         <button class="btn lg" id="final-b">${M.finalUnlocked() ? 'FINAL TEST →' : '🔒 Bloqueado'}</button></div>
       <p class="center muted" style="margin-top:30px;font-size:13px">mrarrieta.com · ¡Aprende inglés HABLANDO! · WhatsApp ${esc(C.WHATSAPP.replace(/^57/, ''))}</p>
@@ -118,7 +118,7 @@
   /* ---------------- unlock ---------------- */
   function unlockModal() {
     const wa = `https://wa.me/${C.WHATSAPP}?text=${encodeURIComponent(C.BUY_MESSAGE + (S.name ? ` (Soy ${S.name})` : ''))}`;
-    const m = M.modal(`<div class="center">${M.mascot('mascot')}</div><h3 class="center">🔓 Desbloquea el Módulo 1</h3>
+    const m = M.modal(`<div class="center">${M.mascot('mascot', 'present')}</div><h3 class="center">🔓 Desbloquea el Módulo 1</h3>
       <p class="muted center">Ingresa el código de acceso que te dio tu profe.</p>
       <input class="inp" id="cd" placeholder="Ej: ABC-123" autocapitalize="characters" style="margin:8px 0 12px">
       <button class="btn k block lg" id="ok">Desbloquear</button>
@@ -154,7 +154,7 @@
   async function runClass(id) {
     const p = M.partById(id);
     if (!M.isUnlocked(p.topic)) { unlockModal(); return route('home'); }
-    app.innerHTML = `<div class="wrap center" style="padding-top:80px">${M.mascot('mascot bounce')}<h2>Cargando tu clase…</h2></div>`;
+    app.innerHTML = `<div class="wrap center" style="padding-top:80px">${M.mascot('mascot bounce', 'book')}<h2>Cargando tu clase…</h2></div>`;
     const pv = M.prevPart(p); await M.loadAudio(['common', 't' + p.topic].concat(pv ? ['t' + pv.topic] : []));
     const steps = buildSteps(p); const secs = [...new Set(steps.map(s => s.sec))];
     const rec = S.parts[id] = S.parts[id] || { done: false, stars: 0, best: 0 };
@@ -163,25 +163,44 @@
       const ok = await new Promise(r => { const m = M.modal(`<h3>¿Continuar donde quedaste?</h3><p class="muted">Ibas en la sección <b>${esc(steps[rec.step].sec)}</b>.</p><div class="row"><button class="btn k" id="y">Sí, continuar</button><button class="btn w" id="n">Empezar de nuevo</button></div>`); $('#y', m).onclick = () => { m.remove(); r(true); }; $('#n', m).onclick = () => { m.remove(); r(false); }; });
       if (ok) startAt = rec.step;
     }
-    const run = (startAt && rec.run) ? rec.run : { res: [], xp: 0 };
-    app.innerHTML = `<div class="player"><div class="phead"><button class="x" title="Salir">✕</button><div class="prog"><i style="width:0%"></i></div></div>
+    const run = (startAt && rec.run && !Array.isArray(rec.run.res)) ? rec.run : { res: {}, xp: 0 };
+    app.innerHTML = `<div class="player"><div class="phead"><button class="x" title="Salir">✕</button><button class="back" title="Volver al paso anterior">← Atrás</button><div class="prog"><i style="width:0%"></i></div></div>
       <div class="secbar">${secs.map(s => `<span data-s="${esc(s)}">${esc(s)}</span>`).join('')}</div><div class="stage"></div></div>`;
     $('.x', app).onclick = () => { stop(); route('home'); };
-    const stage = $('.stage', app);
-    for (let i = startAt; i < steps.length; i++) {
+    const player = $('.player', app);
+    let navBack = null;
+    $('.back', app).onclick = () => { if (navBack) { sfx('tap'); navBack(); } };
+    let i = startAt;
+    while (i < steps.length) {
       const s = steps[i];
       rec.step = i; rec.run = run; save();
+      // fresh stage element for every step (so going back never mixes old and new activities)
+      const old = $('.stage', player); const stage = document.createElement('div'); stage.className = 'stage'; old.replaceWith(stage);
       $('.prog i', app).style.width = (i / steps.length * 100) + '%';
+      $('.back', app).disabled = i === 0;
       $$('.secbar span', app).forEach(e => { const k = secs.indexOf(e.dataset.s), ck = secs.indexOf(s.sec); e.className = k === ck ? 'on' : k < ck ? 'ok' : ''; if (k === ck) e.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' }); });
       window.scrollTo({ top: 0, behavior: 'smooth' });
+      const back = new Promise(res => { navBack = () => res('__back'); });
       let r;
-      try { r = await STEP[s.k](stage, p); } catch (e) { console.error(s.k, e); r = null; }
-      if (!app.contains(stage)) return; // user left
+      try { r = await Promise.race([STEP[s.k](stage, p), back]); } catch (e) { console.error(s.k, e); r = null; }
+      navBack = null;
+      if (!app.contains(player)) return; // user left
+      const sh = $('#sheet'); if (sh) sh.remove();
+      if (r === '__back') {
+        stop();
+        // undo the score of the step we are returning to, so it can be done again
+        i = Math.max(0, i - 1);
+        const prev = run.res[i];
+        if (prev) { M.addSkill(prev.skill, -prev.c, -prev.t); run.xp -= prev.c * 10; S.xp -= prev.c * 10; delete run.res[i]; topbar(); }
+        continue;
+      }
       if (r && r.t) {
-        run.res.push({ k: s.k, sec: s.sec, ...r, missed: (r.missed || []).map(x => ({ en: x.en || x.w || x.full || x.s, au: x.au })) });
+        const prevR = run.res[i]; if (prevR) { M.addSkill(prevR.skill, -prevR.c, -prevR.t); run.xp -= prevR.c * 10; S.xp -= prevR.c * 10; }
+        run.res[i] = { k: s.k, sec: s.sec, ...r, missed: (r.missed || []).map(x => ({ en: x.en || x.w || x.full || x.s, au: x.au })) };
         M.addSkill(r.skill, r.c, r.t); const gain = r.c * 10; run.xp += gain; S.xp += gain; if (gain) M.xpFly(gain); topbar();
       }
       save();
+      i++;
     }
     $('.prog i', app).style.width = '100%';
     results(p, run);
@@ -196,6 +215,7 @@
         <h2 style="font-size:28px;margin-top:12px">${esc(p._t.title)}</h2>
         <p class="muted" style="font-size:17px;margin:4px 0 14px">${esc(p.title)} — ${esc(p.es)}</p>
         <div class="mainph" style="max-width:460px">${photo(p._t.cover)}</div>
+        <div class="row" style="justify-content:center;gap:14px;margin:4px 0 8px">${M.mascot('mascot', 'book')}<div class="bubble">Today's class: <b>${esc(p.title)}</b>. Let's go!</div></div>
         <div class="lesson" style="text-align:left;margin-top:6px"><h3>🎯 Goal</h3><p style="font-size:18px;margin:4px 0"><b>${esc(p.goal ? p.goal.en : p.title)}</b></p><p class="muted" style="margin:0">${esc(p.goal ? p.goal.es : p.es)}</p></div>
         <div class="row" style="justify-content:center;margin:16px 0 4px;gap:8px">${SKILLS.map(([k, ic, nm]) => `<span class="pill" style="background:#fff;color:var(--k);border-color:var(--k)">${ic} ${nm}</span>`).join('')}</div>
         <p class="muted" style="font-size:14px">En esta clase vas a: hablar 🗣️ · leer 📖 · repasar 🔁 · aprender vocabulario 📘 · practicar 🎮 · grabar tu voz 🎤 · hacer tu tarea ✍️</p>
@@ -210,7 +230,7 @@
         const q = p.warm[i];
         const body = A.head(stage, { lbl: 'Speaking', title: 'Listen and answer', ins: 'Calentamiento: escucha la pregunta y <b>respóndela en voz alta</b> con tus propias palabras. ¡No hay respuestas incorrectas!', count: `${i + 1} / ${p.warm.length}` });
         const ok = await new Promise(res => {
-          const top = h(`<div class="row" style="justify-content:center;align-items:center;gap:16px;margin:6px 0 10px">${M.mascot('mascot', 'wow')}<div class="bubble" style="font-size:19px">${esc(q.q)}</div></div>`); body.appendChild(top);
+          const top = h(`<div class="row" style="justify-content:center;align-items:center;gap:16px;margin:6px 0 10px">${M.mascot('mascot', 'present')}<div class="bubble" style="font-size:19px">${esc(q.q)}</div></div>`); body.appendChild(top);
           const pr = h(`<div class="center"></div>`); pr.appendChild(A.playBtn(q.au)); body.appendChild(pr);
           const mic = h(`<button class="mic">🎤</button>`); body.appendChild(mic);
           const st = h(`<p class="center" style="font-weight:700">${M.canSR ? 'Toca el micrófono y responde en inglés' : 'Escribe tu respuesta en inglés 👇'}</p>`); body.appendChild(st);
@@ -237,7 +257,7 @@
       const box = h(`<div class="reading">${photo(r.img)}<div><div class="row" style="margin-bottom:10px"><button class="btn k sm" id="rp">▶ Escuchar lectura</button><button class="slowbtn" id="rs">🐢 Lento</button></div><div class="txt">${sents.map(s => `<span class="s">${esc(s)}</span>`).join('')}</div></div></div>`);
       body.appendChild(box);
       // approximate karaoke highlight by character proportion
-      const karaoke = async (rate) => { const a = new Audio('audio/' + r.au + '.mp3'); a.playbackRate = rate; stop(); const spans = $$('.s', box); const lens = sents.map(s => s.length); const tot = lens.reduce((x, y) => x + y, 0);
+      const karaoke = async (rate) => { const a = new Audio(M.audioSrc(r.au)); a.playbackRate = rate; stop(); const spans = $$('.s', box); const lens = sents.map(s => s.length); const tot = lens.reduce((x, y) => x + y, 0);
         a.ontimeupdate = () => { if (!a.duration) return; const f = a.currentTime / a.duration * tot; let acc = 0; spans.forEach((sp, i) => { const on = f >= acc && f < acc + lens[i]; sp.classList.toggle('on', on); acc += lens[i]; }); };
         a.onended = () => spans.forEach(sp => sp.classList.remove('on')); a.play(); window.__ra = a; };
       $('#rp', box).onclick = () => karaoke(1); $('#rs', box).onclick = () => karaoke(.75);
@@ -314,7 +334,7 @@
     music: async (stage, p) => {
       const url = C.MUSIC[p.topic];
       stage.innerHTML = `<div class="hd"><span class="lbl">Music</span></div><h2>🎵 Play & Learn</h2><p class="ins">Aprende inglés con música. Se abrirá en una pestaña nueva; cuando termines, regresa aquí.</p>
-        <div class="music">${M.mascot('mascot bounce')}<div><div class="bubble" style="margin-bottom:12px">Let's play some music!</div><a class="btn" href="${esc(url)}" target="_blank" rel="noopener" style="text-decoration:none">▶ Play & Learn</a></div></div>`;
+        <div class="music">${M.mascot('mascot bounce', 'present')}<div><div class="bubble" style="margin-bottom:12px">Let's play some music!</div><a class="btn" href="${esc(url)}" target="_blank" rel="noopener" style="text-decoration:none">▶ Play & Learn</a></div></div>`;
       await A.waitNext(stage, 'Continuar'); return null;
     },
 
@@ -393,6 +413,7 @@
 
   /* ---------------- RESULTS ---------------- */
   function results(p, run) {
+    run.res = Object.values(run.res || {});
     const c = run.res.reduce((a, r) => a + r.c, 0), t = run.res.reduce((a, r) => a + r.t, 0);
     const pct = t ? Math.round(c / t * 100) : 100; const stars = pct >= 90 ? 3 : pct >= 70 ? 2 : 1;
     const rec = S.parts[p.id]; const wasDone = rec.done;
@@ -406,7 +427,7 @@
     const head = pct >= 90 ? '¡Clase perfecta! 🏆' : pct >= 70 ? '¡Muy buen trabajo! 💪' : '¡Clase completada! 👏';
     const advice = pct >= 90 ? `¡Lo hiciste increíble, ${esc(S.name.split(' ')[0])}! Ya dominas este tema. Sigue con la próxima clase.` : pct >= 70 ? 'Vas muy bien. Repasa las palabras que te costaron y pasa a la siguiente clase.' : 'Te recomendamos repetir esta clase mañana: la repetición es la clave para aprender. ¡Tú puedes!';
     app.innerHTML = `<div class="player"><div class="card">
-      <div class="center">${M.mascot('mascot bounce')}<h2 style="font-size:30px">${head}</h2><p class="muted">${esc(p._t.title)} · Part ${p.part}: ${esc(p.title)}</p></div>
+      <div class="center">${M.mascot('mascot bounce', pct >= 90 ? 'thumbs' : pct >= 70 ? 'wink' : 'smile')}<h2 style="font-size:30px">${head}</h2><p class="muted">${esc(p._t.title)} · Part ${p.part}: ${esc(p.title)}</p></div>
       <div class="res-stars">${[1, 2, 3].map(i => `<span style="${i <= stars ? '' : 'opacity:.2;filter:grayscale(1)'}">⭐</span>`).join('')}</div>
       <div class="stats"><div class="stat"><b>${pct}%</b><small>Precisión</small></div><div class="stat"><b>+${run.xp + bonus}</b><small>XP ganados</small></div><div class="stat"><b>${c}/${t}</b><small>Respuestas</small></div></div>
       <h3 style="margin:18px 0 8px">📊 Tus 4 habilidades en esta clase</h3>
@@ -496,7 +517,7 @@
   /* ---------------- FINAL TEST ---------------- */
   async function finalTest() {
     if (!M.finalUnlocked()) { unlockModal(); return route('home'); }
-    app.innerHTML = `<div class="wrap center" style="padding-top:80px">${M.mascot('mascot bounce')}<h2>Preparando tu examen…</h2></div>`;
+    app.innerHTML = `<div class="wrap center" style="padding-top:80px">${M.mascot('mascot bounce', 'book')}<h2>Preparando tu examen…</h2></div>`;
     await M.loadAudio(['common', ...D.topics.map(t => 't' + t.n)]);
     const parts = M.allParts(); const pool = parts.flatMap(p => p.vocab.filter(v => v.img && !v.img.startsWith('#')).map(v => ({ ...v, _p: p })));
     const uniq = pool.filter((v, i, a) => a.findIndex(x => x.en === v.en) === i);
@@ -509,7 +530,7 @@
     const qs = shuffle(Q);
     app.innerHTML = `<div class="player"><div class="phead"><button class="x">✕</button><div class="prog"><i style="width:0%"></i></div></div><div class="stage"></div></div>`;
     $('.x', app).onclick = () => route('home'); const stage = $('.stage', app);
-    stage.innerHTML = `<div class="center">${M.mascot('mascot bounce', 'wow')}<span class="lbl">Final test</span><h2 style="font-size:30px;margin-top:10px">Examen final · Módulo 1</h2>
+    stage.innerHTML = `<div class="center">${M.mascot('mascot bounce', 'point')}<br><span class="lbl">Final test</span><h2 style="font-size:30px;margin-top:10px">Examen final · Módulo 1</h2>
       <p class="muted" style="font-size:17px">${qs.length} preguntas de los 14 temas: listening, reading y writing.<br>Necesitas <b>${C.PASS_SCORE}%</b> para aprobar y obtener tu certificado 🎓</p></div>`;
     await A.waitNext(stage, '¡Estoy listo(a)! 🚀');
     let c = 0;
@@ -552,8 +573,8 @@
     app.innerHTML = `<div class="player">${pass ? `<div class="cert">
         <span class="lbl">mrarrieta.com</span><h1 style="margin-top:14px">Certificate of Achievement</h1><p class="muted">Se certifica que</p>
         <div class="who">${esc(S.name)}</div><p style="font-size:18px">completó y aprobó el <b>Módulo 1 · Nivel A1</b><br>con un puntaje de <b>${pct}%</b></p>
-        <div style="display:flex;justify-content:center;margin:6px 0">${M.mascot('mascot')}</div><p class="muted">${date} · ¡Aprende inglés HABLANDO!</p></div>` :
-      `<div class="card center">${M.mascot('mascot bounce', 'wow')}<h2 style="font-size:28px">¡Casi lo logras!</h2><p style="font-size:20px"><b>${pct}%</b> (${c}/${qs.length})</p><p class="muted">Necesitas ${C.PASS_SCORE}% para aprobar. Repasa los temas donde tienes menos estrellas y vuelve a intentarlo. ¡Tú puedes! 💪</p></div>`}
+        <div style="display:flex;justify-content:center;margin:6px 0">${M.mascot('mascot', 'thumbs')}</div><p class="muted">${date} · ¡Aprende inglés HABLANDO!</p></div>` :
+      `<div class="card center">${M.mascot('mascot bounce', 'think')}<h2 style="font-size:28px">¡Casi lo logras!</h2><p style="font-size:20px"><b>${pct}%</b> (${c}/${qs.length})</p><p class="muted">Necesitas ${C.PASS_SCORE}% para aprobar. Repasa los temas donde tienes menos estrellas y vuelve a intentarlo. ¡Tú puedes! 💪</p></div>`}
       <div class="row noprint" style="justify-content:center;margin-top:18px">${pass ? '<button class="btn w" id="pr">🖨️ Imprimir / guardar PDF</button>' : '<button class="btn w" id="rt">🔁 Intentar de nuevo</button>'}
       <a class="btn" style="text-decoration:none;background:#25D366;color:#fff" target="_blank" rel="noopener" href="${wa}">💬 Enviar resultado a mi profe</a><button class="btn k" id="hm">🏠 Inicio</button></div></div>`;
     if (pass) { sfx('win'); M.confetti(5000); $('#pr').onclick = () => print(); } else $('#rt').onclick = () => route('final');

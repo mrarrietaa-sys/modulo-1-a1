@@ -46,9 +46,9 @@
     });
     upd();
     $('#all', tools).onclick = async (e) => { const b = e.currentTarget; if (b._run) { b._run = false; stop(); b.textContent = '▶ Escuchar todo'; return; } b._run = true; b.textContent = '⏸ Detener';
-      for (const c of cards) { if (!b._run) break; c.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); await c.onclick(); await sleep(450); } b._run = false; b.textContent = '▶ Escuchar todo'; };
+      for (const c of cards) { if (!b._run || !b.isConnected) break; c.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); await c.onclick(); await sleep(450); } b._run = false; b.textContent = '▶ Escuchar todo'; };
     // mini lesson + tips
-    if (p.tip) body.appendChild(h(`<div class="lesson"><h3>📘 Mini lección</h3>${p.tip}</div>`));
+    if (p.tip) body.appendChild(h(`<div class="lesson lesson-mra">${M.mascot('lesson-img', 'point')}<div><h3>📘 Mini lección de Mr. Arrieta</h3>${p.tip}</div></div>`));
     if (p.tips && p.tips.length) { const tb = h(`<div class="lesson" style="background:#fff"><h3>🗣️ Tips de pronunciación del profe</h3></div>`); p.tips.forEach(t => tb.appendChild(h(`<div class="tipbox"><span>💡</span><span>${t}</span></div>`))); body.appendChild(tb); }
     await waitNext(stage, 'Ya practiqué, ¡continuar!');
     return null; // not scored
@@ -61,6 +61,7 @@
   async function qloop(stage, meta, items, renderQ) {
     let c = 0; const missed = [];
     for (let i = 0; i < items.length; i++) {
+      if (!stage.isConnected) break;
       const body = head(stage, Object.assign({}, meta, { count: `${i + 1} / ${items.length}` }));
       const ok = await renderQ(body, items[i], i);
       if (ok === true) { c++; M.okWeak(items[i].en || items[i].w); } else if (ok === false) { missed.push(items[i]); M.addWeak(items[i].en || items[i].w || items[i].full, items[i].au); }
@@ -386,6 +387,7 @@
       $('#ok', sc).textContent = ok; $('#ko', sc).textContent = ko; await sleep(260);
     }
     clearInterval(iv); const tot = ok + ko;
+    if (!body.isConnected) return result(0, 0, 'reading');
     if (ok >= 10) { sfx('win'); M.confetti(1500); }
     await sheet({ ok: ok >= ko, title: `⏱️ ¡Tiempo! ${ok} correctas`, msg: ok >= 15 ? '¡Eres un rayo! ⚡' : ok >= 8 ? '¡Muy rápido! Intenta superar tu récord.' : 'La velocidad viene con la práctica. ¡Repite y mejora!' });
     return tot > 20 ? result(Math.round(ok / tot * 20), 20, 'reading', missed.slice(0, 6)) : result(ok, Math.max(tot, 1), 'reading', missed.slice(0, 6));
@@ -436,7 +438,7 @@
     const ctr = h(`<div class="row" style="justify-content:center"><button class="btn k" id="pl">▶ Escuchar conversación</button><button class="btn w sm" id="rv">👀 Mostrar texto</button></div>`); body.appendChild(ctr);
     const msgs = d.lines.map(l => { const side = who.indexOf(l.who) % 2 ? 'r' : ''; const m = h(`<div class="msg ${side} blur"><div class="av">${esc(l.who[0])}</div><div class="tx"><span class="who">${esc(l.who)}</span><span>${esc(l.t)}</span></div></div>`); m.onclick = () => play(l.au); return m; });
     let shown = 0, plays = 0;
-    const runAll = async () => { plays++; for (let i = 0; i < msgs.length; i++) { if (!msgs[i].isConnected) chat.appendChild(msgs[i]); msgs.forEach(x => x.classList.remove('speaking')); msgs[i].classList.add('speaking'); msgs[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' }); await play(d.lines[i].au); await sleep(250); } msgs.forEach(x => x.classList.remove('speaking')); shown = msgs.length; next.disabled = false; };
+    const runAll = async () => { plays++; for (let i = 0; i < msgs.length; i++) { if (!body.isConnected) return; if (!msgs[i].isConnected) chat.appendChild(msgs[i]); msgs.forEach(x => x.classList.remove('speaking')); msgs[i].classList.add('speaking'); msgs[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' }); await play(d.lines[i].au); await sleep(250); } msgs.forEach(x => x.classList.remove('speaking')); shown = msgs.length; next.disabled = false; };
     const plb = $('#pl', ctr); plb.onclick = async () => { plb.disabled = true; await runAll(); plb.disabled = false; plb.textContent = '🔁 Escuchar otra vez'; };
     $('#rv', ctr).onclick = () => { msgs.forEach(m => { if (!m.isConnected) chat.appendChild(m); m.classList.remove('blur'); }); };
     const bar = h(`<div class="actionbar"><button class="btn k lg" disabled>Responder preguntas →</button></div>`); body.appendChild(bar); const next = $('button', bar);

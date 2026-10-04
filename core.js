@@ -86,7 +86,7 @@
     stop();
     return new Promise(res => {
       if (!au) return res();
-      const a = new Audio(window.AUD && window.AUD[au] ? 'data:audio/mpeg;base64,' + window.AUD[au] : 'audio/' + au + '.mp3');
+      const a = new Audio(audioSrc(au));
       a.playbackRate = opts.rate || 1; a.preservesPitch = true;
       cur = a; if (opts.btn) { curBtn = opts.btn; opts.btn.classList.add('playing'); }
       const end = () => { if (opts.btn) opts.btn.classList.remove('playing'); if (cur === a) cur = null; res(); };
@@ -182,7 +182,7 @@
     return new Promise(res => {
       let el = $('#sheet'); if (el) el.remove();
       const cls = neutral ? 'neu' : ok ? 'ok' : 'no';
-      const ic = neutral ? '💡' : ok ? '🎉' : '💪';
+      const ic = mascot('sheet-mra', neutral ? 'point' : ok ? (Math.random() < .5 ? 'wink' : 'smile') : 'think');
       el = h(`<div id="sheet" class="sheet ${cls}"><div class="in"><div class="ic">${ic}</div><div class="tx"><h3>${title}</h3>${msg ? `<p>${msg}</p>` : ''}${tip ? `<div class="tipline">💡 ${tip}</div>` : ''}</div><button class="btn ${ok || neutral ? 'k' : 'w'} lg">${btn} →</button></div></div>`);
       document.body.appendChild(el); requestAnimationFrame(() => el.classList.add('show'));
       const go = () => { document.removeEventListener('keydown', kd); el.classList.remove('show'); setTimeout(() => el.remove(), 250); res(); };
@@ -217,24 +217,15 @@
     })(t0);
   }
 
-  /* ---------- mascot (original SVG) ---------- */
-  function mascot(cls = 'mascot bounce', mood = 'happy') {
-    const mouth = mood === 'wow' ? '<ellipse cx="60" cy="74" rx="9" ry="11" fill="#111"/><ellipse cx="60" cy="78" rx="5" ry="5" fill="#E11D48"/>' :
-      '<path d="M40 68 Q60 90 80 68" stroke="#111" stroke-width="5" fill="#fff" stroke-linejoin="round"/><path d="M48 76 Q60 84 72 76" stroke="#E11D48" stroke-width="5" fill="none" stroke-linecap="round"/>';
-    return `<svg class="${cls}" viewBox="0 0 120 130" aria-hidden="true">
-      <ellipse cx="60" cy="124" rx="30" ry="5" fill="rgba(0,0,0,.25)"/>
-      <path d="M38 100 L32 118" stroke="#111" stroke-width="6" stroke-linecap="round"/><path d="M82 100 L88 118" stroke="#111" stroke-width="6" stroke-linecap="round"/>
-      <ellipse cx="29" cy="119" rx="10" ry="6" fill="#E11D48" stroke="#111" stroke-width="3"/><ellipse cx="91" cy="119" rx="10" ry="6" fill="#E11D48" stroke="#111" stroke-width="3"/>
-      <path d="M18 62 Q4 44 12 30" stroke="#111" stroke-width="6" fill="none" stroke-linecap="round"/><circle cx="12" cy="27" r="8" fill="#fff" stroke="#111" stroke-width="3"/>
-      <path d="M102 62 Q116 44 108 30" stroke="#111" stroke-width="6" fill="none" stroke-linecap="round"/><circle cx="108" cy="27" r="8" fill="#fff" stroke="#111" stroke-width="3"/>
-      <circle cx="60" cy="62" r="42" fill="#FFD43B" stroke="#111" stroke-width="5"/>
-      <ellipse cx="45" cy="52" rx="8" ry="11" fill="#fff" stroke="#111" stroke-width="3"/><ellipse cx="75" cy="52" rx="8" ry="11" fill="#fff" stroke="#111" stroke-width="3"/>
-      <circle cx="47" cy="54" r="4.5" fill="#111"/><circle cx="77" cy="54" r="4.5" fill="#111"/>
-      <circle cx="35" cy="68" r="5" fill="#FF9AA2" opacity=".8"/><circle cx="85" cy="68" r="5" fill="#FF9AA2" opacity=".8"/>
-      ${mouth}</svg>`;
+  /* ---------- Mr. Arrieta: personaje guía con varias expresiones ---------- */
+  const MOODS = { happy: 'smile', smile: 'smile', thumbs: 'thumbs', wink: 'wink', wow: 'wow', think: 'think', book: 'book', point: 'point', present: 'present' };
+  function mascot(cls = 'mascot bounce', mood = 'thumbs') {
+    const m = MOODS[mood] || 'thumbs';
+    return `<img class="${cls} mra mra-${m}" src="mra-${m}.webp" alt="Mr. Arrieta" draggable="false">`;
   }
+  function audioSrc(au) { return window.AUD && window.AUD[au] ? 'data:audio/mpeg;base64,' + window.AUD[au] : 'audio/' + au + '.mp3'; }
 
   window.M1 = { D, C, S, $, $$, h, esc, shuffle, sample, sleep, save, touchStreak, addSkill, addWeak, okWeak, skillPct, isUnlocked, finalUnlocked, redeem, codeHash,
     allParts, partById, prevPart, nextPart, partStars, overallPct, imgURL, photo, play, playSeq, loadAudio, stop, sfx, praise, canSR, listen, recordVoice,
-    norm, words, lev, speechScore, sheet, good, bad, toast, modal, xpFly, confetti, mascot };
+    norm, words, lev, speechScore, sheet, good, bad, toast, modal, xpFly, confetti, mascot, audioSrc };
 })();

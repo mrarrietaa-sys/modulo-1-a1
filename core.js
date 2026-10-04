@@ -98,7 +98,10 @@
   function loadAudio(groups) {
     window.__audLoaded = window.__audLoaded || {};
     return Promise.all(groups.filter(g => !window.__audLoaded[g]).map(g => new Promise(res => {
-      const sc = document.createElement('script'); sc.src = 'js/audio/' + g + '.js'; sc.onload = res; sc.onerror = res; document.head.appendChild(sc);
+      // works both with folders (js/audio/t1.js) and with all files in one folder (t1.js)
+      const base = (document.querySelector('script[src$="core.js"]').getAttribute('src') || '').replace(/core\.js$/, '');
+      const tryLoad = (paths) => { if (!paths.length) return res(); const sc = document.createElement('script'); sc.src = paths[0]; sc.onload = res; sc.onerror = () => { sc.remove(); tryLoad(paths.slice(1)); }; document.head.appendChild(sc); };
+      tryLoad([base + 'audio/' + g + '.js', base + g + '.js']);
     })));
   }
   async function playSeq(list, gap = 250) { for (const au of list) { await play(au); await sleep(gap); } }

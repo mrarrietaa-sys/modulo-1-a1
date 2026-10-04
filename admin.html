@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Generador de códigos — Módulo 1</title>
+<meta name="robots" content="noindex">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&family=Poppins:wght@700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<header class="topbar"><div class="brand">MRARRIETA.COM <small>ADMIN · CÓDIGOS</small></div></header>
+<div class="wrap" style="max-width:720px">
+  <div class="card">
+    <span class="lbl">Solo para el profe</span>
+    <h1 style="font-size:28px;margin:10px 0">🔑 Generador de códigos de acceso</h1>
+    <p class="muted">1) Escribe el código que le vas a dar al estudiante. 2) Elige qué desbloquea. 3) Copia la línea y pégala dentro de <b>ACCESS_CODES</b> en el archivo <b>js/config.js</b>. 4) Sube el archivo a GitHub.</p>
+    <label style="font-weight:800">Código</label>
+    <input class="inp" id="code" placeholder="Ej: LAURA-2026" style="margin:6px 0 14px;text-align:left">
+    <label style="font-weight:800">¿Qué desbloquea?</label>
+    <div class="row" style="margin:8px 0 14px">
+      <label><input type="radio" name="t" value="all" checked> Todo el módulo</label>
+      <label><input type="radio" name="t" value="some"> Solo algunos temas:</label>
+      <input class="inp" id="topics" placeholder="3,4,5" style="width:140px;font-size:16px;padding:8px">
+    </div>
+    <label style="font-weight:800">Nota (opcional, solo para ti)</label>
+    <input class="inp" id="note" placeholder="Ej: Laura Gómez - pagó 1 oct" style="margin:6px 0 14px;text-align:left;font-size:16px">
+    <button class="btn k lg" id="gen">Generar línea</button>
+    <div id="out" class="hidden" style="margin-top:16px">
+      <p style="font-weight:800;margin-bottom:6px">Copia esta línea en js/config.js (dentro de ACCESS_CODES):</p>
+      <textarea id="line" class="hw" style="min-height:70px;font-family:monospace;font-size:14px" readonly></textarea>
+      <button class="btn sm" id="copy" style="margin-top:8px">📋 Copiar</button>
+    </div>
+  </div>
+  <div class="card" style="margin-top:18px">
+    <h3>💡 Consejos</h3>
+    <ul style="line-height:1.7">
+      <li>Puedes crear un código distinto para cada estudiante (así sabes quién lo usa) o uno general por grupo.</li>
+      <li>Para <b>cambiar los temas gratis</b>, edita <b>FREE_TOPICS</b> en js/config.js (ej: <code>[1, 2]</code>).</li>
+      <li>Si quieres anular un código, borra su línea de config.js. (Los estudiantes que ya lo usaron conservan el acceso en su dispositivo).</li>
+      <li>Para activar la sección de música de un tema, pon el enlace en <b>MUSIC</b> dentro de config.js.</li>
+    </ul>
+  </div>
+</div>
+<script>
+function codeHash(code){const s='mra-m1|'+String(code).trim().toUpperCase();let h1=0x811c9dc5;for(let i=0;i<s.length;i++){h1^=s.charCodeAt(i);h1=Math.imul(h1,0x01000193)>>>0;}let h2=5381;for(let i=0;i<s.length;i++){h2=(Math.imul(h2,33)+s.charCodeAt(i))>>>0;}return 'h'+h1.toString(36)+h2.toString(36).slice(0,3);}
+document.getElementById('gen').onclick=()=>{
+  const c=document.getElementById('code').value.trim(); if(!c){alert('Escribe un código');return;}
+  const all=document.querySelector('input[name=t]:checked').value==='all';
+  const tp=document.getElementById('topics').value.split(/[^0-9]+/).filter(Boolean).map(Number).filter(n=>n>=1&&n<=14);
+  if(!all&&!tp.length){alert('Escribe los números de los temas, ej: 3,4,5');return;}
+  const note=(document.getElementById('note').value||c).replace(/"/g,"'");
+  const line=`    { hash: "${codeHash(c)}", topics: ${all?'"all"':'['+tp.join(', ')+']'}, note: "${note}" },`;
+  document.getElementById('line').value=line; document.getElementById('out').classList.remove('hidden');
+};
+document.getElementById('copy').onclick=()=>{const t=document.getElementById('line');t.select();navigator.clipboard?navigator.clipboard.writeText(t.value):document.execCommand('copy');document.getElementById('copy').textContent='✅ Copiado';};
+</script>
+</body>
+</html>

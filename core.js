@@ -182,7 +182,7 @@
     return new Promise(res => {
       let el = $('#sheet'); if (el) el.remove();
       const cls = neutral ? 'neu' : ok ? 'ok' : 'no';
-      const ic = mascot('sheet-mra', neutral ? 'point' : ok ? (Math.random() < .5 ? 'wink' : 'smile') : 'think');
+      const ic = mascot('sheet-mra', neutral ? 'point' : ok ? ['wink', 'thumbs', 'celebrate', 'smile'][Math.floor(Math.random() * 4)] : (Math.random() < .5 ? 'think' : 'shrug'));
       el = h(`<div id="sheet" class="sheet ${cls}"><div class="in"><div class="ic">${ic}</div><div class="tx"><h3>${title}</h3>${msg ? `<p>${msg}</p>` : ''}${tip ? `<div class="tipline">💡 ${tip}</div>` : ''}</div><button class="btn ${ok || neutral ? 'k' : 'w'} lg">${btn} →</button></div></div>`);
       document.body.appendChild(el); requestAnimationFrame(() => el.classList.add('show'));
       const go = () => { document.removeEventListener('keydown', kd); el.classList.remove('show'); setTimeout(() => el.remove(), 250); res(); };
@@ -218,7 +218,7 @@
   }
 
   /* ---------- Mr. Arrieta: personaje guía con varias expresiones ---------- */
-  const MOODS = { happy: 'smile', smile: 'smile', thumbs: 'thumbs', wink: 'wink', wow: 'wow', think: 'think', book: 'book', point: 'point', present: 'present' };
+  const MOODS = { happy: 'welcome', welcome: 'welcome', smile: 'smile', thumbs: 'thumbs', wink: 'wink', wow: 'wow', think: 'think', book: 'book', point: 'point', present: 'present', pointside: 'pointside', celebrate: 'celebrate', shrug: 'shrug', idea: 'idea', watch: 'watch' };
   function mascot(cls = 'mascot bounce', mood = 'thumbs') {
     const m = MOODS[mood] || 'thumbs';
     return `<img class="${cls} mra mra-${m}" src="mra-${m}.webp" alt="Mr. Arrieta" draggable="false">`;

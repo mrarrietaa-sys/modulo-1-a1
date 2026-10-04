@@ -48,7 +48,7 @@
     $('#all', tools).onclick = async (e) => { const b = e.currentTarget; if (b._run) { b._run = false; stop(); b.textContent = '▶ Escuchar todo'; return; } b._run = true; b.textContent = '⏸ Detener';
       for (const c of cards) { if (!b._run || !b.isConnected) break; c.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); await c.onclick(); await sleep(450); } b._run = false; b.textContent = '▶ Escuchar todo'; };
     // mini lesson + tips
-    if (p.tip) body.appendChild(h(`<div class="lesson lesson-mra">${M.mascot('lesson-img', 'point')}<div><h3>📘 Mini lección de Mr. Arrieta</h3>${p.tip}</div></div>`));
+    if (p.tip) body.appendChild(h(`<div class="lesson lesson-mra">${M.mascot('lesson-img', 'idea')}<div><h3>📘 Mini lección de Mr. Arrieta</h3>${p.tip}</div></div>`));
     if (p.tips && p.tips.length) { const tb = h(`<div class="lesson" style="background:#fff"><h3>🗣️ Tips de pronunciación del profe</h3></div>`); p.tips.forEach(t => tb.appendChild(h(`<div class="tipbox"><span>💡</span><span>${t}</span></div>`))); body.appendChild(tb); }
     await waitNext(stage, 'Ya practiqué, ¡continuar!');
     return null; // not scored

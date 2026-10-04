@@ -412,3 +412,35 @@ canvas#confetti{position:fixed;inset:0;pointer-events:none;z-index:99}
 .pend-list .partbtn small{white-space:normal}
 .remind-card{padding:14px 18px}
 @media (max-width:600px){.pending-card,.music-card{flex-direction:column;text-align:center}.pending-card .mascot,.music-card .mascot{height:140px}.remind-card{flex-direction:column;text-align:center}.brand .logo{height:36px}}
+
+/* ---- v4: white header + white welcome box + full-body character ---- */
+.topbar{background:#fff;color:var(--k);border-bottom:3px solid var(--k)}
+.logo-pill{background:transparent;padding:0}
+.brand small{border:2px solid var(--k)}
+.topbar .pill{background:#fff;color:var(--k);border-color:var(--k)}
+.topbar .pill.y{background:var(--y);border-color:var(--k)}
+.iconbtn{border-color:var(--k);color:var(--k)}
+.iconbtn:hover{background:var(--y);border-color:var(--k);color:var(--k)}
+.mascot-box{background:#fff;color:var(--k)}
+.mascot-box .tipday{font-weight:800;color:var(--k);background:var(--y);border:2px solid var(--k);border-radius:12px;padding:6px 12px;margin-top:6px;text-align:center}
+.mascot{height:210px}
+.mascot-box .mascot{height:300px}
+.modal .mascot{height:190px}
+.stage .mascot{height:200px}
+.final .mascot{height:190px}
+.res-mra,.player .card .mascot{height:240px}
+.pending-card .mascot,.music-card .mascot{height:230px}
+.lesson-mra .lesson-img{height:200px}
+.sheet-mra{height:110px}
+.ytwrap{position:relative;width:100%;max-width:720px;margin:6px auto 0;aspect-ratio:16/9;border:3px solid var(--k);border-radius:16px;overflow:hidden;box-shadow:var(--sh);background:#000}
+.ytwrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.song-intro{justify-content:center;align-items:center;gap:16px;margin:4px 0 12px}
+.kwrow{background:var(--y3);border:2px solid var(--k);border-radius:14px;padding:12px;margin-bottom:14px}
+@media (max-width:600px){
+  .mascot{height:160px}
+  .mascot-box .mascot{height:230px}
+  .stage .mascot,.modal .mascot{height:160px}
+  .pending-card .mascot,.music-card .mascot{height:170px}
+  .lesson-mra .lesson-img{height:150px}
+  .sheet-mra{height:80px}
+}

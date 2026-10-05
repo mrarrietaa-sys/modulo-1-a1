@@ -30,11 +30,12 @@
       <button class="btn w block" data-a="progress">📊 Mi progreso</button>
       <button class="btn w block" data-a="unlock">🔑 Tengo un código de acceso</button>
       <button class="btn w block" data-a="remind">🔔 Recordatorio diario</button>
+      <button class="btn w block" data-a="tour">🧭 Ver el tour guiado</button>
       <button class="btn w block" data-a="name">✏️ Cambiar mi nombre</button>
       <button class="btn w block" data-a="sound">${S.sound ? '🔔 Sonidos: activados' : '🔕 Sonidos: desactivados'}</button>
       <button class="btn k block" data-a="close">Cerrar</button></div>`);
     $$('button', m).forEach(b => b.onclick = () => { const a = b.dataset.a; m.remove();
-      if (a === 'home' || a === 'progress') route(a); else if (a === 'unlock') unlockModal(); else if (a === 'remind') reminderModal(); else if (a === 'name') onboarding(true); else if (a === 'sound') { S.sound = !S.sound; save(); M.toast(S.sound ? 'Sonidos activados 🔔' : 'Sonidos desactivados 🔕'); } });
+      if (a === 'home' || a === 'progress') route(a); else if (a === 'unlock') unlockModal(); else if (a === 'remind') reminderModal(); else if (a === 'name') onboarding(true); else if (a === 'tour') { route('home'); setTimeout(tour, 400); } else if (a === 'sound') { S.sound = !S.sound; save(); M.toast(S.sound ? 'Sonidos activados 🔔' : 'Sonidos desactivados 🔕'); } });
   }
 
   /* ---------------- router ---------------- */
@@ -62,6 +63,51 @@
     const i = $('#nm'); i.focus();
     const go = () => { const v = i.value.trim(); if (!v) { i.classList.add('wrong'); return; } S.name = v.replace(/\s+/g, ' ').split(' ').map(w => w[0].toUpperCase() + w.slice(1)).join(' '); M.touchStreak(); save(); sfx('win'); route('home'); };
     $('#go').onclick = go; i.onkeydown = e => { if (e.key === 'Enter') go(); };
+  }
+
+
+  /* ---------------- TOUR GUIADO (primera vez) ---------------- */
+  function tour() {
+    if ($('#tour')) return;
+    const first = esc(S.name.split(' ')[0]);
+    const steps = [
+      { mood: 'welcome', t: `¡Hola, ${first}! 👋`, d: 'Soy Mr. Arrieta, tu profe. Te muestro en 1 minuto cómo funciona tu plataforma.' },
+      { sel: '.ringbox', mood: 'point', t: 'Tu progreso', d: 'Aquí ves cuánto llevas del Módulo 1 y el botón para <b>empezar o continuar</b> tu clase.' },
+      { sel: '.hello .skills', mood: 'idea', t: 'Tus 4 habilidades', d: 'Escuchar 🎧, leer 📖, hablar 🗣️ y escribir ✍️. Las barras suben con cada clase que haces.' },
+      { sel: '#tgrid > :first-child', mood: 'pointside', t: 'Los 14 temas', d: 'Cada tema tiene <b>2 clases</b>. Los temas con 🔒 se desbloquean con un <b>código de acceso</b> que te da el profe.' },
+      { mood: 'book', t: '¿Cómo es una clase?', d: 'Cada clase sigue el mismo orden: <b>Goal → Speaking → Reading → Explanation → Practice → Oral task → Music → Homework</b>.<br><br>🔊 escucha · 🎤 habla (permite el micrófono) · <b>← Atrás</b> para corregir · tu avance se guarda solo.' },
+      { sel: '#dict-fab', mood: 'present', t: 'Tu diccionario', d: '¿No entiendes una palabra? Toca aquí, <b>escríbela o dila en voz alta</b> (en español o inglés) y te doy la respuesta con su pronunciación.' },
+      { sel: '#final-b', mood: 'celebrate', t: 'Examen final', d: 'Al terminar los 14 temas presentas el examen final. Si apruebas, ¡obtienes tu <b>certificado</b> del Módulo 1! 🎓' },
+      { sel: '#menu-b', mood: 'watch', t: 'Menú', d: 'Aquí encuentras tu progreso, el código de acceso, el <b>recordatorio diario</b> y este tour por si quieres verlo otra vez.' },
+      { mood: 'thumbs', t: '¡Listo! 🚀', d: 'Ya sabes todo lo necesario. Recuerda: un poquito cada día hace la diferencia. ¡Vamos a tu primera clase!', last: true },
+    ];
+    const ov = h(`<div id="tour"><div class="tour-hole"></div><div class="tour-card"></div></div>`); document.body.appendChild(ov);
+    const hole = $('.tour-hole', ov), card = $('.tour-card', ov);
+    let i = 0;
+    const end = (start) => { ov.remove(); window.removeEventListener('resize', place); window.removeEventListener('scroll', place); S.tourDone = true; save(); if (start) { const nu = nextUp(); if (nu && M.isUnlocked(nu.topic)) route('class', nu.id); } };
+    function place() {
+      const s = steps[i]; const el = s.sel && $(s.sel);
+      if (!el) { hole.style.cssText = 'left:50%;top:40%;width:0;height:0'; card.classList.add('center'); card.style.cssText = ''; return; }
+      card.classList.remove('center');
+      const r = el.getBoundingClientRect(), pad = 8;
+      hole.style.cssText = `left:${r.left - pad}px;top:${r.top - pad}px;width:${r.width + pad * 2}px;height:${r.height + pad * 2}px`;
+      const cw = Math.min(380, innerWidth - 24); const ch = card.offsetHeight || 220;
+      let top = r.bottom + 16; if (top + ch > innerHeight - 10) top = Math.max(10, r.top - ch - 16);
+      let left = Math.min(Math.max(12, r.left + r.width / 2 - cw / 2), innerWidth - cw - 12);
+      card.style.cssText = `left:${left}px;top:${top}px;width:${cw}px`;
+    }
+    function show() {
+      const s = steps[i]; const el = s.sel && $(s.sel);
+      card.innerHTML = `<div class="tour-in">${M.mascot('tour-mra', s.mood)}<div><div class="tour-n">${i + 1} / ${steps.length}</div><h3>${s.t}</h3><p>${s.d}</p></div></div>
+        <div class="tour-bar"><button class="btn w sm" id="tskip">${s.last ? 'Cerrar' : 'Saltar tour'}</button><div class="grow"></div>${i ? '<button class="btn w sm" id="tprev">←</button>' : ''}<button class="btn k" id="tnext">${s.last ? '¡Empezar mi clase! →' : 'Siguiente →'}</button></div>`;
+      $('#tskip', card).onclick = () => end(false);
+      if (i) $('#tprev', card).onclick = () => { i--; show(); };
+      $('#tnext', card).onclick = () => { if (s.last) end(true); else { i++; show(); } };
+      if (el) { el.scrollIntoView({ block: 'center' }); setTimeout(place, 60); } else place();
+      sfx('tap');
+    }
+    window.addEventListener('resize', place); window.addEventListener('scroll', place, { passive: true });
+    show();
   }
 
   /* ---------------- home ---------------- */
@@ -118,7 +164,7 @@
     $('#final-b').onclick = () => M.finalUnlocked() ? route('final') : unlockModal();
     $$('[data-hw]', app).forEach(b => b.onclick = () => route('hw', b.dataset.hw));
     if ($('#rem-b')) $('#rem-b').onclick = reminderModal;
-    dailyReminder();
+    if (!S.tourDone) setTimeout(tour, 700); else dailyReminder();
   }
 
   /* ---------------- tareas pendientes + recordatorio diario ---------------- */
@@ -278,8 +324,6 @@
         <div class="mainph" style="max-width:460px">${photo(p._t.cover)}</div>
         <div class="row" style="justify-content:center;gap:14px;margin:4px 0 8px">${M.mascot('mascot', 'book')}<div class="bubble">Today's class: <b>${esc(p.title)}</b>. Let's go!</div></div>
         <div class="lesson" style="text-align:left;margin-top:6px"><h3>🎯 Goal</h3><p style="font-size:18px;margin:4px 0"><b>${esc(p.goal ? p.goal.en : p.title)}</b></p><p class="muted" style="margin:0">${esc(p.goal ? p.goal.es : p.es)}</p></div>
-        <div class="row" style="justify-content:center;margin:16px 0 4px;gap:8px">${SKILLS.map(([k, ic, nm]) => `<span class="pill" style="background:#fff;color:var(--k);border-color:var(--k)">${ic} ${nm}</span>`).join('')}</div>
-        <p class="muted" style="font-size:14px">En esta clase vas a: hablar 🗣️ · leer 📖 · repasar 🔁 · aprender vocabulario 📘 · practicar 🎮 · grabar tu voz 🎤 · hacer tu tarea ✍️</p>
         ${prev && !(S.parts[prev.id] && S.parts[prev.id].done) ? `<p class="hint" style="margin-top:6px">💡 Te recomendamos completar primero: ${esc(prev._t.title)} · Part ${prev.part}</p>` : ''}
       </div>`;
       await A.waitNext(stage, '¡Empezar clase! 🚀'); return null;
@@ -292,6 +336,7 @@
         const body = A.head(stage, { lbl: 'Speaking', title: 'Listen and answer', ins: 'Calentamiento: escucha la pregunta y <b>respóndela en voz alta</b> con tus propias palabras. ¡No hay respuestas incorrectas!', count: `${i + 1} / ${p.warm.length}` });
         const ok = await new Promise(res => {
           const top = h(`<div class="row" style="justify-content:center;align-items:center;gap:16px;margin:6px 0 10px">${M.mascot('mascot', 'welcome')}<div class="bubble" style="font-size:19px">${esc(q.q)}</div></div>`); body.appendChild(top);
+          if (q.es) body.appendChild(h(`<div class="warm-es"><div class="es">🇪🇸 ${esc(q.es)}</div>${q.ex ? `<div class="ex">💡 Puedes responder: <b>${esc(q.ex)}</b></div>` : ''}</div>`));
           const pr = h(`<div class="center"></div>`); pr.appendChild(A.playBtn(q.au)); body.appendChild(pr);
           const mic = h(`<button class="mic">🎤</button>`); body.appendChild(mic);
           const st = h(`<p class="center" style="font-weight:700">${M.canSR ? 'Toca el micrófono y responde en inglés' : 'Escribe tu respuesta en inglés 👇'}</p>`); body.appendChild(st);
@@ -357,7 +402,7 @@
       let c = 0; const done = new Set();
       p.keyq.forEach((k, i) => {
         const ans = k.a.replace(/___/g, '<b>___</b>');
-        const e = h(`<div class="kq"><div class="q"><span class="grow">❓ ${esc(k.q)}</span></div><div class="a"><span class="grow">💬 ${ans}</span></div><div class="act"></div><div class="out"></div></div>`);
+        const e = h(`<div class="kq"><div class="q"><span class="grow">❓ ${esc(k.q)}</span></div>${k.es ? `<div class="qes">🇪🇸 ${esc(k.es)}</div>` : ''}<div class="a"><span class="grow">💬 ${ans}</span></div><div class="act"></div><div class="out"></div></div>`);
         $('.q', e).appendChild(A.playBtn(k.qau, false)); if (k.aau) $('.a', e).appendChild(A.playBtn(k.aau, false));
         const mic = h(`<button class="btn sm k">🎤 Practicar respuesta</button>`); $('.act', e).appendChild(mic);
         if (k.a.includes('___')) $('.act', e).appendChild(h(`<span class="muted" style="font-size:13px">Completa el ___ con tu información personal</span>`));
@@ -436,7 +481,7 @@
       await A.waitNext(stage, 'Ya la escuché, ¡a jugar! 🎮');
     }
     // 3) Listen & choose / order (frases inspiradas en la canción)
-    const lc = sg.lc;
+    const lc = sample(sg.lc.filter(x => x.type === 'blank'), 3);
     for (let n = 0; n < lc.length; n++) {
       if (!stage.isConnected) return A.result(c, t, 'listening', missed);
       const it = lc[n];
@@ -455,7 +500,7 @@
       await A.feedback(ok, it.full, it.x);
     }
     // 4) Grammar
-    const gr = sample(sg.gr, Math.min(3, sg.gr.length));
+    const gr = sample(sg.gr, Math.min(2, sg.gr.length));
     for (let n = 0; n < gr.length; n++) {
       if (!stage.isConnected) return A.result(c, t, 'listening', missed);
       const it = gr[n];
@@ -468,7 +513,7 @@
       mark(ok, { full: it.s.replace('___', it.a) }); await A.feedback(ok, it.s.replace('___', it.a), it.x);
     }
     // 5) Word order (writing)
-    const wo = sample(sg.wo, Math.min(2, sg.wo.length));
+    const wo = sample(sg.wo, Math.min(1, sg.wo.length));
     for (let n = 0; n < wo.length; n++) {
       if (!stage.isConnected) return A.result(c, t, 'listening', missed);
       const it = wo[n];
@@ -477,7 +522,7 @@
       await A.feedback(ok, it.full, 'Recuerda: <b>Sujeto + Verbo + Complemento</b>.');
     }
     // 6) Sing & speak
-    const sp = sample(sg.sp, Math.min(2, sg.sp.length));
+    const sp = sample(sg.sp, Math.min(1, sg.sp.length));
     for (let n = 0; n < sp.length; n++) {
       if (!stage.isConnected) return A.result(c, t, 'listening', missed);
       const it = sp[n];
@@ -489,8 +534,7 @@
     {
       const pct = t ? Math.round(c / t * 100) : 0;
       stage.innerHTML = `<div class="center"><span class="lbl">${lbl}</span>${M.mascot('mascot bounce', pct >= 70 ? 'celebrate' : 'thumbs')}
-        <h2 style="margin:10px 0 4px">🎶 ${esc(sg.title)} — ${pct}%</h2><p class="muted">${pct >= 70 ? '¡Excelente! Ya puedes cantar esta canción entendiendo lo que dice.' : '¡Buen intento! Escucha la canción otra vez y repite las palabras clave.'}</p>
-        <p style="margin-top:10px"><a class="btn w sm" href="${esc((C.MUSIC || {})[p.topic] || 'https://mrarrietaa-sys.github.io/mrarrieta-learningre/')}" target="_blank" rel="noopener" style="text-decoration:none">🎵 Más retos musicales (Music & English A1)</a></p></div>`;
+        <h2 style="margin:10px 0 4px">🎶 ${esc(sg.title)} — ${pct}%</h2><p class="muted">${pct >= 70 ? '¡Excelente! Ya puedes cantar esta canción entendiendo lo que dice.' : '¡Buen intento! Escucha la canción otra vez y repite las palabras clave.'}</p></div>`;
       await A.waitNext(stage, 'Continuar');
     }
     return A.result(c, t, 'listening', missed);

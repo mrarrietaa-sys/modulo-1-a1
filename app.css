@@ -490,3 +490,28 @@ canvas#confetti{position:fixed;inset:0;pointer-events:none;z-index:99}
 /* ---- audio playing state ---- */
 .btn.playing{background:#E11D48;color:#fff}
 .play.playing,.aud.playing{background:#E11D48}
+
+/* ---- image + label (easier association) ---- */
+.opt.imgopt{display:flex;flex-direction:column}
+.imglbl{display:block;font-family:var(--fh);font-weight:800;font-size:16px;padding:8px 6px;background:#fff;border-top:3px solid var(--k)}
+.mc .b .mimg{width:100%;height:100%;display:flex;flex-direction:column}
+.mc .b .mimg img{flex:1;min-height:0;width:100%;object-fit:cover}
+.mc .b .mimg span{display:block;padding:4px 2px;background:#fff;border-top:2px solid var(--k);font-size:clamp(11px,2.2vw,15px)}
+.mc .b .mes{color:#1d4ed8}
+.mc.match .b .mimg span{background:#dcfce7}
+.warm-es{margin:8px auto 0;max-width:520px;text-align:center}
+.warm-es .es{font-size:17px;font-weight:700}
+.warm-es .ex{display:inline-block;margin-top:8px;background:var(--y3);border:2px dashed var(--k);border-radius:12px;padding:6px 12px;font-size:15px}
+.kq .qes{font-size:15px;color:#555;margin:-4px 0 6px 26px}
+
+/* ---- Tour guiado ---- */
+#tour{position:fixed;inset:0;z-index:100}
+.tour-hole{position:fixed;border-radius:16px;box-shadow:0 0 0 9999px rgba(0,0,0,.62);border:3px solid var(--y);transition:all .25s ease;pointer-events:none}
+.tour-card{position:fixed;background:#fff;border:3px solid var(--k);border-radius:18px;box-shadow:6px 6px 0 var(--k);padding:14px;transition:top .25s,left .25s}
+.tour-card.center{left:50%!important;top:50%!important;transform:translate(-50%,-50%);width:min(440px,calc(100vw - 24px))}
+.tour-in{display:flex;gap:12px;align-items:flex-start}
+.tour-in h3{margin:2px 0 6px;font-size:20px}.tour-in p{margin:0;font-size:15.5px;line-height:1.5}
+.tour-mra{height:130px;width:auto;flex:none}
+.tour-n{font-size:12px;font-weight:800;color:#777}
+.tour-bar{display:flex;gap:8px;align-items:center;margin-top:12px}
+@media (max-width:600px){.tour-mra{height:95px}.tour-in p{font-size:14.5px}}

@@ -81,7 +81,7 @@
       const opts = shuffle([it, ...sample(pool.filter(x => x.en !== it.en && x.img !== it.img), 3)]);
       const wrap = h(`<div class="opts"></div>`); body.appendChild(wrap);
       const big = p.letters || p.numbers;
-      const btns = opts.map(o => { const b = h(usePh ? `<button class="opt imgopt">${photo(o.img)}</button>` : `<button class="opt ${big ? 'big' : ''}">${esc(label(o))}</button>`); wrap.appendChild(b); return b; });
+      const btns = opts.map(o => { const b = h(usePh ? `<button class="opt imgopt">${photo(o.img)}<span class="imglbl">${esc(label(o))}</span></button>` : `<button class="opt ${big ? 'big' : ''}">${esc(label(o))}</button>`); wrap.appendChild(b); return b; });
       setTimeout(() => play(it.au), 350);
       const i = await choose(btns); const ok = opts[i] === it;
       btns[opts.indexOf(it)].classList.add('right'); if (!ok) btns[i].classList.add('wrong'); btns.forEach((b, k) => { if (opts[k] !== it && k !== i) b.classList.add('dim'); });
@@ -94,8 +94,9 @@
   async function pickWord(stage, p) {
     const pool = onePerKey(p.vocab);
     const items = sample(pool, Math.min(6, pool.length));
-    const r = await qloop(stage, { lbl: 'Reading', title: 'Choose and listen', ins: 'Mira la imagen y elige la palabra correcta. ¡Luego escúchala!' }, items, async (body, it) => {
-      body.appendChild(h(`<div class="mainph">${photo(it.img)}</div>`));
+    const r = await qloop(stage, { lbl: 'Reading', title: 'Choose and listen', ins: 'Lee la palabra en español y elige cómo se dice en inglés. ¡Luego escúchala!' }, items, async (body, it) => {
+      body.appendChild(h(`<div class="mainph" style="max-width:300px">${photo(it.img)}</div>`));
+      body.appendChild(h(`<div class="sent" style="margin-top:-4px">🇪🇸 ${esc(it.es)}</div>`));
       const opts = shuffle([it, ...sample(pool.filter(x => x.en !== it.en), 3)]);
       const wrap = h(`<div class="opts"></div>`); body.appendChild(wrap);
       const btns = opts.map(o => { const b = h(`<button class="opt">${esc(o.en)}</button>`); wrap.appendChild(b); return b; });
@@ -217,15 +218,15 @@
   async function memory(stage, p) {
     let pairs;
     if (p.pairs) pairs = sample(p.pairs, 6).map(x => ({ a: { txt: x.a, au: x.aau }, b: { txt: x.b, au: x.bau }, key: x.a }));
-    else pairs = sample(onePerKey(p.vocab).filter(hasPhoto), 6).map(x => ({ a: { img: x.img, au: x.au }, b: { txt: x.en, au: x.au }, key: x.en }));
-    const body = head(stage, { lbl: 'Practice', title: 'Memory game', ins: p.pairs ? 'Encuentra las parejas: <b>singular ↔ plural</b>.' : 'Encuentra las parejas: <b>imagen ↔ palabra</b>. ¡Usa tu memoria!' });
+    else pairs = sample(onePerKey(p.vocab).filter(x => x.es), 6).map(x => ({ a: { img: hasPhoto(x) ? x.img : null, txt: x.en, au: x.au }, b: { txt: x.es, es: true, au: x.au }, key: x.en }));
+    const body = head(stage, { lbl: 'Practice', title: 'Memory game', ins: p.pairs ? 'Encuentra las parejas: <b>singular ↔ plural</b>.' : 'Encuentra las parejas: <b>inglés ↔ español</b>. ¡Usa tu memoria!' });
     const cards = shuffle(pairs.flatMap(pr => [{ ...pr.a, key: pr.key }, { ...pr.b, key: pr.key }]));
     const grid = h(`<div class="mem"></div>`); body.appendChild(grid);
     const info = h(`<p class="center muted" style="margin-top:12px">Intentos: <b id="tries">0</b> · Parejas: <b id="pr">0</b>/${pairs.length}</p>`); body.appendChild(info);
     let open = [], lock = false, tries = 0, found = 0;
     await new Promise(res => {
       cards.forEach((cd) => {
-        const back = cd.img ? `<img src="${M.imgURL(cd.img, 300, 300)}" alt="">` : esc(cd.txt);
+        const back = cd.img ? `<div class="mimg"><img src="${M.imgURL(cd.img, 300, 220)}" alt=""><span>${esc(cd.txt)}</span></div>` : (cd.es ? `<span class="mes">🇪🇸 ${esc(cd.txt)}</span>` : esc(cd.txt));
         const el = h(`<button class="mc"><div class="in"><div class="f">?</div><div class="b">${back}</div></div></button>`); grid.appendChild(el);
         el.onclick = async () => {
           if (lock || el.classList.contains('flip')) return;
@@ -367,7 +368,7 @@
   /* ================= 10. SPEED CHALLENGE ================= */
   async function speed(stage, p) {
     const pool = onePerKey(p.vocab);
-    const body = head(stage, { lbl: 'Challenge', title: '⚡ Speed challenge', ins: '¿La palabra corresponde a la imagen? Responde lo más rápido que puedas. ¡Tienes 40 segundos!' });
+    const body = head(stage, { lbl: 'Challenge', title: '⚡ Speed challenge', ins: '¿La palabra en inglés significa lo mismo que la palabra en español? Responde lo más rápido que puedas. ¡Tienes 40 segundos!' });
     const start = h(`<div class="center" style="padding:30px 0">${M.mascot('mascot bounce', 'wow')}<br><button class="btn k lg">¡Empezar! ⏱️</button></div>`); body.appendChild(start);
     await new Promise(r => $('button', start).onclick = r); start.remove();
     const tm = h(`<div class="timer"><i style="width:100%"></i></div>`); body.appendChild(tm);
@@ -377,7 +378,7 @@
     const iv = setInterval(() => { left--; $('i', tm).style.width = (left / T * 100) + '%'; if (left <= 0) { alive = false; clearInterval(iv); } }, 1000);
     while (alive) {
       const it = pool[Math.floor(Math.random() * pool.length)]; const match = Math.random() < .5; const shown = match ? it : sample(pool.filter(x => x.en !== it.en), 1)[0];
-      area.innerHTML = `<div class="mainph" style="max-width:300px;margin-bottom:8px">${photo(it.img)}</div><div class="spword">${esc(shown.en)}</div>`;
+      area.innerHTML = `<div class="mainph" style="max-width:260px;margin-bottom:6px">${photo(it.img)}</div><div class="center" style="font-size:18px;font-weight:700">🇪🇸 ${esc(it.es)}</div><div class="spword">${esc(shown.en)}</div>`;
       const tf = h(`<div class="tfb"><button class="opt">✅</button><button class="opt">❌</button></div>`); area.appendChild(tf);
       const btns = $$('button', tf);
       const ans = await Promise.race([choose(btns), new Promise(r => { const w = setInterval(() => { if (!alive) { clearInterval(w); r(-1); } }, 200); })]);
@@ -398,7 +399,7 @@
     const items = sample(p.spell, Math.min(5, p.spell.length)).map(x => ({ ...x, en: x.w }));
     const L = M.D.letters;
     const r = await qloop(stage, { lbl: 'Writing', title: 'Listen and spell', ins: 'Escucha la palabra y deletréala tocando las letras. ¡Cada letra suena!' }, items, (body, it) => new Promise(res => {
-      body.appendChild(h(`<div class="mainph" style="max-width:260px">${photo(it.img)}</div>`)); const pb = playBtn(it.au, false); const row = h(`<div class="center" style="margin-bottom:6px"></div>`); row.appendChild(pb); body.appendChild(row);
+      body.appendChild(h(`<div class="mainph" style="max-width:260px">${photo(it.img)}</div>`)); if (it.es) body.appendChild(h(`<p class="center" style="margin:-4px 0 6px"><span class="hint">🇪🇸 ${esc(it.es)}</span></p>`)); const pb = playBtn(it.au, false); const row = h(`<div class="center" style="margin-bottom:6px"></div>`); row.appendChild(pb); body.appendChild(row);
       const w = it.w.toUpperCase(); const slots = h(`<div class="slots">${w.split('').map(() => '<div class="slot"></div>').join('')}</div>`); body.appendChild(slots);
       const extras = sample('ABCDEFGHIJKLMNOPRSTUVWY'.split('').filter(c => !w.includes(c)), 2);
       const tiles = h(`<div class="tiles"></div>`); body.appendChild(tiles);

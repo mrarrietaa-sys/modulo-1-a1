@@ -80,18 +80,37 @@
   }
 
   /* ---------- audio (natural neural voices pre-generated as MP3) ---------- */
-  let cur = null, curBtn = null;
-  function stop() { if (cur) { cur.pause(); cur = null; } if (curBtn) { curBtn.classList.remove('playing'); curBtn = null; } if (window.speechSynthesis) speechSynthesis.cancel(); }
+  let cur = null, curBtn = null, curEnd = null; const ext = new Set();
+  // botón global "Detener audio" (aparece cuando suena cualquier audio)
+  let pill = null;
+  function audioUI() {
+    if (!pill && document.body) { pill = document.createElement('button'); pill.id = 'stop-pill'; pill.type = 'button'; pill.innerHTML = '⏹ Detener audio'; pill.onclick = () => stop(); document.body.appendChild(pill); }
+    const on = !!cur || [...ext].some(a => !a.paused && !a.ended) || !!(window.speechSynthesis && speechSynthesis.speaking);
+    if (pill) pill.classList.toggle('on', on);
+  }
+  function halt() {
+    if (cur) { cur.pause(); cur = null; }
+    if (curBtn) { curBtn.classList.remove('playing'); curBtn = null; }
+    if (curEnd) { const e = curEnd; curEnd = null; e(); }
+    ext.forEach(a => { a.pause(); a.dispatchEvent(new Event('ended')); }); ext.clear();
+    if (window.speechSynthesis) speechSynthesis.cancel();
+    audioUI();
+  }
+  // stop(): detiene TODO el audio y avisa a las secuencias ("Escuchar todo", diálogos, lecturas)
+  function stop() { halt(); window.dispatchEvent(new Event('m1-audio-stop')); }
+  function trackAudio(a) { ext.add(a); ['play', 'playing', 'pause'].forEach(ev => a.addEventListener(ev, audioUI)); a.addEventListener('ended', () => { ext.delete(a); audioUI(); }); audioUI(); return a; }
   function play(au, opts = {}) {
-    stop();
+    halt();
     return new Promise(res => {
       if (!au) return res();
       const a = new Audio(audioSrc(au));
       a.playbackRate = opts.rate || 1; a.preservesPitch = true;
       cur = a; if (opts.btn) { curBtn = opts.btn; opts.btn.classList.add('playing'); }
-      const end = () => { if (opts.btn) opts.btn.classList.remove('playing'); if (cur === a) cur = null; res(); };
+      let done = false;
+      const end = () => { if (done) return; done = true; if (opts.btn) opts.btn.classList.remove('playing'); if (cur === a) cur = null; if (curEnd === end) curEnd = null; audioUI(); res(); };
+      curEnd = end;
       a.onended = end; a.onerror = end;
-      a.play().catch(end);
+      a.play().then(audioUI).catch(end);
     });
   }
   // audio is packed in a few files (js/audio/*.js) so the folder is easy to upload to GitHub
@@ -226,6 +245,6 @@
   function audioSrc(au) { return window.AUD && window.AUD[au] ? 'data:audio/mpeg;base64,' + window.AUD[au] : 'audio/' + au + '.mp3'; }
 
   window.M1 = { D, C, S, $, $$, h, esc, shuffle, sample, sleep, save, touchStreak, addSkill, addWeak, okWeak, skillPct, isUnlocked, finalUnlocked, redeem, codeHash,
-    allParts, partById, prevPart, nextPart, partStars, overallPct, imgURL, photo, play, playSeq, loadAudio, stop, sfx, praise, canSR, listen, recordVoice,
+    allParts, partById, trackAudio, audioUI, prevPart, nextPart, partStars, overallPct, imgURL, photo, play, playSeq, loadAudio, stop, sfx, praise, canSR, listen, recordVoice,
     norm, words, lev, speechScore, sheet, good, bad, toast, modal, xpFly, confetti, mascot, audioSrc };
 })();

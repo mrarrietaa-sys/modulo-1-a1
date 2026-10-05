@@ -486,3 +486,11 @@ canvas#confetti{position:fixed;inset:0;pointer-events:none;z-index:99}
   .dict-word{flex-direction:column}.dict-ph{width:100%}.dict-ph img{height:150px}
 }
 @media print{#dict-fab{display:none}}
+
+/* ---- Detener audio (global) ---- */
+#stop-pill{position:fixed;left:50%;bottom:22px;transform:translate(-50%,12px);z-index:80;background:#E11D48;color:#fff;border:3px solid var(--k);border-radius:999px;padding:10px 20px;font-family:var(--fh);font-weight:800;font-size:16px;box-shadow:4px 4px 0 var(--k);opacity:0;pointer-events:none;transition:opacity .15s,transform .15s;cursor:pointer}
+#stop-pill.on{opacity:1;pointer-events:auto;transform:translate(-50%,0)}
+#stop-pill:hover{filter:brightness(1.08)}
+.btn.playing{background:#E11D48;color:#fff}
+.play.playing,.aud.playing{background:#E11D48}
+@media (max-width:600px){#stop-pill{bottom:92px;font-size:14px;padding:8px 16px}}

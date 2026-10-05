@@ -318,20 +318,22 @@
       const box = h(`<div class="reading">${photo(r.img)}<div><div class="row" style="margin-bottom:10px"><button class="btn k sm" id="rp">▶ Escuchar lectura</button></div><div class="txt">${sents.map(s => `<span class="s">${esc(s)}</span>`).join('')}</div></div></div>`);
       body.appendChild(box);
       // approximate karaoke highlight by character proportion
-      const karaoke = async (rate) => { const a = new Audio(M.audioSrc(r.au)); a.playbackRate = rate; stop(); const spans = $$('.s', box); const lens = sents.map(s => s.length); const tot = lens.reduce((x, y) => x + y, 0);
+      const rp = $('#rp', box);
+      const karaoke = () => { stop(); const a = M.trackAudio(new Audio(M.audioSrc(r.au))); const spans = $$('.s', box); const lens = sents.map(s => s.length); const tot = lens.reduce((x, y) => x + y, 0);
         a.ontimeupdate = () => { if (!a.duration) return; const f = a.currentTime / a.duration * tot; let acc = 0; spans.forEach((sp, i) => { const on = f >= acc && f < acc + lens[i]; sp.classList.toggle('on', on); acc += lens[i]; }); };
-        a.onended = () => spans.forEach(sp => sp.classList.remove('on')); a.play(); window.__ra = a; };
-      $('#rp', box).onclick = () => karaoke(1);
+        a.addEventListener('ended', () => { spans.forEach(sp => sp.classList.remove('on')); rp.innerHTML = '▶ Escuchar lectura'; rp.classList.remove('playing'); });
+        a.play(); window.__ra = a; rp.innerHTML = '⏹ Detener lectura'; rp.classList.add('playing'); };
+      rp.onclick = () => { if (rp.classList.contains('playing')) stop(); else karaoke(); };
       body.appendChild(h(`<h3 style="margin-top:18px">Answer YES or NO</h3>`));
       const qs = r.q.map((q, i) => { const e = h(`<div class="yn"><p>${i + 1}) ${esc(q.s)}</p><div class="b"><button data-v="yes">YES</button><button data-v="no">NO</button></div></div>`); $$('button', e).forEach(b => b.onclick = () => { $$('button', e).forEach(x => x.classList.remove('sel')); b.classList.add('sel'); e._v = b.dataset.v; sfx('tap'); }); body.appendChild(e); return e; });
       const bar = h(`<div class="actionbar"><button class="btn k lg">Comprobar ✓</button></div>`); body.appendChild(bar);
       const c = await new Promise(res => { $('button', bar).onclick = async () => {
         if (qs.some(e => !e._v)) { M.toast('Responde todas las preguntas 😉'); return; }
-        if (window.__ra) window.__ra.pause();
+        stop();
         let c = 0; qs.forEach((e, i) => { const ok = e._v === r.q[i].a; if (ok) c++; e.classList.add(ok ? 'right' : 'wrong'); $$('button', e).forEach(b => b.disabled = true); if (!ok) $('p', e).innerHTML += ` <b>(${r.q[i].a.toUpperCase()})</b>`; });
         bar.remove(); c === qs.length ? sfx('win') : sfx(c >= qs.length / 2 ? 'ok' : 'bad');
         await A.waitNext(stage, `${c}/${qs.length} correctas — Continuar`); res(c); }; });
-      if (window.__ra) window.__ra.pause();
+      stop();
       return A.result(c, r.q.length, 'reading');
     },
 

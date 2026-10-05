@@ -13,7 +13,7 @@
   }
   const playBtn = (au, big = true) => {
     const b = h(big ? `<button class="play" aria-label="Escuchar">🔊</button>` : `<button class="aud" aria-label="Escuchar">🔊</button>`);
-    b.onclick = (e) => { e.stopPropagation(); sfx('tap'); play(au, { btn: b }); }; return b;
+    b.onclick = (e) => { e.stopPropagation(); if (b.classList.contains('playing')) { stop(); return; } sfx('tap'); play(au, { btn: b }); }; return b;
   };
   const slowBtn = (au) => { const b = h(`<button class="slowbtn">🐢 Lento</button>`); b.onclick = () => play(au, { rate: .72 }); return b; };
   const hasPhoto = (it) => it.img && !it.img.startsWith('#');
@@ -45,7 +45,7 @@
       grid.appendChild(c); return c;
     });
     upd();
-    $('#all', tools).onclick = async (e) => { const b = e.currentTarget; if (b._run) { b._run = false; stop(); b.textContent = '▶ Escuchar todo'; return; } b._run = true; b.textContent = '⏸ Detener';
+    $('#all', tools).onclick = async (e) => { const b = e.currentTarget; if (b._run) { b._run = false; stop(); b.textContent = '▶ Escuchar todo'; return; } b._run = true; b.textContent = '⏹ Detener'; const onStop = () => { b._run = false; }; window.addEventListener('m1-audio-stop', onStop, { once: true });
       for (const c of cards) { if (!b._run || !b.isConnected) break; c.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); await c.onclick(); await sleep(450); } b._run = false; b.textContent = '▶ Escuchar todo'; };
     // mini lesson + tips
     if (p.tip) body.appendChild(h(`<div class="lesson lesson-mra">${M.mascot('lesson-img', 'idea')}<div><h3>📘 Mini lección de Mr. Arrieta</h3>${p.tip}</div></div>`));
@@ -438,8 +438,9 @@
     const ctr = h(`<div class="row" style="justify-content:center"><button class="btn k" id="pl">▶ Escuchar conversación</button><button class="btn w sm" id="rv">👀 Mostrar texto</button></div>`); body.appendChild(ctr);
     const msgs = d.lines.map(l => { const side = who.indexOf(l.who) % 2 ? 'r' : ''; const m = h(`<div class="msg ${side} blur"><div class="av">${esc(l.who[0])}</div><div class="tx"><span class="who">${esc(l.who)}</span><span>${esc(l.t)}</span></div></div>`); m.onclick = () => play(l.au); return m; });
     let shown = 0, plays = 0;
-    const runAll = async () => { plays++; for (let i = 0; i < msgs.length; i++) { if (!body.isConnected) return; if (!msgs[i].isConnected) chat.appendChild(msgs[i]); msgs.forEach(x => x.classList.remove('speaking')); msgs[i].classList.add('speaking'); msgs[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' }); await play(d.lines[i].au); await sleep(250); } msgs.forEach(x => x.classList.remove('speaking')); shown = msgs.length; next.disabled = false; };
-    const plb = $('#pl', ctr); plb.onclick = async () => { plb.disabled = true; await runAll(); plb.disabled = false; plb.textContent = '🔁 Escuchar otra vez'; };
+    let halted = false; window.addEventListener('m1-audio-stop', () => { halted = true; });
+    const runAll = async () => { plays++; halted = false; for (let i = 0; i < msgs.length; i++) { if (!body.isConnected) return; if (halted) break; if (!msgs[i].isConnected) chat.appendChild(msgs[i]); msgs.forEach(x => x.classList.remove('speaking')); msgs[i].classList.add('speaking'); msgs[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' }); await play(d.lines[i].au); await sleep(250); } msgs.forEach(x => x.classList.remove('speaking')); shown = msgs.length; next.disabled = false; };
+    const plb = $('#pl', ctr); let running = false; plb.onclick = async () => { if (running) { stop(); return; } running = true; plb.textContent = '⏹ Detener'; await runAll(); running = false; msgs.forEach(x => x.classList.remove('speaking')); plb.textContent = '🔁 Escuchar otra vez'; };
     $('#rv', ctr).onclick = () => { msgs.forEach(m => { if (!m.isConnected) chat.appendChild(m); m.classList.remove('blur'); }); };
     const bar = h(`<div class="actionbar"><button class="btn k lg" disabled>Responder preguntas →</button></div>`); body.appendChild(bar); const next = $('button', bar);
     await new Promise(r => next.onclick = r); stop(); void shown; void plays;

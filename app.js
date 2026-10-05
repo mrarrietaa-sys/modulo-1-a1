@@ -336,7 +336,7 @@
         const body = A.head(stage, { lbl: 'Speaking', title: 'Listen and answer', ins: 'Calentamiento: escucha la pregunta y <b>respóndela en voz alta</b> con tus propias palabras. ¡No hay respuestas incorrectas!', count: `${i + 1} / ${p.warm.length}` });
         const ok = await new Promise(res => {
           const top = h(`<div class="row" style="justify-content:center;align-items:center;gap:16px;margin:6px 0 10px">${M.mascot('mascot', 'welcome')}<div class="bubble" style="font-size:19px">${esc(q.q)}</div></div>`); body.appendChild(top);
-          if (q.es) body.appendChild(h(`<div class="warm-es"><div class="es">🇪🇸 ${esc(q.es)}</div>${q.ex ? `<div class="ex">💡 Puedes responder: <b>${esc(q.ex)}</b></div>` : ''}</div>`));
+          if (q.es) body.appendChild(h(`<div class="warm-es">${q.ex ? `<div class="ex">💡 Puedes responder: <b>${esc(q.ex)}</b></div>` : ''}</div>`));
           const pr = h(`<div class="center"></div>`); pr.appendChild(A.playBtn(q.au)); body.appendChild(pr);
           const mic = h(`<button class="mic">🎤</button>`); body.appendChild(mic);
           const st = h(`<p class="center" style="font-weight:700">${M.canSR ? 'Toca el micrófono y responde en inglés' : 'Escribe tu respuesta en inglés 👇'}</p>`); body.appendChild(st);
@@ -389,7 +389,7 @@
       const r = await A.qloop(stage, { lbl: 'Review', title: 'Let\'s remember last class', ins: `Repaso de <b>${esc(pv._t.title)} · Part ${pv.part}</b>. Escucha y elige.` }, items, async (body, it) => {
         body.appendChild(A.playBtn(it.au));
         const opts = shuffle([it, ...sample(pool.filter(x => x.en !== it.en), 3)]); const wrap = h(`<div class="opts" style="margin-top:12px"></div>`); body.appendChild(wrap);
-        const btns = opts.map(o => { const b = h(usePh ? `<button class="opt imgopt">${photo(o.img)}</button>` : `<button class="opt">${esc(o.en)}</button>`); wrap.appendChild(b); return b; });
+        const btns = opts.map(o => { const b = h(usePh ? `<button class="opt imgopt">${photo(o.img)}<span class="imglbl">${esc(o.en)}</span></button>` : `<button class="opt">${esc(o.en)}</button>`); wrap.appendChild(b); return b; });
         setTimeout(() => play(it.au), 350);
         const i = await A.choose(btns); const ok = opts[i] === it; btns[opts.indexOf(it)].classList.add('right'); if (!ok) btns[i].classList.add('wrong');
         await A.feedback(ok, `${it.en} (${it.es})`, 'Repasa la clase anterior si lo necesitas.'); return ok;
@@ -402,7 +402,7 @@
       let c = 0; const done = new Set();
       p.keyq.forEach((k, i) => {
         const ans = k.a.replace(/___/g, '<b>___</b>');
-        const e = h(`<div class="kq"><div class="q"><span class="grow">❓ ${esc(k.q)}</span></div>${k.es ? `<div class="qes">🇪🇸 ${esc(k.es)}</div>` : ''}<div class="a"><span class="grow">💬 ${ans}</span></div><div class="act"></div><div class="out"></div></div>`);
+        const e = h(`<div class="kq"><div class="q"><span class="grow">❓ ${esc(k.q)}</span></div>${k.es ? `<div class="qes">${esc(k.es)}</div>` : ''}<div class="a"><span class="grow">💬 ${ans}</span></div><div class="act"></div><div class="out"></div></div>`);
         $('.q', e).appendChild(A.playBtn(k.qau, false)); if (k.aau) $('.a', e).appendChild(A.playBtn(k.aau, false));
         const mic = h(`<button class="btn sm k">🎤 Practicar respuesta</button>`); $('.act', e).appendChild(mic);
         if (k.a.includes('___')) $('.act', e).appendChild(h(`<span class="muted" style="font-size:13px">Completa el ___ con tu información personal</span>`));
@@ -753,13 +753,13 @@
       const q = qs[i]; const meta = { lbl: 'Final test', count: `${i + 1} / ${qs.length}` };
       let ok = false;
       if (q.k === 'lc') {
-        const body = A.head(stage, { ...meta, title: 'Listen and choose', ins: 'Escucha y elige la imagen correcta.' });
+        const body = A.head(stage, { ...meta, title: 'Listen and choose', ins: 'Escucha y elige la opción correcta.' });
         body.appendChild(A.playBtn(q.it.au)); const opts = shuffle([q.it, ...sample(uniq.filter(x => x.en !== q.it.en && x.img !== q.it.img), 3)]);
-        const wrap = h(`<div class="opts" style="margin-top:12px"></div>`); body.appendChild(wrap); const btns = opts.map(o => { const b = h(`<button class="opt imgopt">${photo(o.img)}</button>`); wrap.appendChild(b); return b; });
+        const wrap = h(`<div class="opts" style="margin-top:12px"></div>`); body.appendChild(wrap); const btns = opts.map(o => { const b = h(`<button class="opt imgopt">${photo(o.img)}<span class="imglbl">${esc(o.en)}</span></button>`); wrap.appendChild(b); return b; });
         setTimeout(() => play(q.it.au), 300); const k = await A.choose(btns); ok = opts[k] === q.it; btns[k].classList.add(ok ? 'right' : 'wrong'); await sleep(600);
       } else if (q.k === 'pw') {
-        const body = A.head(stage, { ...meta, title: 'Choose the word', ins: 'Elige la palabra correcta para la imagen.' });
-        body.appendChild(h(`<div class="mainph" style="max-width:340px">${photo(q.it.img)}</div>`)); const opts = shuffle([q.it, ...sample(uniq.filter(x => x.en !== q.it.en), 3)]);
+        const body = A.head(stage, { ...meta, title: 'Choose the word', ins: 'Lee la palabra en español y elige cómo se dice en inglés.' });
+        body.appendChild(h(`<div class="mainph" style="max-width:300px">${photo(q.it.img)}</div>`)); if (q.it.es) body.appendChild(h(`<div class="sent" style="margin-top:-4px">${esc(q.it.es)}</div>`)); const opts = shuffle([q.it, ...sample(uniq.filter(x => x.en !== q.it.en), 3)]);
         const wrap = h(`<div class="opts"></div>`); body.appendChild(wrap); const btns = opts.map(o => { const b = h(`<button class="opt">${esc(o.en)}</button>`); wrap.appendChild(b); return b; });
         const k = await A.choose(btns); ok = opts[k] === q.it; btns[k].classList.add(ok ? 'right' : 'wrong'); await sleep(600);
       } else if (q.k === 'fill') {

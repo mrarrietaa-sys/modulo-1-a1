@@ -96,7 +96,7 @@
     const items = sample(pool, Math.min(6, pool.length));
     const r = await qloop(stage, { lbl: 'Reading', title: 'Choose and listen', ins: 'Lee la palabra en español y elige cómo se dice en inglés. ¡Luego escúchala!' }, items, async (body, it) => {
       body.appendChild(h(`<div class="mainph" style="max-width:300px">${photo(it.img)}</div>`));
-      body.appendChild(h(`<div class="sent" style="margin-top:-4px">🇪🇸 ${esc(it.es)}</div>`));
+      body.appendChild(h(`<div class="sent" style="margin-top:-4px">${esc(it.es)}</div>`));
       const opts = shuffle([it, ...sample(pool.filter(x => x.en !== it.en), 3)]);
       const wrap = h(`<div class="opts"></div>`); body.appendChild(wrap);
       const btns = opts.map(o => { const b = h(`<button class="opt">${esc(o.en)}</button>`); wrap.appendChild(b); return b; });
@@ -226,7 +226,7 @@
     let open = [], lock = false, tries = 0, found = 0;
     await new Promise(res => {
       cards.forEach((cd) => {
-        const back = cd.img ? `<div class="mimg"><img src="${M.imgURL(cd.img, 300, 220)}" alt=""><span>${esc(cd.txt)}</span></div>` : (cd.es ? `<span class="mes">🇪🇸 ${esc(cd.txt)}</span>` : esc(cd.txt));
+        const back = cd.img ? `<div class="mimg"><img src="${M.imgURL(cd.img, 300, 220)}" alt=""><span>${esc(cd.txt)}</span></div>` : (cd.es ? `<span class="mes">${esc(cd.txt)}</span>` : esc(cd.txt));
         const el = h(`<button class="mc"><div class="in"><div class="f">?</div><div class="b">${back}</div></div></button>`); grid.appendChild(el);
         el.onclick = async () => {
           if (lock || el.classList.contains('flip')) return;
@@ -378,7 +378,7 @@
     const iv = setInterval(() => { left--; $('i', tm).style.width = (left / T * 100) + '%'; if (left <= 0) { alive = false; clearInterval(iv); } }, 1000);
     while (alive) {
       const it = pool[Math.floor(Math.random() * pool.length)]; const match = Math.random() < .5; const shown = match ? it : sample(pool.filter(x => x.en !== it.en), 1)[0];
-      area.innerHTML = `<div class="mainph" style="max-width:260px;margin-bottom:6px">${photo(it.img)}</div><div class="center" style="font-size:18px;font-weight:700">🇪🇸 ${esc(it.es)}</div><div class="spword">${esc(shown.en)}</div>`;
+      area.innerHTML = `<div class="mainph" style="max-width:260px;margin-bottom:6px">${photo(it.img)}</div><div class="center" style="font-size:18px;font-weight:700">${esc(it.es)}</div><div class="spword">${esc(shown.en)}</div>`;
       const tf = h(`<div class="tfb"><button class="opt">✅</button><button class="opt">❌</button></div>`); area.appendChild(tf);
       const btns = $$('button', tf);
       const ans = await Promise.race([choose(btns), new Promise(r => { const w = setInterval(() => { if (!alive) { clearInterval(w); r(-1); } }, 200); })]);
@@ -399,7 +399,7 @@
     const items = sample(p.spell, Math.min(5, p.spell.length)).map(x => ({ ...x, en: x.w }));
     const L = M.D.letters;
     const r = await qloop(stage, { lbl: 'Writing', title: 'Listen and spell', ins: 'Escucha la palabra y deletréala tocando las letras. ¡Cada letra suena!' }, items, (body, it) => new Promise(res => {
-      body.appendChild(h(`<div class="mainph" style="max-width:260px">${photo(it.img)}</div>`)); if (it.es) body.appendChild(h(`<p class="center" style="margin:-4px 0 6px"><span class="hint">🇪🇸 ${esc(it.es)}</span></p>`)); const pb = playBtn(it.au, false); const row = h(`<div class="center" style="margin-bottom:6px"></div>`); row.appendChild(pb); body.appendChild(row);
+      body.appendChild(h(`<div class="mainph" style="max-width:260px">${photo(it.img)}</div>`)); if (it.es) body.appendChild(h(`<p class="center" style="margin:-4px 0 6px"><span class="hint">${esc(it.es)}</span></p>`)); const pb = playBtn(it.au, false); const row = h(`<div class="center" style="margin-bottom:6px"></div>`); row.appendChild(pb); body.appendChild(row);
       const w = it.w.toUpperCase(); const slots = h(`<div class="slots">${w.split('').map(() => '<div class="slot"></div>').join('')}</div>`); body.appendChild(slots);
       const extras = sample('ABCDEFGHIJKLMNOPRSTUVWY'.split('').filter(c => !w.includes(c)), 2);
       const tiles = h(`<div class="tiles"></div>`); body.appendChild(tiles);

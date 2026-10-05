@@ -84,8 +84,7 @@
   // botón global "Detener audio" (aparece cuando suena cualquier audio)
   let pill = null;
   function audioUI() {
-    if (!pill && document.body) { pill = document.createElement('button'); pill.id = 'stop-pill'; pill.type = 'button'; pill.innerHTML = '⏹ Detener audio'; pill.onclick = () => stop(); document.body.appendChild(pill); }
-    const on = !!cur || [...ext].some(a => !a.paused && !a.ended) || !!(window.speechSynthesis && speechSynthesis.speaking);
+        const on = !!cur || [...ext].some(a => !a.paused && !a.ended) || !!(window.speechSynthesis && speechSynthesis.speaking);
     if (pill) pill.classList.toggle('on', on);
   }
   function halt() {
@@ -118,7 +117,7 @@
     window.__audLoaded = window.__audLoaded || {};
     return Promise.all(groups.filter(g => !window.__audLoaded[g]).map(g => new Promise(res => {
       // works both with folders (js/audio/t1.js) and with all files in one folder (t1.js)
-      const base = (document.querySelector('script[src$="core.js"]').getAttribute('src') || '').replace(/core\.js$/, '');
+      const base = (document.querySelector('script[src*="core.js"]').getAttribute('src') || '').replace(/core\.js(\?.*)?$/, '');
       const tryLoad = (paths) => { if (!paths.length) return res(); const sc = document.createElement('script'); sc.src = paths[0]; sc.onload = res; sc.onerror = () => { sc.remove(); tryLoad(paths.slice(1)); }; document.head.appendChild(sc); };
       tryLoad([base + 'audio/' + g + '.js', base + g + '.js']);
     })));

@@ -142,7 +142,7 @@
     $('.dict-x', panel).onclick = close;
     $('.dict-form', panel).onsubmit = (e) => { e.preventDefault(); const v = $('#dq', panel).value.trim(); if (v) ask(v); };
     $$('.dict-mics button', panel).forEach(b => b.onclick = () => voice(b));
-    hist(); suggestions(); setTimeout(() => $('#dq', panel).focus(), 50);
+    hist(); setTimeout(() => $('#dq', panel).focus(), 50);
   }
   function close() { if (panel) panel.classList.remove('on'); M.stop(); if (window.speechSynthesis) speechSynthesis.cancel(); }
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && panel && panel.classList.contains('on')) close(); });

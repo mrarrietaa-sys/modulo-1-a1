@@ -20,26 +20,30 @@
     tb.innerHTML = `<div class="brand" id="go-home"><span class="logo-pill"><img class="logo" src="mra-brand.png" alt="mrarrieta.com"></span><small>MÓDULO 1 · A1</small></div><div class="sp"></div>
       <span class="pill y" title="Puntos de experiencia">⚡ ${S.xp} XP</span>
       <span class="pill hide-s" title="Días seguidos estudiando">🔥 ${S.streak.n || 0}</span>
-      <button class="iconbtn" id="menu-b" title="Menú">☰</button>`;
+      ${S.dictHidden ? '<button class="iconbtn" id="dict-b" title="Diccionario">🔎</button>' : ''}<button class="iconbtn" id="menu-b" title="Menú">☰</button>`;
     $('#go-home', tb).onclick = () => { stop(); route('home'); };
     $('#menu-b', tb).onclick = menu;
+    const db = $('#dict-b', tb); if (db) db.onclick = () => window.M1DICT && M1DICT.open();
   }
   function menu() {
     const m = M.modal(`<h3>☰ Menú</h3><div style="display:grid;gap:10px;margin-top:10px">
       <button class="btn w block" data-a="home">🏠 Inicio</button>
       <button class="btn w block" data-a="progress">📊 Mi progreso</button>
+      <button class="btn w block" data-a="chat">💬 Chat con mi profe</button>
       <button class="btn w block" data-a="unlock">🔑 Tengo un código de acceso</button>
       <button class="btn w block" data-a="remind">🔔 Recordatorio diario</button>
+      <button class="btn w block" data-a="dict">${S.dictHidden ? '📌 Mostrar botón flotante del diccionario' : '🙈 Ocultar botón flotante del diccionario'}</button>
       <button class="btn w block" data-a="tour">🧭 Ver el tour guiado</button>
       <button class="btn w block" data-a="name">✏️ Cambiar mi nombre</button>
       <button class="btn w block" data-a="sound">${S.sound ? '🔔 Sonidos: activados' : '🔕 Sonidos: desactivados'}</button>
       <button class="btn k block" data-a="close">Cerrar</button></div>`);
     $$('button', m).forEach(b => b.onclick = () => { const a = b.dataset.a; m.remove();
-      if (a === 'home' || a === 'progress') route(a); else if (a === 'unlock') unlockModal(); else if (a === 'remind') reminderModal(); else if (a === 'name') onboarding(true); else if (a === 'tour') { route('home'); setTimeout(tour, 400); } else if (a === 'sound') { S.sound = !S.sound; save(); M.toast(S.sound ? 'Sonidos activados 🔔' : 'Sonidos desactivados 🔕'); } });
+      if (a === 'home' || a === 'progress' || a === 'chat') route(a); else if (a === 'unlock') unlockModal(); else if (a === 'remind') reminderModal(); else if (a === 'name') onboarding(true); else if (a === 'dict') { window.M1DICT && M1DICT.setHidden(!S.dictHidden); } else if (a === 'tour') { route('home'); setTimeout(tour, 400); } else if (a === 'sound') { S.sound = !S.sound; save(); M.toast(S.sound ? 'Sonidos activados 🔔' : 'Sonidos desactivados 🔕'); } });
   }
 
   /* ---------------- router ---------------- */
   window.addEventListener('m1-open-part', e => route('class', e.detail));
+  window.addEventListener('m1-dict-toggle', () => { if ($('#topbar')) topbar(); });
   function route(name, arg) {
     stop(); window.scrollTo(0, 0); topbar();
     if (!S.name) return onboarding();
@@ -48,6 +52,7 @@
     if (name === 'class') return runClass(arg);
     if (name === 'final') return finalTest();
     if (name === 'hw') return homeworkOnly(arg);
+    if (name === 'chat') return chatScreen();
   }
 
   /* ---------------- onboarding ---------------- */
@@ -110,6 +115,40 @@
     show();
   }
 
+
+  /* ---------------- CHAT CON MI PROFE (vista previa) ---------------- */
+  function chatRoom() { if (!S.sid) { S.sid = 's' + Math.random().toString(36).slice(2, 10); save(); } return S.teacher ? window.M1CHAT.store.room(S.teacher.code, S.sid) : null; }
+  function chatCard() {
+    if (!window.M1CHAT) return '';
+    const room = chatRoom(); const n = room ? M1CHAT.store.unread(room, S.sid) : 0;
+    return `<div class="card chat-card">${M.mascot('mascot', 'present')}<div class="grow"><h3 style="margin:0 0 4px">💬 Chat con mi profe ${n ? `<span class="badge-n">${n}</span>` : ''}</h3>
+      <p class="muted" style="margin:0 0 10px">${S.teacher ? `Escríbele a <b>${esc(S.teacher.name)}</b> cuando tengas una duda.` : 'Cuando te asignen un docente, podrás escribirle aquí tus dudas.'}</p>
+      <button class="btn k sm" id="chat-b">${S.teacher ? 'Abrir chat →' : 'Conectar con mi docente →'}</button></div></div>`;
+  }
+  function chatScreen() {
+    const CH = window.M1CHAT; if (!CH) return route('home');
+    const demo = CH.demo ? `<div class="chat-demo">🧪 <b>Vista previa.</b> Por ahora los mensajes se guardan solo en este dispositivo. Muy pronto se conectará para hablar con tu docente desde cualquier lugar.</div>` : '';
+    if (!S.teacher) {
+      app.innerHTML = `<div class="wrap" style="max-width:640px"><div class="card center">${M.mascot('mascot bounce', 'present')}
+        <h2 style="margin:8px 0 6px">💬 Chat con mi profe</h2><p class="muted">Escribe el <b>código de tu docente</b>. Te lo entrega la academia cuando te asignan tu profe.</p>
+        <input class="inp" id="tcode" placeholder="Ej: PROFE-ANA" style="margin:8px 0 12px;text-transform:uppercase"><button class="btn k lg block" id="tgo">Conectar</button>
+        <p class="muted" style="font-size:13px;margin-top:12px">¿No tienes código? Escríbenos por WhatsApp y te ayudamos.</p></div>${demo}
+        <p class="center"><button class="btn w sm" id="back">← Volver al inicio</button></p></div>`;
+      $('#back').onclick = () => route('home');
+      const go = () => { const t = CH.findTeacher($('#tcode').value); if (!t) { $('#tcode').classList.add('wrong'); M.toast('Ese código no existe. Revísalo 🙏'); return; }
+        S.teacher = { code: t.code, name: t.name }; save(); CH.store.ensure(chatRoom(), { student: S.name, sid: S.sid, teacher: t.code }); sfx('win'); chatScreen(); };
+      $('#tgo').onclick = go; $('#tcode').onkeydown = e => { if (e.key === 'Enter') go(); };
+      return;
+    }
+    const room = chatRoom(); CH.store.ensure(room, { student: S.name, sid: S.sid, teacher: S.teacher.code });
+    const ini = S.teacher.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+    app.innerHTML = `<div class="wrap" style="max-width:760px"><div class="card chat-wrap">
+      <div class="chat-head"><button class="iconbtn dark" id="back" title="Volver">←</button><div class="av">${esc(ini)}</div><div class="grow"><b>${esc(S.teacher.name)}</b><small>Tu docente</small></div></div>
+      ${demo}<div id="thread"></div></div></div>`;
+    $('#back').onclick = () => route('home');
+    CH.thread($('#thread'), room, S.sid, S.teacher.name);
+  }
+
   /* ---------------- home ---------------- */
   const MOTTO = ['Hoy es un gran día para aprender inglés 💛', '¡Cada clase te acerca a hablar con confianza!', 'Recuerda: se aprende inglés <b>HABLANDO</b> 🗣️', 'Un poquito cada día hace la diferencia 🔥', '¡Vamos por esas estrellas! ⭐'];
   function greeting() { const hr = new Date().getHours(); return hr < 12 ? 'Good morning' : hr < 18 ? 'Good afternoon' : 'Good evening'; }
@@ -135,6 +174,7 @@
         </div>
       </section>
       ${pendingBlock()}
+      ${chatCard()}
       <div class="sect-title"><h2>📚 Temas del Módulo 1</h2><div class="row"><button class="btn sm w" id="prog">📊 Mi progreso</button><button class="btn sm" id="code">🔑 Código de acceso</button></div></div>
       <div class="grid" id="tgrid"></div>
       <div class="sect-title"><h2>🏆 Final Test</h2></div>
@@ -163,6 +203,8 @@
     $('#prog').onclick = () => route('progress'); $('#code').onclick = unlockModal;
     $('#final-b').onclick = () => M.finalUnlocked() ? route('final') : unlockModal();
     $$('[data-hw]', app).forEach(b => b.onclick = () => route('hw', b.dataset.hw));
+    const cb = $('#chat-b', app); if (cb) cb.onclick = () => route('chat');
+    const pt = $('#pend-t', app); if (pt) pt.onclick = () => { const l = $('#pend-l', app); const open = l.classList.toggle('hidden') === false; pt.innerHTML = `📋 ${open ? 'Ocultar' : 'Ver'} mis tareas pendientes (${pendingHW().length}) ${open ? '▴' : '▾'}`; sfx('tap'); };
     if ($('#rem-b')) $('#rem-b').onclick = reminderModal;
     if (!S.tourDone) setTimeout(tour, 700); else dailyReminder();
   }
@@ -175,8 +217,9 @@
     return `<div class="card pending-card">${M.mascot('mascot', 'point')}<div class="grow"><span class="lbl r">Tarea pendiente</span>
       <h3 style="font-size:22px;margin:8px 0 4px">${esc(S.name.split(' ')[0])}, tienes ${pend.length} ${pend.length === 1 ? 'tarea pendiente' : 'tareas pendientes'} ✍️</h3>
       <p class="muted" style="margin:0 0 10px">Hacer tu tarea es lo que más te ayuda a recordar lo que aprendiste. ¡Solo te toma 5 minutos!</p>
-      <div class="pend-list">${pend.slice(0, 5).map(p => `<button class="partbtn" data-hw="${p.id}"><span class="t">${esc(p._t.title)} · Part ${p.part}<small>${esc(p.hw.es)}</small></span><span class="btn sm k" style="pointer-events:none">Hacer tarea →</span></button>`).join('')}</div>
-      <button class="btn sm w" id="rem-b" style="margin-top:10px">🔔 Recordarme todos los días</button></div></div>`;
+      <button class="btn k" id="pend-t">📋 Ver mis tareas pendientes (${pend.length}) ▾</button>
+      <div class="pend-list hidden" id="pend-l" style="margin-top:10px">${pend.map(p => `<button class="partbtn" data-hw="${p.id}"><span class="t">${esc(p._t.title)} · Part ${p.part}<small>${esc(p.hw.es)}</small></span><span class="btn sm k" style="pointer-events:none">Hacer tarea →</span></button>`).join('')}</div>
+      <div style="margin-top:10px"><button class="btn sm w" id="rem-b">🔔 Recordarme todos los días</button></div></div></div>`;
   }
   function dailyReminder() {
     const pend = pendingHW(); const t = new Date().toISOString().slice(0, 10);
@@ -322,7 +365,6 @@
         <h2 style="font-size:28px;margin-top:12px">${esc(p._t.title)}</h2>
         <p class="muted" style="font-size:17px;margin:4px 0 14px">${esc(p.title)} — ${esc(p.es)}</p>
         <div class="mainph" style="max-width:460px">${photo(p._t.cover)}</div>
-        <div class="row" style="justify-content:center;gap:14px;margin:4px 0 8px">${M.mascot('mascot', 'book')}<div class="bubble">Today's class: <b>${esc(p.title)}</b>. Let's go!</div></div>
         <div class="lesson" style="text-align:left;margin-top:6px"><h3>🎯 Goal</h3><p style="font-size:18px;margin:4px 0"><b>${esc(p.goal ? p.goal.en : p.title)}</b></p><p class="muted" style="margin:0">${esc(p.goal ? p.goal.es : p.es)}</p></div>
         ${prev && !(S.parts[prev.id] && S.parts[prev.id].done) ? `<p class="hint" style="margin-top:6px">💡 Te recomendamos completar primero: ${esc(prev._t.title)} · Part ${prev.part}</p>` : ''}
       </div>`;
@@ -367,7 +409,7 @@
       const karaoke = () => { stop(); const a = M.trackAudio(new Audio(M.audioSrc(r.au))); const spans = $$('.s', box); const lens = sents.map(s => s.length); const tot = lens.reduce((x, y) => x + y, 0);
         a.ontimeupdate = () => { if (!a.duration) return; const f = a.currentTime / a.duration * tot; let acc = 0; spans.forEach((sp, i) => { const on = f >= acc && f < acc + lens[i]; sp.classList.toggle('on', on); acc += lens[i]; }); };
         a.addEventListener('ended', () => { spans.forEach(sp => sp.classList.remove('on')); rp.innerHTML = '▶ Escuchar lectura'; rp.classList.remove('playing'); });
-        a.play(); window.__ra = a; rp.innerHTML = '⏹ Detener lectura'; rp.classList.add('playing'); };
+        a.play(); window.__ra = a; rp.innerHTML = '⏹ Detener lectura'; rp.classList.add('playing'); const hideF = M.floatStop(rp); a.addEventListener('ended', hideF); };
       rp.onclick = () => { if (rp.classList.contains('playing')) stop(); else karaoke(); };
       body.appendChild(h(`<h3 style="margin-top:18px">Answer YES or NO</h3>`));
       const qs = r.q.map((q, i) => { const e = h(`<div class="yn"><p>${i + 1}) ${esc(q.s)}</p><div class="b"><button data-v="yes">YES</button><button data-v="no">NO</button></div></div>`); $$('button', e).forEach(b => b.onclick = () => { $$('button', e).forEach(x => x.classList.remove('sel')); b.classList.add('sel'); e._v = b.dataset.v; sfx('tap'); }); body.appendChild(e); return e; });
@@ -398,17 +440,20 @@
     },
 
     keyq: async (stage, p) => {
-      const body = A.head(stage, { lbl: 'Listen & practice', title: 'Key questions', ins: 'Estas son las preguntas clave de la clase. Escucha la pregunta y la respuesta, y luego <b>practica la respuesta en voz alta</b> 🎤.' });
+      const body = A.head(stage, { lbl: 'Listen & practice', title: 'Key questions', ins: 'Para cada pregunta: <b>1)</b> toca 🔊 para escuchar la pregunta, <b>2)</b> toca 🔊 para escuchar la respuesta y <b>3)</b> toca 🎤 y <b>di la respuesta en voz alta</b>.' });
       let c = 0; const done = new Set();
       p.keyq.forEach((k, i) => {
         const ans = k.a.replace(/___/g, '<b>___</b>');
-        const e = h(`<div class="kq"><div class="q"><span class="grow">❓ ${esc(k.q)}</span></div>${k.es ? `<div class="qes">${esc(k.es)}</div>` : ''}<div class="a"><span class="grow">💬 ${ans}</span></div><div class="act"></div><div class="out"></div></div>`);
+        const e = h(`<div class="kq"><div class="kq-n">Pregunta ${i + 1}</div>
+          <div class="kstep q"><span class="kn">1</span><div class="grow"><small>Escucha la pregunta</small><div class="kt">${esc(k.q)}</div>${k.es ? `<div class="qes">${esc(k.es)}</div>` : ''}</div></div>
+          <div class="kstep a"><span class="kn">2</span><div class="grow"><small>Escucha la respuesta</small><div class="kt ans">${ans}</div></div></div>
+          <div class="kstep k3"><span class="kn">3</span><div class="grow"><small>Ahora di la respuesta en voz alta</small><div class="act"></div></div></div><div class="out"></div></div>`);
         $('.q', e).appendChild(A.playBtn(k.qau, false)); if (k.aau) $('.a', e).appendChild(A.playBtn(k.aau, false));
-        const mic = h(`<button class="btn sm k">🎤 Practicar respuesta</button>`); $('.act', e).appendChild(mic);
+        const mic = h(`<button class="btn sm k">🎤 Decir la respuesta</button>`); $('.act', e).appendChild(mic);
         if (k.a.includes('___')) $('.act', e).appendChild(h(`<span class="muted" style="font-size:13px">Completa el ___ con tu información personal</span>`));
         mic.onclick = async () => {
           if (!M.canSR) { e.classList.add('done'); if (!done.has(i)) { done.add(i); c++; } M.toast('¡Bien! Repite en voz alta 🗣️'); return; }
-          stop(); mic.textContent = '🎧 Te escucho…'; const r = await M.listen(8000); mic.textContent = '🎤 Practicar respuesta';
+          stop(); mic.textContent = '🎧 Te escucho…'; const r = await M.listen(8000); mic.textContent = '🎤 Decir la respuesta';
           if (!r.alts.length) { M.toast('No te escuché 🙉 intenta otra vez'); return; }
           const tgt = k.a.split(' / ')[0].replace(/___/g, ''); const sc = M.speechScore(tgt, r.alts); const okk = k.a.includes('___') ? M.words(r.alts[0]).length >= 2 && sc.score >= 50 : sc.score >= 60;
           $('.out', e).innerHTML = `<div class="heardbox" style="font-size:15px">Escuché: “${esc(sc.heard)}” — ${okk ? '✅ ¡Muy bien!' : '🔁 Escucha la respuesta modelo y repite.'}</div>`;
@@ -449,9 +494,21 @@
 
   /* ---------- MUSIC · PLAY & LEARN (una canción A1 por clase) ---------- */
   function songFor(p) { const SG = window.M1SONGS; if (!SG) return null; const id = SG.map[p.id]; return id ? SG.songs[id] : null; }
-  function ytBox(sg) {
-    return `<div class="ytwrap"><iframe src="https://www.youtube-nocookie.com/embed/${esc(sg.yt)}?rel=0&modestbranding=1&playsinline=1" title="${esc(sg.title)}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>
-      <p class="center" style="margin:8px 0 0"><a class="btn w sm" href="https://www.youtube.com/watch?v=${esc(sg.yt)}" target="_blank" rel="noopener" style="text-decoration:none">▶ ¿No carga el video? Ábrelo en YouTube</a></p>`;
+  // video con respaldo: si YouTube no permite verlo aquí, prueba automáticamente el siguiente video
+  let ytApi = null;
+  function loadYT() { if (window.YT && YT.Player) return Promise.resolve(); if (ytApi) return ytApi;
+    ytApi = new Promise(r => { const prev = window.onYouTubeIframeAPIReady; window.onYouTubeIframeAPIReady = () => { prev && prev(); r(); }; const sc = document.createElement('script'); sc.src = 'https://www.youtube.com/iframe_api'; sc.onerror = r; document.head.appendChild(sc); });
+    return ytApi; }
+  function ytBox(sg, host) {
+    const ids = [sg.yt, ...(sg.alt || [])]; let k = 0;
+    host.innerHTML = `<div class="ytwrap"><div class="ytp"></div></div><p class="center yt-msg hidden" style="margin:8px 0 0"></p>`;
+    const msg = $('.yt-msg', host);
+    const showLink = () => { msg.innerHTML = `<a class="btn w sm" href="https://www.youtube.com/watch?v=${esc(ids[0])}" target="_blank" rel="noopener" style="text-decoration:none">▶ Ver la canción en YouTube</a>`; msg.classList.remove('hidden'); };
+    loadYT().then(() => {
+      if (!(window.YT && YT.Player)) { $('.ytwrap', host).innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${esc(ids[0])}?rel=0&playsinline=1" allowfullscreen></iframe>`; showLink(); return; }
+      const player = new YT.Player($('.ytp', host), { videoId: ids[0], width: '100%', height: '100%', playerVars: { rel: 0, modestbranding: 1, playsinline: 1 },
+        events: { onError: () => { k++; if (k < ids.length) player.loadVideoById(ids[k]); else { $('.ytwrap', host).classList.add('hidden'); showLink(); } } } });
+    });
   }
   async function playLearn(stage, p) {
     const sg = songFor(p); if (!sg) return null;
@@ -476,7 +533,7 @@
     // 2) Escuchar la canción
     {
       const body = A.head(stage, { lbl, title: '🎧 Listen to the song', ins: 'Escucha la canción completa. Fíjate en las <b>palabras clave</b>. ¡Si quieres, canta! Cuando termines, continúa con los retos.' });
-      body.insertAdjacentHTML('beforeend', ytBox(sg));
+      const yh = h('<div></div>'); body.appendChild(yh); ytBox(sg, yh);
       body.appendChild(h(`<div class="row" style="gap:8px;justify-content:center;margin-top:12px">${sg.kw.map(k => `<span class="pill" style="background:var(--y3);color:var(--k);border-color:var(--k)">${esc(k.en)}</span>`).join('')}</div>`));
       await A.waitNext(stage, 'Ya la escuché, ¡a jugar! 🎮');
     }

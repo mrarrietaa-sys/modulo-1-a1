@@ -45,8 +45,8 @@
       grid.appendChild(c); return c;
     });
     upd();
-    $('#all', tools).onclick = async (e) => { const b = e.currentTarget; if (b._run) { b._run = false; stop(); b.textContent = '▶ Escuchar todo'; return; } b._run = true; b.textContent = '⏹ Detener'; const onStop = () => { b._run = false; }; window.addEventListener('m1-audio-stop', onStop, { once: true });
-      for (const c of cards) { if (!b._run || !b.isConnected) break; c.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); await c.onclick(); await sleep(450); } b._run = false; b.textContent = '▶ Escuchar todo'; };
+    $('#all', tools).onclick = async (e) => { const b = e.currentTarget; if (b._run) { b._run = false; stop(); b.textContent = '▶ Escuchar todo'; return; } b._run = true; b.textContent = '⏹ Detener'; const onStop = () => { b._run = false; }; window.addEventListener('m1-audio-stop', onStop, { once: true }); const hideF = M.floatStop(b);
+      for (const c of cards) { if (!b._run || !b.isConnected) break; c.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); await c.onclick(); await sleep(450); } hideF(); b._run = false; b.textContent = '▶ Escuchar todo'; };
     // mini lesson + tips
     if (p.tip) body.appendChild(h(`<div class="lesson lesson-mra">${M.mascot('lesson-img', 'idea')}<div><h3>📘 Mini lección de Mr. Arrieta</h3>${p.tip}</div></div>`));
     if (p.tips && p.tips.length) { const tb = h(`<div class="lesson" style="background:#fff"><h3>🗣️ Tips de pronunciación del profe</h3></div>`); p.tips.forEach(t => tb.appendChild(h(`<div class="tipbox"><span>💡</span><span>${t}</span></div>`))); body.appendChild(tb); }
@@ -114,13 +114,32 @@
       if (img) body.appendChild(h(`<div class="mainph" style="max-width:300px">${photo(img)}</div>`));
       if (hint) body.appendChild(h(`<p class="center"><span class="hint">${hint}</span></p>`));
       const plain = answer.replace(/[^A-Za-z0-9 ]/g, '');
-      if (showLen && mode !== 'sentence') body.appendChild(h(`<div class="hintline">${plain.split('').map(ch => ch === ' ' ? '&nbsp;' : '_').join(' ')}</div>`));
+      const hl = h(`<div class="hintline ${showLen && mode !== 'sentence' ? '' : 'hidden'}"></div>`); body.appendChild(hl);
+      const drawLine = (n) => { hl.innerHTML = plain.split('').map((ch, k) => ch === ' ' ? '&nbsp;' : (k < n ? `<b>${esc(ch)}</b>` : '_')).join(' '); };
+      drawLine(0);
+      const hintBox = h(`<p class="center hidden" style="margin:-4px 0 10px"><span class="hint"></span></p>`); body.appendChild(hintBox);
       const inp = h(`<input class="inp" autocomplete="off" autocapitalize="off" spellcheck="false" ${numeric ? 'inputmode="numeric"' : ''} placeholder="${mode === 'sentence' ? 'Escribe la oración que escuchas…' : 'Escribe aquí…'}">`);
       body.appendChild(inp);
       const bar = h(`<div class="actionbar"><button class="btn w" id="hintb">💡 Pista</button><button class="btn k lg" id="chk">Comprobar ✓</button></div>`); body.appendChild(bar);
       setTimeout(() => { play(au); inp.focus({ preventScroll: true }); }, 350);
       let hints = 0;
-      $('#hintb', bar).onclick = () => { hints++; const n = Math.min(plain.length, hints * Math.max(1, Math.ceil(plain.length / 4))); inp.value = plain.slice(0, n); inp.focus(); if (hints >= 3) $('#hintb', bar).disabled = true; };
+      // la pista NUNCA escribe la respuesta: solo muestra una ayuda; el estudiante debe escribirla completa
+      $('#hintb', bar).onclick = () => {
+        hints++; play(au); const ch = plain.replace(/ /g, '');
+        if (mode === 'sentence') {
+          const w = answer.replace(/[.?!,]/g, '').split(' '); const n = Math.min(w.length - 1, hints * Math.max(1, Math.ceil(w.length / 4)));
+          $('.hint', hintBox).innerHTML = `💡 Empieza así: <b>${esc(w.slice(0, n).join(' '))} …</b> (${w.length} palabras)`; hintBox.classList.remove('hidden');
+          if (n >= w.length - 1) $('#hintb', bar).disabled = true;
+        } else if (ch.length <= 1) {
+          const AB = numeric ? '0123456789' : 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'; const k = AB.indexOf(ch.toUpperCase());
+          $('.hint', hintBox).innerHTML = k > 0 && k < AB.length - 1 ? `💡 Está entre <b>${AB[k - 1]}</b> y <b>${AB[k + 1]}</b> ${numeric ? '' : 'en el abecedario'}` : `💡 Es ${k === 0 ? 'la primera' : 'la última'} ${numeric ? 'cifra' : 'letra del abecedario'}`;
+          hintBox.classList.remove('hidden'); $('#hintb', bar).disabled = true;
+        } else {
+          const n = Math.min(plain.length - 1, hints * Math.max(1, Math.ceil(plain.length / 4))); drawLine(n); hl.classList.remove('hidden');
+          if (hints >= 3 || n >= plain.length - 1) $('#hintb', bar).disabled = true;
+        }
+        inp.focus();
+      };
       const check = async () => {
         const v = inp.value.trim(); if (!v) { inp.focus(); return; }
         let ok;
@@ -226,7 +245,7 @@
     let open = [], lock = false, tries = 0, found = 0;
     await new Promise(res => {
       cards.forEach((cd) => {
-        const back = cd.img ? `<div class="mimg"><img src="${M.imgURL(cd.img, 300, 220)}" alt=""><span>${esc(cd.txt)}</span></div>` : (cd.es ? `<span class="mes">${esc(cd.txt)}</span>` : esc(cd.txt));
+        const back = cd.img ? `<div class="mimg"><img src="${M.imgURL(cd.img, 600, 440)}" alt=""><span>${esc(cd.txt)}</span></div>` : (cd.es ? `<span class="mes">${esc(cd.txt)}</span>` : esc(cd.txt));
         const el = h(`<button class="mc"><div class="in"><div class="f">?</div><div class="b">${back}</div></div></button>`); grid.appendChild(el);
         el.onclick = async () => {
           if (lock || el.classList.contains('flip')) return;
@@ -399,15 +418,25 @@
     const items = sample(p.spell, Math.min(5, p.spell.length)).map(x => ({ ...x, en: x.w }));
     const L = M.D.letters;
     const r = await qloop(stage, { lbl: 'Writing', title: 'Listen and spell', ins: 'Escucha la palabra y deletréala tocando las letras. ¡Cada letra suena!' }, items, (body, it) => new Promise(res => {
-      body.appendChild(h(`<div class="mainph" style="max-width:260px">${photo(it.img)}</div>`)); if (it.es) body.appendChild(h(`<p class="center" style="margin:-4px 0 6px"><span class="hint">${esc(it.es)}</span></p>`)); const pb = playBtn(it.au, false); const row = h(`<div class="center" style="margin-bottom:6px"></div>`); row.appendChild(pb); body.appendChild(row);
+      body.appendChild(h(`<div class="mainph" style="max-width:260px">${photo(it.img)}</div>`)); const esW = it.es || (M.allParts().flatMap(q => q.vocab || []).find(v => M.norm(v.en) === M.norm(it.w)) || {}).es; if (esW) body.appendChild(h(`<p class="center" style="margin:-4px 0 6px"><span class="hint">Significa: <b>${esc(esW)}</b></span></p>`)); const pb = playBtn(it.au, false); const row = h(`<div class="center" style="margin-bottom:6px"></div>`); row.appendChild(pb); body.appendChild(row);
       const w = it.w.toUpperCase(); const slots = h(`<div class="slots">${w.split('').map(() => '<div class="slot"></div>').join('')}</div>`); body.appendChild(slots);
       const extras = sample('ABCDEFGHIJKLMNOPRSTUVWY'.split('').filter(c => !w.includes(c)), 2);
       const tiles = h(`<div class="tiles"></div>`); body.appendChild(tiles);
       const seq = []; const sl = $$('.slot', slots);
       shuffle([...w.split(''), ...extras]).forEach(ch => { const t = h(`<button class="tile">${ch}</button>`); tiles.appendChild(t);
         t.onclick = () => { if (seq.length >= w.length) return; play(L[ch]); t.classList.add('used'); seq.push({ ch, t }); sl[seq.length - 1].textContent = ch; sl[seq.length - 1].classList.add('f'); if (seq.length === w.length) check(); }; });
-      const bar = h(`<div class="actionbar"><button class="btn w">⌫ Borrar</button></div>`); body.appendChild(bar);
-      $('button', bar).onclick = () => { const l = seq.pop(); if (!l) return; l.t.classList.remove('used'); sl[seq.length].textContent = ''; sl[seq.length].classList.remove('f'); };
+      const hintTxt = h(`<p class="center muted hidden" style="margin:6px 0 0;font-size:15px"></p>`); body.appendChild(hintTxt);
+      const bar = h(`<div class="actionbar"><button class="btn w" id="hb">💡 Pista</button><button class="btn w" id="del">⌫ Borrar</button></div>`); body.appendChild(bar);
+      $('#del', bar).onclick = () => { const l = seq.pop(); if (!l) return; l.t.classList.remove('used'); sl[seq.length].textContent = ''; sl[seq.length].classList.remove('f'); };
+      // pista: marca la siguiente letra correcta (no la escribe) y repite el audio
+      $('#hb', bar).onclick = () => {
+        let k = 0; while (k < seq.length && seq[k].ch === w[k]) k++;
+        if (k < seq.length) { hintTxt.textContent = '💡 Hay una letra equivocada: toca ⌫ Borrar y revisa.'; hintTxt.classList.remove('hidden'); return; }
+        const need = w[seq.length]; const tile = [...tiles.children].find(t => !t.classList.contains('used') && t.textContent === need);
+        hintTxt.innerHTML = `💡 La letra ${seq.length + 1} es la que parpadea. La palabra empieza por <b>${w[0]}</b> y tiene <b>${w.length}</b> letras.`; hintTxt.classList.remove('hidden');
+        if (tile) { tile.classList.remove('blink'); void tile.offsetWidth; tile.classList.add('blink'); }
+        play(it.au);
+      };
       setTimeout(() => play(it.au), 300);
       async function check() { const ok = seq.map(s => s.ch).join('') === w; await sleep(300); bar.remove(); await play(it.au); await feedback(ok, w, 'Escucha cada letra al tocarla: así aprendes el abecedario.'); res(ok); }
     }));
@@ -441,7 +470,7 @@
     let shown = 0, plays = 0;
     let halted = false; window.addEventListener('m1-audio-stop', () => { halted = true; });
     const runAll = async () => { plays++; halted = false; for (let i = 0; i < msgs.length; i++) { if (!body.isConnected) return; if (halted) break; if (!msgs[i].isConnected) chat.appendChild(msgs[i]); msgs.forEach(x => x.classList.remove('speaking')); msgs[i].classList.add('speaking'); msgs[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' }); await play(d.lines[i].au); await sleep(250); } msgs.forEach(x => x.classList.remove('speaking')); shown = msgs.length; next.disabled = false; };
-    const plb = $('#pl', ctr); let running = false; plb.onclick = async () => { if (running) { stop(); return; } running = true; plb.textContent = '⏹ Detener'; await runAll(); running = false; msgs.forEach(x => x.classList.remove('speaking')); plb.textContent = '🔁 Escuchar otra vez'; };
+    const plb = $('#pl', ctr); let running = false; plb.onclick = async () => { if (running) { stop(); return; } running = true; plb.textContent = '⏹ Detener'; const hideF = M.floatStop(plb); await runAll(); hideF(); running = false; msgs.forEach(x => x.classList.remove('speaking')); plb.textContent = '🔁 Escuchar otra vez'; };
     $('#rv', ctr).onclick = () => { msgs.forEach(m => { if (!m.isConnected) chat.appendChild(m); m.classList.remove('blur'); }); };
     const bar = h(`<div class="actionbar"><button class="btn k lg" disabled>Responder preguntas →</button></div>`); body.appendChild(bar); const next = $('button', bar);
     await new Promise(r => next.onclick = r); stop(); void shown; void plays;

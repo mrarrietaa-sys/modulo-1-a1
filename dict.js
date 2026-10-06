@@ -123,11 +123,29 @@
 
   /* ---------- UI ---------- */
   let panel = null;
+  // botón flotante: se puede arrastrar (celular y computador) y ocultar
   function fab() {
     if ($('#dict-fab')) return;
-    const b = h(`<button id="dict-fab" title="Diccionario: pregunta cualquier palabra"><img src="mra-book.webp" alt=""><span>Diccionario</span></button>`);
-    b.onclick = open; document.body.appendChild(b);
+    const b = h(`<button id="dict-fab" title="Diccionario: pregunta cualquier palabra (puedes arrastrarlo)"><img src="mra-idea.webp" alt=""><span>Diccionario</span></button>`);
+    document.body.appendChild(b);
+    const place = () => { const p = S.dictPos; if (!p) { b.style.left = ''; b.style.top = ''; b.style.bottom = ''; return; }
+      const x = Math.min(Math.max(4, p.x * innerWidth), innerWidth - b.offsetWidth - 4), y = Math.min(Math.max(4, p.y * innerHeight), innerHeight - b.offsetHeight - 4);
+      b.style.left = x + 'px'; b.style.top = y + 'px'; b.style.bottom = 'auto'; };
+    place(); addEventListener('resize', place);
+    let sx, sy, ox, oy, moved = false, down = false;
+    b.addEventListener('pointerdown', e => { down = true; moved = false; sx = e.clientX; sy = e.clientY; const r = b.getBoundingClientRect(); ox = r.left; oy = r.top; b.setPointerCapture(e.pointerId); });
+    b.addEventListener('pointermove', e => { if (!down) return; const dx = e.clientX - sx, dy = e.clientY - sy; if (!moved && Math.hypot(dx, dy) < 8) return;
+      moved = true; b.classList.add('drag'); const x = Math.min(Math.max(4, ox + dx), innerWidth - b.offsetWidth - 4), y = Math.min(Math.max(4, oy + dy), innerHeight - b.offsetHeight - 4);
+      b.style.left = x + 'px'; b.style.top = y + 'px'; b.style.bottom = 'auto'; });
+    const up = () => { if (!down) return; down = false; b.classList.remove('drag');
+      if (moved) { const r = b.getBoundingClientRect(); S.dictPos = { x: r.left / innerWidth, y: r.top / innerHeight }; M.save(); } };
+    b.addEventListener('pointerup', up); b.addEventListener('pointercancel', up);
+    b.addEventListener('click', e => { if (moved) { e.preventDefault(); moved = false; return; } open(); });
+    b.style.touchAction = 'none';
+    applyHidden();
   }
+  function applyHidden() { const b = $('#dict-fab'); if (b) b.classList.toggle('hidden', !!S.dictHidden); window.dispatchEvent(new Event('m1-dict-toggle')); }
+  function setHidden(v) { S.dictHidden = !!v; M.save(); applyHidden(); M.toast(v ? 'Listo: abre el diccionario con el botón 🔎 de arriba' : 'Botón del diccionario visible 📖'); }
   function open() {
     if (!IDX) buildIndex();
     if (panel) { panel.classList.add('on'); $('#dq', panel).focus(); return; }
@@ -136,13 +154,15 @@
       <form class="dict-form"><input id="dq" class="inp" placeholder="Ej: ¿cómo se dice perro?  ·  breakfast  ·  a o an" autocomplete="off">
         <button class="btn k" type="submit">Buscar</button></form>
       <div class="row dict-mics">${SR ? '<button class="btn w sm" data-l="es-CO">🎤 Preguntar en español</button><button class="btn w sm" data-l="en-US">🎤 Say it in English</button>' : '<span class="muted">Tu navegador no permite dictado por voz; escribe tu pregunta.</span>'}</div>
-      <div class="dict-out"></div><div class="dict-hist"></div></div></div>`);
+      <div class="dict-out"></div><div class="dict-foot"><button class="linkbtn" id="dhide"></button></div></div></div>`);
     document.body.appendChild(panel);
     panel.addEventListener('click', e => { if (e.target === panel) close(); });
     $('.dict-x', panel).onclick = close;
     $('.dict-form', panel).onsubmit = (e) => { e.preventDefault(); const v = $('#dq', panel).value.trim(); if (v) ask(v); };
     $$('.dict-mics button', panel).forEach(b => b.onclick = () => voice(b));
-    hist(); setTimeout(() => $('#dq', panel).focus(), 50);
+    const dh = $('#dhide', panel); const lab = () => dh.textContent = S.dictHidden ? '📌 Mostrar el botón flotante del diccionario' : '🙈 Ocultar el botón flotante (lo abrirás con 🔎 arriba)';
+    lab(); dh.onclick = () => { setHidden(!S.dictHidden); lab(); };
+    setTimeout(() => $('#dq', panel).focus(), 50);
   }
   function close() { if (panel) panel.classList.remove('on'); M.stop(); if (window.speechSynthesis) speechSynthesis.cancel(); }
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && panel && panel.classList.contains('on')) close(); });
@@ -157,21 +177,8 @@
     try { r.start(); } catch (e) { btn.textContent = old; btn.disabled = false; }
   }
 
-  function suggestions() {
-    const out = $('.dict-out', panel); if (out.innerHTML) return;
-    const ex = ['¿Cómo se dice perro?', '¿Qué significa breakfast?', '¿Cuándo uso a o an?', 'There is / there are', 'Los días de la semana', 'beautiful'];
-    out.innerHTML = `<div class="dict-sug"><b>Prueba con:</b><div class="row" style="gap:8px;margin-top:8px">${ex.map(x => `<button class="chip">${esc(x)}</button>`).join('')}</div></div>`;
-    $$('.dict-sug .chip', out).forEach(c => c.onclick = () => { $('#dq', panel).value = c.textContent; ask(c.textContent); });
-  }
-  function hist() {
-    const H = (S.dictHist || []).slice(0, 8); const box = $('.dict-hist', panel);
-    box.innerHTML = H.length ? `<small class="muted">Búsquedas recientes:</small><div class="row" style="gap:6px;margin-top:6px">${H.map(x => `<button class="chip sm">${esc(x)}</button>`).join('')}</div>` : '';
-    $$('.chip', box).forEach(c => c.onclick = () => { $('#dq', panel).value = c.textContent; ask(c.textContent); });
-  }
-  function remember(q) { S.dictHist = [q].concat((S.dictHist || []).filter(x => x !== q)).slice(0, 12); M.save(); hist(); }
-
   async function ask(q, langHint) {
-    const out = $('.dict-out', panel); remember(q);
+    const out = $('.dict-out', panel);
     out.innerHTML = `<div class="dict-think"><img src="mra-think.webp" alt=""><div class="dots"><i></i><i></i><i></i></div></div>`;
     const { term, lang } = extract(q); const L = lang || langHint || null; const sq = strip(q);
     const blocks = [];
@@ -245,6 +252,6 @@
     M.sfx(sc.score >= 60 ? 'ok' : 'bad');
   }
 
-  window.M1DICT = { open, ask };
+  window.M1DICT = { open, ask, setHidden };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fab); else fab();
 })();

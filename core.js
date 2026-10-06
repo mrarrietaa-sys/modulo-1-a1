@@ -40,11 +40,11 @@
 
   /* ---------- access ---------- */
   function isUnlocked(topicN) {
-    if (S.all) return true;
+    if (S.all || C.UNLOCK_ALL) return true;
     if ((C.FREE_TOPICS || []).includes(topicN)) return true;
     return S.unlocked.includes(topicN);
   }
-  function finalUnlocked() { return S.all || D.topics.every(t => isUnlocked(t.n)); }
+  function finalUnlocked() { return S.all || C.UNLOCK_ALL || D.topics.every(t => isUnlocked(t.n)); }
   function redeem(code) {
     const hh = codeHash(code);
     const hit = (C.ACCESS_CODES || []).find(c => c.hash === hh);
@@ -65,8 +65,8 @@
   /* ---------- images ---------- */
   function imgURL(src, w = 640, hgt = 480) {
     if (!src) return '';
-    if (src.startsWith('u:')) return `https://images.unsplash.com/${src.slice(2)}?w=${w}&h=${hgt}&fit=crop&crop=entropy&q=80&auto=format`;
-    if (src.startsWith('flag:')) return `https://flagcdn.com/w640/${src.slice(5)}.png`;
+    if (src.startsWith('u:')) return `https://images.unsplash.com/${src.slice(2)}?w=${w}&h=${hgt}&fit=crop&crop=entropy&q=82&auto=format`;
+    if (src.startsWith('flag:')) return `https://flagcdn.com/w1280/${src.slice(5)}.png`;
     return '';
   }
   function photo(src, opts = {}) {
@@ -76,7 +76,9 @@
       return `<div class="ph ${opts.cls || ''}"><div class="tc ${opts.dark ? 'dark' : ''}" style="font-size:${fs}">${esc(t)}</div>${badge}</div>`;
     }
     const isFlag = src && src.startsWith('flag:');
-    return `<div class="ph ${isFlag ? 'flag' : ''} ${opts.cls || ''}"><img loading="lazy" alt="${esc(opts.alt || '')}" src="${imgURL(src)}" onerror="this.style.opacity=0">${badge}</div>`;
+    // alta resolución en celulares (pantallas retina): el navegador elige 640, 960 o 1280 px
+    const set = isFlag ? '' : ` srcset="${imgURL(src, 640, 480)} 640w, ${imgURL(src, 960, 720)} 960w, ${imgURL(src, 1280, 960)} 1280w" sizes="(max-width:600px) 92vw, 460px"`;
+    return `<div class="ph ${isFlag ? 'flag' : ''} ${opts.cls || ''}"><img loading="lazy" decoding="async" alt="${esc(opts.alt || '')}" src="${imgURL(src, 960, 720)}"${set} onerror="this.style.opacity=0">${badge}</div>`;
   }
 
   /* ---------- audio (natural neural voices pre-generated as MP3) ---------- */
@@ -97,6 +99,16 @@
   }
   // stop(): detiene TODO el audio y avisa a las secuencias ("Escuchar todo", diálogos, lecturas)
   function stop() { halt(); window.dispatchEvent(new Event('m1-audio-stop')); }
+  // botón rojo flotante "Detener" que aparece solo mientras suena una secuencia larga y su botón original ya no se ve en pantalla
+  function floatStop(btn) {
+    let pill = document.getElementById('stop-float');
+    if (!pill) { pill = document.createElement('button'); pill.id = 'stop-float'; pill.type = 'button'; pill.innerHTML = '⏹ Detener audio'; document.body.appendChild(pill); }
+    pill.onclick = () => stop();
+    let io = null; try { io = new IntersectionObserver(([en]) => pill.classList.toggle('on', !en.isIntersecting && btn.isConnected), { rootMargin: '-70px 0px 0px 0px' }); io.observe(btn); } catch (e) { }
+    let off = false; const hide = () => { if (off) return; off = true; if (io) io.disconnect(); pill.classList.remove('on'); window.removeEventListener('m1-audio-stop', hide); };
+    window.addEventListener('m1-audio-stop', hide);
+    return hide;
+  }
   function trackAudio(a) { ext.add(a); ['play', 'playing', 'pause'].forEach(ev => a.addEventListener(ev, audioUI)); a.addEventListener('ended', () => { ext.delete(a); audioUI(); }); audioUI(); return a; }
   function play(au, opts = {}) {
     halt();
@@ -236,7 +248,7 @@
   }
 
   /* ---------- Mr. Arrieta: personaje guía con varias expresiones ---------- */
-  const MOODS = { happy: 'welcome', welcome: 'welcome', smile: 'smile', thumbs: 'thumbs', wink: 'wink', wow: 'wow', think: 'think', book: 'book', point: 'point', present: 'present', pointside: 'pointside', celebrate: 'celebrate', shrug: 'shrug', idea: 'idea', watch: 'watch' };
+  const MOODS = { happy: 'welcome', welcome: 'welcome', smile: 'smile', thumbs: 'thumbs', wink: 'wink', wow: 'wow', think: 'think', book: 'idea', point: 'point', present: 'present', pointside: 'pointside', celebrate: 'celebrate', shrug: 'shrug', idea: 'idea', watch: 'watch' };
   function mascot(cls = 'mascot bounce', mood = 'thumbs') {
     const m = MOODS[mood] || 'thumbs';
     return `<img class="${cls} mra mra-${m}" src="mra-${m}.webp" alt="Mr. Arrieta" draggable="false">`;
@@ -244,6 +256,6 @@
   function audioSrc(au) { return window.AUD && window.AUD[au] ? 'data:audio/mpeg;base64,' + window.AUD[au] : 'audio/' + au + '.mp3'; }
 
   window.M1 = { D, C, S, $, $$, h, esc, shuffle, sample, sleep, save, touchStreak, addSkill, addWeak, okWeak, skillPct, isUnlocked, finalUnlocked, redeem, codeHash,
-    allParts, partById, trackAudio, audioUI, prevPart, nextPart, partStars, overallPct, imgURL, photo, play, playSeq, loadAudio, stop, sfx, praise, canSR, listen, recordVoice,
+    allParts, partById, trackAudio, audioUI, floatStop, prevPart, nextPart, partStars, overallPct, imgURL, photo, play, playSeq, loadAudio, stop, sfx, praise, canSR, listen, recordVoice,
     norm, words, lev, speechScore, sheet, good, bad, toast, modal, xpFly, confetti, mascot, audioSrc };
 })();

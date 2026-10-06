@@ -4,6 +4,10 @@
    ===================================================================== */
 window.M1CONFIG = {
 
+  // MODO REVISIÓN (solo para el profe): true = TODAS las clases y el examen final abiertos.
+  // ⚠️ Cuando la plataforma esté lista para los estudiantes, cámbialo a false.
+  UNLOCK_ALL: true,
+
   // Temas GRATIS (todos los estudiantes pueden entrar sin código).
   // Ejemplo: [1, 2] = The Greetings y The Alphabet son gratis.
   FREE_TOPICS: [1, 2],
@@ -40,5 +44,13 @@ window.M1CONFIG = {
   REMINDER_TIME: "19:00",
 
   // Porcentaje mínimo para aprobar el examen final
-  PASS_SCORE: 70
+  PASS_SCORE: 70,
+
+  // DOCENTES para el chat (vista previa).
+  // code = código que le das al estudiante para conectarse con su profe.
+  // pin  = clave del docente para entrar a docente.html.
+  // ⚠️ En la vista previa esto es visible en el código; cuando conectemos el servidor se volverá privado.
+  TEACHERS: [
+    { code: "PROFE-DEMO", name: "Mr. Arrieta", pin: "1234" },
+  ]
 };

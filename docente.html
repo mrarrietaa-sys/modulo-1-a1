@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Docentes — Chat con estudiantes · mrarrieta.com</title>
+<meta name="robots" content="noindex">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css?v=11">
+</head>
+<body>
+<header class="topbar"><div class="brand"><span class="logo-pill"><img class="logo" src="mra-brand.png" alt="mrarrieta.com"></span><small>DOCENTES · CHAT</small></div><div class="sp"></div><button class="iconbtn hidden" id="out" title="Salir">⎋</button></header>
+<div class="wrap" id="app" style="max-width:1000px"></div>
+<script src="config.js?v=11"></script>
+<script src="chat.js?v=11"></script>
+<script>
+(function () {
+  const CH = window.M1CHAT, app = document.getElementById('app'), esc = CH.esc;
+  const SKEY = 'mra_teacher_session';
+  const demo = CH.demo ? '<div class="chat-demo">🧪 <b>Vista previa.</b> Los mensajes se guardan en este navegador. Para probar: abre la plataforma como estudiante en este mismo computador, conecta con el código del docente y escribe; luego respóndele desde aquí.</div>' : '';
+  function login() {
+    document.getElementById('out').classList.add('hidden');
+    app.innerHTML = `<div class="card center" style="max-width:520px;margin:30px auto"><img src="mra-present.webp" alt="" style="height:170px">
+      <h2 style="margin:6px 0">Chat con mis estudiantes</h2><p class="muted">Ingresa tu código de docente y tu PIN.</p>
+      <input class="inp" id="c" placeholder="Código (ej: PROFE-ANA)" style="margin:6px 0;text-transform:uppercase"><input class="inp" id="p" type="password" inputmode="numeric" placeholder="PIN" style="margin:6px 0 12px">
+      <button class="btn k lg block" id="go">Entrar</button><p id="err" class="muted" style="color:#E11D48"></p></div>${demo}`;
+    const go = () => { const t = CH.findTeacher(document.getElementById('c').value); if (!t || String(t.pin) !== document.getElementById('p').value.trim()) { document.getElementById('err').textContent = 'Código o PIN incorrecto.'; return; }
+      sessionStorage.setItem(SKEY, t.code); panel(t); };
+    document.getElementById('go').onclick = go; document.getElementById('p').onkeydown = e => { if (e.key === 'Enter') go(); };
+  }
+  function panel(t, sel) {
+    const out = document.getElementById('out'); out.classList.remove('hidden'); out.onclick = () => { sessionStorage.removeItem(SKEY); login(); };
+    const rooms = CH.store.rooms(t.code).sort((a, b) => ((b.msgs || []).slice(-1)[0] || {}).ts - ((a.msgs || []).slice(-1)[0] || {}).ts || 0);
+    sel = sel || (rooms[0] && rooms[0].id);
+    app.innerHTML = `<h2 style="margin:6px 0 12px">👋 Hola, ${esc(t.name)}</h2>${demo}
+      <div class="tchat"><div class="card tlist">${rooms.length ? rooms.map(r => { const last = (r.msgs || []).slice(-1)[0]; const n = CH.store.unread(r.id, t.code);
+        return `<button class="troom ${r.id === sel ? 'on' : ''}" data-id="${esc(r.id)}"><div class="av">${esc((r.student || '?')[0].toUpperCase())}</div><div class="grow"><b>${esc(r.student || 'Estudiante')}</b><small>${last ? esc(last.text.slice(0, 40)) : 'Sin mensajes'}</small></div>${n ? `<span class="badge-n">${n}</span>` : ''}</button>`; }).join('')
+        : `<p class="muted">Aún no tienes estudiantes conectados. Dales tu código: <b>${esc(t.code)}</b></p>`}</div>
+      <div class="card chat-wrap" id="th">${sel ? '' : '<p class="muted center">Selecciona un estudiante</p>'}</div></div>`;
+    app.querySelectorAll('.troom').forEach(b => b.onclick = () => panel(t, b.dataset.id));
+    if (sel) { const r = CH.store.get(sel); const th = document.getElementById('th');
+      th.innerHTML = `<div class="chat-head"><div class="av">${esc((r.student || '?')[0].toUpperCase())}</div><div class="grow"><b>${esc(r.student || 'Estudiante')}</b><small>Estudiante · Módulo 1</small></div></div><div id="thr"></div>`;
+      CH.thread(document.getElementById('thr'), sel, t.code, r.student || 'Estudiante'); }
+    const off = CH.store.subscribe(() => { off(); panel(t, sel); });
+  }
+  const code = sessionStorage.getItem(SKEY); const t = code && CH.findTeacher(code);
+  t ? panel(t) : login();
+})();
+</script>
+</body>
+</html>

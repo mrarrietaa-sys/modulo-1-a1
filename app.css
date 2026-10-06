@@ -515,3 +515,100 @@ canvas#confetti{position:fixed;inset:0;pointer-events:none;z-index:99}
 .tour-n{font-size:12px;font-weight:800;color:#777}
 .tour-bar{display:flex;gap:8px;align-items:center;margin-top:12px}
 @media (max-width:600px){.tour-mra{height:95px}.tour-in p{font-size:14.5px}}
+
+/* ---- v11: diccionario arrastrable / ocultable ---- */
+#dict-fab{user-select:none;-webkit-user-select:none;touch-action:none}
+#dict-fab.drag{cursor:grabbing;transform:scale(1.06);box-shadow:6px 6px 0 var(--k)}
+#dict-fab.hidden{display:none!important}
+#dict-fab img{object-fit:cover;object-position:50% 4%;background:#fff}
+.dict-foot{margin-top:14px;text-align:center}
+.linkbtn{background:none;border:0;color:#555;text-decoration:underline;font-size:14px;cursor:pointer;padding:6px}
+
+/* ---- v11: preguntas clave paso a paso ---- */
+.kq{display:block}
+.kq-n{font-family:var(--fh);font-weight:800;font-size:13px;letter-spacing:.6px;text-transform:uppercase;background:var(--k);color:var(--y);display:inline-block;border-radius:8px;padding:3px 10px;margin-bottom:8px}
+.kstep{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:2px dashed #e5e5e5}
+.kstep:first-of-type{border-top:0}
+.kstep small{display:block;font-weight:800;color:#666;font-size:12.5px;text-transform:uppercase;letter-spacing:.3px}
+.kstep .kt{font-family:var(--fh);font-weight:800;font-size:19px;line-height:1.3}
+.kstep .kt.ans{font-family:inherit;font-weight:600}
+.kstep .qes{margin:2px 0 0;font-size:15px;color:#555}
+.kn{flex:none;width:30px;height:30px;border-radius:50%;background:var(--y);border:2.5px solid var(--k);display:grid;place-items:center;font-weight:800;font-family:var(--fh)}
+.kstep .act{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px}
+/* ---- botón rojo flotante (solo mientras suena y el botón original no se ve) ---- */
+#stop-float{position:fixed;left:50%;bottom:20px;transform:translate(-50%,16px);z-index:85;background:#E11D48;color:#fff;border:3px solid var(--k);border-radius:999px;padding:12px 22px;font-family:var(--fh);font-weight:800;font-size:16px;box-shadow:4px 4px 0 var(--k);opacity:0;pointer-events:none;transition:opacity .15s,transform .15s}
+#stop-float.on{opacity:1;pointer-events:auto;transform:translate(-50%,0)}
+/* ---- pista de deletreo ---- */
+.tile.blink{animation:blink .5s 4;background:var(--y)!important}
+@keyframes blink{50%{transform:scale(1.15);box-shadow:0 0 0 4px #E11D48}}
+
+/* ---- v11: versión celular — todo dentro de los márgenes y más legible ---- */
+*,*::before,*::after{box-sizing:border-box}
+img{max-width:100%}
+.stage,.card,.player,.wrap{min-width:0}
+.opt{min-width:0;overflow-wrap:anywhere;word-break:normal;hyphens:auto}
+.opts{grid-template-columns:repeat(2,minmax(0,1fr))}
+.stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+.stat{min-width:0;overflow:hidden}
+.skills>*{min-width:0}
+.mc .b{overflow-wrap:anywhere;line-height:1.15}
+@media (max-width:600px){
+  :root{--mut:#3f3f3f}
+  body{font-size:16.5px}
+  .wrap{padding-left:12px;padding-right:12px}
+  .stage{padding-left:14px!important;padding-right:14px!important}
+  .stage h2{font-size:22px}
+  .stage .ins{font-size:16px;line-height:1.45;color:#333}
+  .opts{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px}
+  .opt{font-size:16.5px;padding:12px 8px}
+  .opt.imgopt{padding:0}
+  .imglbl{font-size:15px;padding:7px 4px}
+  .stats{gap:8px}
+  .stat{padding:10px 4px}
+  .stat b{font-size:21px}
+  .stat small{font-size:10px;letter-spacing:.2px}
+  .mem{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+  .mc{aspect-ratio:auto;height:118px}
+  .mc .b{font-size:14px;padding:3px}
+  .mc .b .mimg span{font-size:12.5px;padding:3px 2px}
+  .mainph{max-width:100%!important}
+  .reading .txt{font-size:18px;line-height:1.7}
+  .sent{font-size:20px}
+  .kstep .kt{font-size:17.5px}
+  .actionbar{gap:8px}
+  .actionbar .btn{flex:1 1 auto}
+  #dict-fab{padding:3px;bottom:96px}
+  #dict-fab span{display:none}
+  #dict-fab img{width:52px;height:52px}
+  #stop-float{bottom:96px}
+  .lgrid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px}
+  .lcard .tx .en{font-size:17px}
+}
+@media (max-width:360px){ .opt{font-size:15px} .mem{gap:6px} }
+
+/* ---- v11: chat docente ↔ estudiante ---- */
+.chat-card{display:flex;gap:16px;align-items:center;margin-top:18px}
+.chat-card .mascot{height:150px;flex:none}
+.badge-n{display:inline-grid;place-items:center;min-width:24px;height:24px;padding:0 6px;border-radius:999px;background:#E11D48;color:#fff;font-size:13px;font-weight:800;vertical-align:middle}
+.chat-demo{background:#EEF2FF;border:2px dashed #6366F1;border-radius:12px;padding:10px 12px;font-size:14px;margin:12px 0}
+.chat-wrap{padding:0;overflow:hidden;display:flex;flex-direction:column}
+.chat-head{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:3px solid var(--k);background:var(--y)}
+.chat-head small{display:block;color:#333;font-size:12.5px}
+.chat-wrap .chat-demo{margin:10px 12px 0}
+.av{flex:none;width:42px;height:42px;border-radius:50%;background:var(--k);color:var(--y);display:grid;place-items:center;font-weight:800;font-family:var(--fh)}
+.iconbtn.dark{border-color:var(--k);color:var(--k)}
+.chat-thread{display:flex;flex-direction:column;height:min(62vh,560px)}
+.chat-msgs{flex:1;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:10px;background:var(--paper)}
+.cm{max-width:80%;display:flex;flex-direction:column}
+.cm.me{align-self:flex-end;align-items:flex-end}.cm.them{align-self:flex-start}
+.cm .bub{padding:10px 13px;border-radius:16px;border:2px solid var(--k);background:#fff;font-size:16px;line-height:1.4;overflow-wrap:anywhere}
+.cm.me .bub{background:var(--y);border-bottom-right-radius:4px}.cm.them .bub{border-bottom-left-radius:4px}
+.cm small{font-size:11.5px;color:#666;margin-top:3px}
+.chat-empty{margin:auto;color:#666;text-align:center}
+.chat-form{display:flex;gap:8px;padding:10px;border-top:3px solid var(--k);background:#fff;align-items:flex-end}
+.chat-form textarea{flex:1;resize:none;text-align:left;font-size:16px;padding:10px 12px;min-height:46px}
+.tchat{display:grid;grid-template-columns:280px minmax(0,1fr);gap:14px}
+.tlist{padding:8px;display:flex;flex-direction:column;gap:6px;max-height:70vh;overflow:auto}
+.troom{display:flex;gap:10px;align-items:center;text-align:left;background:#fff;border:2px solid transparent;border-radius:12px;padding:8px;cursor:pointer}
+.troom.on{border-color:var(--k);background:var(--y3)}.troom small{display:block;color:#666;font-size:12.5px}
+@media (max-width:700px){.tchat{grid-template-columns:1fr}.chat-card{flex-direction:column;text-align:center}.chat-card .mascot{height:120px}.chat-thread{height:65vh}.cm{max-width:88%}}

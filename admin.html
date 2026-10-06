@@ -20,13 +20,14 @@
     <div class="row" style="margin:8px 0 14px">
       <label><input type="radio" name="t" value="all" checked> Todo el módulo</label>
       <label><input type="radio" name="t" value="some"> Solo algunos temas:</label>
+      <label style="flex-basis:100%"><input type="radio" name="t" value="exam"> 🎓 Intento extra del examen final (después de los 2 intentos)</label>
       <input class="inp" id="topics" placeholder="3,4,5" style="width:140px;font-size:16px;padding:8px">
     </div>
     <label style="font-weight:800">Nota (opcional, solo para ti)</label>
     <input class="inp" id="note" placeholder="Ej: Laura Gómez - pagó 1 oct" style="margin:6px 0 14px;text-align:left;font-size:16px">
     <button class="btn k lg" id="gen">Generar línea</button>
     <div id="out" class="hidden" style="margin-top:16px">
-      <p style="font-weight:800;margin-bottom:6px">Copia esta línea en js/config.js (dentro de ACCESS_CODES):</p>
+      <p style="font-weight:800;margin-bottom:6px">Copia esta línea en config.js (dentro de <span id="where">ACCESS_CODES</span>):</p>
       <textarea id="line" class="hw" style="min-height:70px;font-family:monospace;font-size:14px" readonly></textarea>
       <button class="btn sm" id="copy" style="margin-top:8px">📋 Copiar</button>
     </div>
@@ -47,9 +48,11 @@ document.getElementById('gen').onclick=()=>{
   const c=document.getElementById('code').value.trim(); if(!c){alert('Escribe un código');return;}
   const all=document.querySelector('input[name=t]:checked').value==='all';
   const tp=document.getElementById('topics').value.split(/[^0-9]+/).filter(Boolean).map(Number).filter(n=>n>=1&&n<=14);
-  if(!all&&!tp.length){alert('Escribe los números de los temas, ej: 3,4,5');return;}
+  if(document.querySelector('input[name=t]:checked').value==='some'&&!tp.length){alert('Escribe los números de los temas, ej: 3,4,5');return;}
   const note=(document.getElementById('note').value||c).replace(/"/g,"'");
-  const line=`    { hash: "${codeHash(c)}", topics: ${all?'"all"':'['+tp.join(', ')+']'}, note: "${note}" },`;
+  const exam=document.querySelector('input[name=t]:checked').value==='exam';
+  const line= exam ? `    { hash: "${codeHash('EXAM:'+c)}", note: "${note}" },` : `    { hash: "${codeHash(c)}", topics: ${all?'"all"':'['+tp.join(', ')+']'}, note: "${note}" },`;
+  document.getElementById('where').textContent = exam ? 'EXAM_RETRY_CODES' : 'ACCESS_CODES';
   document.getElementById('line').value=line; document.getElementById('out').classList.remove('hidden');
 };
 document.getElementById('copy').onclick=()=>{const t=document.getElementById('line');t.select();navigator.clipboard?navigator.clipboard.writeText(t.value):document.execCommand('copy');document.getElementById('copy').textContent='✅ Copiado';};

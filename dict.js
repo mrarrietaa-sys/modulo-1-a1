@@ -130,16 +130,15 @@
     if (!IDX) buildIndex();
     if (panel) { panel.classList.add('on'); panel._lab && panel._lab(); $('#dq', panel).focus(); return; }
     panel = h(`<div id="dict" class="on"><div class="dict-card">
-      <div class="dict-hd"><img src="mra-idea.webp" alt=""><div><h3>📖 Diccionario de Mr. Arrieta</h3><p>Escribe o pregunta en voz alta una palabra o duda <b>de inglés</b>, en español o en inglés.</p><p class="dict-only">ℹ️ Solo para inglés: palabras, frases, pronunciación y gramática. No responde temas de otras materias.</p></div><button class="dict-x" title="Cerrar">✕</button></div>
+      <div class="dict-hd"><img src="mra-idea.webp" alt=""><div><h3>📖 Diccionario de Mr. Arrieta</h3><p>Escribe o pregunta en voz alta una palabra o duda <b>de inglés</b>, en español o en inglés.</p></div><button class="dict-x" title="Cerrar">✕</button></div>
       <form class="dict-form"><input id="dq" class="inp" placeholder="Ej: perro, breakfast…" autocomplete="off">
-        <button class="btn k" type="submit">Buscar</button></form>
-      <div class="row dict-mics">${SR ? '<button class="btn w sm" data-l="es-CO">🎤 Preguntar en español</button><button class="btn w sm" data-l="en-US">🎤 Say it in English</button>' : '<span class="muted">Tu navegador no permite dictado por voz; escribe tu pregunta.</span>'}</div>
+        ${SR ? '<button class="btn w dict-mic" type="button" data-l="es-CO" title="Habla">🎤 Habla</button>' : ''}<button class="btn k" type="submit">Buscar</button></form>
       <div class="dict-out"></div><div class="dict-foot"><button class="linkbtn" id="dhide"></button></div></div></div>`);
     document.body.appendChild(panel);
     panel.addEventListener('click', e => { if (e.target === panel) close(); });
     $('.dict-x', panel).onclick = close;
     $('.dict-form', panel).onsubmit = (e) => { e.preventDefault(); const v = $('#dq', panel).value.trim(); if (v) ask(v); };
-    $$('.dict-mics button', panel).forEach(b => b.onclick = () => voice(b));
+    $$('.dict-mic', panel).forEach(b => b.onclick = () => voice(b));
     const dh = $('#dhide', panel); const lab = () => { dh.innerHTML = S.dictHidden ? '📌 Mostrar otra vez el botón flotante' : '💡 Para quitar el botón flotante, arrástralo hasta la <b>✕</b> del centro de la pantalla.'; dh.disabled = !S.dictHidden; };
     lab(); dh.onclick = () => { if (S.dictHidden) { setHidden(false); lab(); } };
     panel._lab = lab;
@@ -151,11 +150,11 @@
 
   function voice(btn) {
     const r = new SR(); r.lang = btn.dataset.l; r.interimResults = true; r.maxAlternatives = 1;
-    const old = btn.textContent; btn.textContent = '🔴 Te escucho…'; btn.disabled = true;
+    const old = btn.textContent; btn.textContent = '🔴 Habla…'; btn.disabled = true;
     let final = '';
     r.onresult = (e) => { let t = ''; for (const x of e.results) t += x[0].transcript; $('#dq', panel).value = t; if (e.results[e.results.length - 1].isFinal) final = t; };
     r.onerror = (e) => { if (e.error === 'not-allowed') M.toast('Permite el micrófono 🎤'); };
-    r.onend = () => { btn.textContent = old; btn.disabled = false; const v = (final || $('#dq', panel).value).trim(); if (v) ask(v, btn.dataset.l.startsWith('es') ? 'es' : 'en'); };
+    r.onend = () => { btn.textContent = old; btn.disabled = false; const v = (final || $('#dq', panel).value).trim(); if (v) ask(v); };
     try { r.start(); } catch (e) { btn.textContent = old; btn.disabled = false; }
   }
 

@@ -271,7 +271,7 @@
     const so = p.sort; const items = shuffle(so.items);
     const body = head(stage, { lbl: 'Practice', title: 'Classify the words', ins: 'Toca una palabra y luego la categoría correcta.' });
     const bank = h(`<div class="bank"></div>`); body.appendChild(bank);
-    const cats = h(`<div class="cats" style="grid-template-columns:repeat(${Math.min(so.cats.length, 4)},1fr)"></div>`); body.appendChild(cats);
+    const cats = h(`<div class="cats" style="--n:${Math.min(so.cats.length, 4)}"></div>`); body.appendChild(cats);
     let sel = null, c = 0, placed = 0; const missed = [];
     const catEls = so.cats.map(ct => { const e = h(`<div class="cat"><h4>${esc(ct)}</h4><div class="in"></div></div>`); cats.appendChild(e); return e; });
     await new Promise(res => {

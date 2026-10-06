@@ -44,7 +44,14 @@ window.M1CONFIG = {
   REMINDER_TIME: "19:00",
 
   // Porcentaje mínimo para aprobar el examen final
-  PASS_SCORE: 70,
+  PASS_SCORE: 50,
+
+  // EXAMEN FINAL: códigos para dar un intento adicional (después de los 2 intentos).
+  // Crea uno nuevo en admin.html → "Código de intento extra del examen". Cada código sirve una vez por dispositivo.
+  // Código de ejemplo: EXAMEN-EXTRA
+  EXAM_RETRY_CODES: [
+    { hash: "hd0dg6i7qw", note: "EXAMEN-EXTRA (ejemplo)" },
+  ],
 
   // DOCENTES para el chat (vista previa).
   // code = código que le das al estudiante para conectarse con su profe.

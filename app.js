@@ -20,7 +20,7 @@
     tb.innerHTML = `<div class="brand" id="go-home"><span class="logo-pill"><img class="logo" src="mra-brand.png" alt="mrarrieta.com"></span><small>MÓDULO 1 · A1</small></div><div class="sp"></div>
       <span class="pill y" title="Puntos de experiencia">⚡ ${S.xp} XP</span>
       <span class="pill hide-s" title="Días seguidos estudiando">🔥 ${S.streak.n || 0}</span>
-      ${S.chatHidden ? '<button class="iconbtn" id="chat-tb" title="Chat con mi profe">💬</button>' : ''}${S.dictHidden ? '<button class="iconbtn" id="dict-b" title="Diccionario">🔎</button>' : ''}<button class="iconbtn" id="menu-b" title="Menú">☰</button>`;
+      <button class="iconbtn chat-ic" id="chat-tb" title="Chat con mi profe" aria-label="Chat con mi profe"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.6A8 8 0 1 1 21 12z"/><path d="M8.5 11h.01M12 11h.01M15.5 11h.01"/></svg><i class="fbadge hidden" id="chat-n"></i></button>${S.dictHidden ? '<button class="iconbtn" id="dict-b" title="Diccionario">🔎</button>' : ''}<button class="iconbtn" id="menu-b" title="Menú">☰</button>`;
     $('#go-home', tb).onclick = () => { stop(); route('home'); };
     $('#menu-b', tb).onclick = menu;
     const db = $('#dict-b', tb); if (db) db.onclick = () => window.M1DICT && M1DICT.open();
@@ -35,7 +35,6 @@
       <button class="btn w block" data-a="unlock">🔑 Tengo un código de acceso</button>
       <button class="btn w block" data-a="remind">🔔 Recordatorio diario</button>
       <button class="btn w block" data-a="dict">${S.dictHidden ? '📌 Mostrar botón flotante del diccionario' : '🙈 Quitar botón flotante del diccionario'}</button>
-      <button class="btn w block" data-a="chath">${S.chatHidden ? '📌 Mostrar botón flotante del chat' : '🙈 Quitar botón flotante del chat'}</button>
       <button class="btn w block" data-a="tour">🧭 Ver el tour guiado</button>
       <button class="btn w block" data-a="name">✏️ Cambiar mi nombre</button>
       <button class="btn w block" data-a="sound">${S.sound ? '🔔 Sonidos: activados' : '🔕 Sonidos: desactivados'}</button>
@@ -54,6 +53,7 @@
     if (name === 'progress') return progress();
     if (name === 'class') return runClass(arg);
     if (name === 'final') return finalTest();
+    if (name === 'cert') return certificateView();
     if (name === 'hw') return homeworkOnly(arg);
     if (name === 'chat') return chatScreen();
   }
@@ -85,7 +85,7 @@
       { sel: '#tgrid > :first-child', mood: 'pointside', t: 'Los 14 temas', d: 'Cada tema tiene <b>2 clases</b>. Los temas con 🔒 se desbloquean con un <b>código de acceso</b> que te da el profe.' },
       { mood: 'book', t: '¿Cómo es una clase?', d: 'Cada clase sigue el mismo orden: <b>Goal → Speaking → Reading → Explanation → Practice → Oral task → Music → Homework</b>.<br><br>🔊 escucha · 🎤 habla (permite el micrófono) · <b>← Atrás</b> para corregir · tu avance se guarda solo.' },
       { sel: '#dict-fab', mood: 'present', t: 'Tu diccionario', d: '¿No entiendes una palabra? Toca aquí, <b>escríbela o dila en voz alta</b> (en español o inglés) y te doy la respuesta con su pronunciación.' },
-      { sel: '#chat-fab', mood: 'present', t: 'Chat con tu profe', d: 'Aquí le escribes a tu docente cuando tengas dudas. Puedes <b>arrastrar</b> este botón y el del diccionario a donde quieras, o <b>quitarlos</b> soltándolos en la ✕ del centro.' },
+      { sel: '#chat-tb', mood: 'present', t: 'Chat con tu profe', d: 'Con este botón le escribes a tu docente cuando tengas dudas. El botón del diccionario lo puedes <b>arrastrar</b> a donde quieras o <b>quitarlo</b> soltándolo en la ✕ del centro.' },
       { sel: '#final-b', mood: 'celebrate', t: 'Examen final', d: 'Al terminar los 14 temas presentas el examen final. Si apruebas, ¡obtienes tu <b>certificado</b> del Módulo 1! 🎓' },
       { sel: '#menu-b', mood: 'watch', t: 'Menú', d: 'Aquí encuentras tu progreso, el código de acceso, el <b>recordatorio diario</b> y este tour por si quieres verlo otra vez.' },
       { mood: 'thumbs', t: '¡Listo! 🚀', d: 'Ya sabes todo lo necesario. Recuerda: un poquito cada día hace la diferencia. ¡Vamos a tu primera clase!', last: true },
@@ -138,9 +138,8 @@
   }
   function chatFab() {
     if (!window.M1CHAT) return;
-    const b = M.floatBubble({ id: 'chat-fab', img: 'mra-present.webp', label: 'Chat con mi profe', posKey: 'chatPos', hiddenKey: 'chatHidden', onOpen: openChat, cls: 'chat' });
     const room = S.teacher ? chatRoom() : null; const n = room ? M1CHAT.store.unread(room, S.sid) : 0;
-    const bd = b.querySelector('.fbadge'); bd.textContent = n; bd.classList.toggle('hidden', !n);
+    const bd = $('#chat-n'); if (bd) { bd.textContent = n; bd.classList.toggle('hidden', !n); }
   }
   function chatScreen() {
     const CH = window.M1CHAT; if (!CH) return route('home');
@@ -194,8 +193,8 @@
       <div class="sect-title"><h2>📚 Temas del Módulo 1</h2><div class="row"><button class="btn sm w" id="prog">📊 Mi progreso</button><button class="btn sm" id="code">🔑 Código de acceso</button></div></div>
       <div class="grid" id="tgrid"></div>
       <div class="sect-title"><h2>🏆 Final Test</h2></div>
-      <div class="card final">${M.mascot('mascot', 'point')}<div><h3>Well done! Get ready for the test.</h3><p style="margin:6px 0 0;color:#ddd">Examen final con preguntas de los 14 temas. Si apruebas con ${C.PASS_SCORE}% o más, obtienes tu certificado del Módulo 1 🎓</p>
-        ${S.final ? `<p style="margin:8px 0 0;color:var(--y);font-weight:800">Tu mejor resultado: ${S.final.best}% ${S.final.best >= C.PASS_SCORE ? '✅ Aprobado' : ''}</p>` : ''}</div>
+      <div class="card final">${M.mascot('mascot', 'point')}<div><h3>Well done! Get ready for the test.</h3><p style="margin:6px 0 0;color:#ddd">40 preguntas de los 14 temas (Listening, Reading, Writing y Speaking) · 45 minutos · 2 intentos. Si apruebas con ${(C.PASS_SCORE / 10).toFixed(1)}/10 o más, obtienes tu certificado 🎓</p>
+        ${S.final ? `<p style="margin:8px 0 0;color:var(--y);font-weight:800">Tu mejor resultado: ${(S.final.best / 10).toFixed(1)} / 10 ${S.final.passed ? '✅ Aprobado' : ''}</p>` : ''}${S.final && S.final.passed ? `<button class="btn sm" id="cert-b" style="margin-top:8px">🎓 Ver mi certificado</button>` : ''}
         <button class="btn lg" id="final-b">${M.finalUnlocked() ? 'FINAL TEST →' : '🔒 Bloqueado'}</button></div>
       <p class="center muted" style="margin-top:30px;font-size:13px">mrarrieta.com · ¡Aprende inglés HABLANDO! · WhatsApp ${esc(C.WHATSAPP.replace(/^57/, ''))}</p>
     </div>`;
@@ -218,6 +217,7 @@
     if ($('#buy2')) $('#buy2').onclick = unlockModal;
     $('#prog').onclick = () => route('progress'); $('#code').onclick = unlockModal;
     $('#final-b').onclick = () => M.finalUnlocked() ? route('final') : unlockModal();
+    if ($('#cert-b')) $('#cert-b').onclick = () => route('cert');
     $$('[data-hw]', app).forEach(b => b.onclick = () => route('hw', b.dataset.hw));
     const cb = $('#chat-b', app); if (cb) cb.onclick = () => route('chat');
     const pt = $('#pend-t', app); if (pt) pt.onclick = () => { const l = $('#pend-l', app); const open = l.classList.toggle('hidden') === false; pt.innerHTML = `📋 ${open ? 'Ocultar' : 'Ver'} mis tareas pendientes (${pendingHW().length}) ${open ? '▴' : '▾'}`; sfx('tap'); };
@@ -300,6 +300,23 @@
      CLASS — estructura: GOAL · SPEAKING · READING · REVIEW · EXPLANATION
      · LISTEN & PRACTICE · PRACTICE · ORAL TASK · MUSIC · HOMEWORK
      ================================================================= */
+  // Cada clase tiene su propia combinación de juegos para que ninguna se sienta igual
+  const PLAN = {
+    t1p1: ['learn', 'bubblePop', 'matchLines', 'fill', 'quizShow', 'speakWords'], t1p2: ['learn', 'dialogue', 'oddOneOut', 'unscramble', 'typeSentence', 'speak'],
+    t2p1: ['learn', 'bubblePop', 'typeLetter', 'spell', 'speed'], t2p2: ['learn', 'spellName', 'dialogue', 'spell', 'quizShow'],
+    t3p1: ['learn', 'listenChoose', 'wordSearch', 'crossword', 'speak'], t3p2: ['learn', 'matchLines', 'sort', 'typeWord', 'speak'],
+    t4p1: ['learn', 'bubblePop', 'typeNumber', 'phone', 'speak'], t4p2: ['learn', 'pickWord', 'hangman', 'unscramble', 'speed', 'speakWords'],
+    t5p1: ['learn', 'fill', 'quizShow', 'unscramble', 'typeSentence', 'speak'], t5p2: ['learn', 'sort', 'fill', 'bubblePop', 'speak'],
+    t6p1: ['learn', 'listenChoose', 'wordSearch', 'crossword', 'speed', 'speak'], t6p2: ['learn', 'dialogue', 'sort', 'fill', 'unscramble', 'speak'],
+    t7p1: ['learn', 'hangman', 'memory', 'matchLines', 'speak'], t7p2: ['learn', 'bubblePop', 'sort', 'crossword', 'oddOneOut'],
+    t8p1: ['learn', 'pickWord', 'fill', 'wordSearch', 'speed', 'speak'], t8p2: ['learn', 'sort', 'memory', 'hangman', 'oddOneOut'],
+    t9p1: ['learn', 'listenChoose', 'fill', 'wordSearch', 'speak'], t9p2: ['learn', 'quizShow', 'spell', 'fill', 'dialogue'],
+    t10p1: ['learn', 'matchLines', 'pickWord', 'typeSentence', 'bubblePop', 'speak'], t10p2: ['learn', 'listenChoose', 'memory', 'sort', 'hangman', 'speak'],
+    t11p1: ['learn', 'pickWord', 'spell', 'wordSearch', 'crossword', 'oddOneOut'], t11p2: ['learn', 'quizShow', 'sort', 'fill', 'unscramble', 'speak'],
+    t12p1: ['learn', 'listenChoose', 'sort', 'plural', 'matchLines', 'speakWords'], t12p2: ['learn', 'memory', 'plural', 'fill', 'bubblePop'],
+    t13p1: ['learn', 'fill', 'matchLines', 'unscramble', 'typeSentence', 'speak'], t13p2: ['learn', 'sort', 'fill', 'dialogue', 'quizShow', 'speak'],
+    t14p1: ['learn', 'fill', 'bubblePop', 'unscramble', 'typeSentence', 'speak'], t14p2: ['learn', 'fill', 'dialogue', 'oddOneOut', 'speak'],
+  };
   function buildSteps(p) {
     const st = [];
     st.push({ sec: 'Goal', k: 'goal' });
@@ -308,8 +325,9 @@
     if (M.prevPart(p)) st.push({ sec: 'Review', k: 'review' });
     st.push({ sec: 'Explanation', k: 'learn' });
     if (p.keyq) st.push({ sec: 'Listen & practice', k: 'keyq' });
-    p.acts.filter(a => !['learn', 'speak', 'speakWords'].includes(a)).forEach(a => st.push({ sec: 'Practice', k: a }));
-    const sp = p.acts.find(a => a === 'speak' || a === 'speakWords') || (p.sentences ? 'speak' : 'speakWords');
+    const acts = PLAN[p.id] || p.acts;
+    acts.filter(a => !['learn', 'speak', 'speakWords'].includes(a)).forEach(a => st.push({ sec: 'Practice', k: a }));
+    const sp = acts.find(a => a === 'speak' || a === 'speakWords') || (p.sentences ? 'speak' : 'speakWords');
     if (!p.letters) st.push({ sec: 'Oral task', k: sp });
     else st.push({ sec: 'Oral task', k: 'speakLetters' });
     if (songFor(p)) st.push({ sec: 'Music', k: 'music' });
@@ -529,7 +547,7 @@
     hw: async (stage, p) => homework(stage, p),
   };
   // practice activities map
-  ['learn', 'listenChoose', 'pickWord', 'typeWord', 'typeLetter', 'typeNumber', 'phone', 'spellName', 'typeSentence', 'fill', 'unscramble', 'memory', 'sort', 'crossword', 'speed', 'spell', 'plural', 'dialogue', 'speak', 'speakWords']
+  ['learn', 'listenChoose', 'pickWord', 'typeWord', 'typeLetter', 'typeNumber', 'phone', 'spellName', 'typeSentence', 'fill', 'unscramble', 'memory', 'sort', 'crossword', 'speed', 'spell', 'plural', 'dialogue', 'speak', 'speakWords', 'wordSearch', 'hangman', 'bubblePop', 'matchLines', 'quizShow', 'oddOneOut']
     .forEach(k => { STEP[k] = (stage, p) => A[k](stage, p); });
 
   /* ---------- MUSIC · PLAY & LEARN (una canción A1 por clase) ---------- */
@@ -826,71 +844,11 @@
   }
 
   /* ---------------- FINAL TEST ---------------- */
-  async function finalTest() {
+  function finalTest() {
     if (!M.finalUnlocked()) { unlockModal(); return route('home'); }
-    app.innerHTML = `<div class="wrap center" style="padding-top:80px">${M.mascot('mascot bounce', 'book')}<h2>Preparando tu examen…</h2></div>`;
-    await M.loadAudio(['common', ...D.topics.map(t => 't' + t.n)]);
-    const parts = M.allParts(); const pool = parts.flatMap(p => p.vocab.filter(v => v.img && !v.img.startsWith('#')).map(v => ({ ...v, _p: p })));
-    const uniq = pool.filter((v, i, a) => a.findIndex(x => x.en === v.en) === i);
-    const Q = [];
-    sample(uniq, 10).forEach(it => Q.push({ k: 'lc', it }));
-    sample(uniq.filter(x => !Q.find(q => q.it === x)), 6).forEach(it => Q.push({ k: 'pw', it }));
-    sample(parts.filter(p => p.fill).flatMap(p => p.fill), 8).forEach(it => Q.push({ k: 'fill', it }));
-    sample(parts.filter(p => p.sentences).flatMap(p => p.sentences).filter(s => s.en.split(' ').length <= 7), 3).forEach(it => Q.push({ k: 'type', it }));
-    sample(parts.filter(p => p.reading).flatMap(p => p.reading.q.map(q => ({ ...q, r: p.reading }))), 3).forEach(it => Q.push({ k: 'yn', it }));
-    const qs = shuffle(Q);
-    app.innerHTML = `<div class="player"><div class="phead"><button class="x">✕</button><div class="prog"><i style="width:0%"></i></div></div><div class="stage"></div></div>`;
-    $('.x', app).onclick = () => route('home'); const stage = $('.stage', app);
-    stage.innerHTML = `<div class="center">${M.mascot('mascot bounce', 'point')}<br><span class="lbl">Final test</span><h2 style="font-size:30px;margin-top:10px">Examen final · Módulo 1</h2>
-      <p class="muted" style="font-size:17px">${qs.length} preguntas de los 14 temas: listening, reading y writing.<br>Necesitas <b>${C.PASS_SCORE}%</b> para aprobar y obtener tu certificado 🎓</p></div>`;
-    await A.waitNext(stage, '¡Estoy listo(a)! 🚀');
-    let c = 0;
-    for (let i = 0; i < qs.length; i++) {
-      $('.prog i', app).style.width = (i / qs.length * 100) + '%';
-      const q = qs[i]; const meta = { lbl: 'Final test', count: `${i + 1} / ${qs.length}` };
-      let ok = false;
-      if (q.k === 'lc') {
-        const body = A.head(stage, { ...meta, title: 'Listen and choose', ins: 'Escucha y elige la opción correcta.' });
-        body.appendChild(A.playBtn(q.it.au)); const opts = shuffle([q.it, ...sample(uniq.filter(x => x.en !== q.it.en && x.img !== q.it.img), 3)]);
-        const wrap = h(`<div class="opts" style="margin-top:12px"></div>`); body.appendChild(wrap); const btns = opts.map(o => { const b = h(`<button class="opt imgopt">${photo(o.img)}<span class="imglbl">${esc(o.en)}</span></button>`); wrap.appendChild(b); return b; });
-        setTimeout(() => play(q.it.au), 300); const k = await A.choose(btns); ok = opts[k] === q.it; btns[k].classList.add(ok ? 'right' : 'wrong'); await sleep(600);
-      } else if (q.k === 'pw') {
-        const body = A.head(stage, { ...meta, title: 'Choose the word', ins: 'Lee la palabra en español y elige cómo se dice en inglés.' });
-        body.appendChild(h(`<div class="mainph" style="max-width:300px">${photo(q.it.img)}</div>`)); if (q.it.es) body.appendChild(h(`<div class="sent" style="margin-top:-4px">${esc(q.it.es)}</div>`)); const opts = shuffle([q.it, ...sample(uniq.filter(x => x.en !== q.it.en), 3)]);
-        const wrap = h(`<div class="opts"></div>`); body.appendChild(wrap); const btns = opts.map(o => { const b = h(`<button class="opt">${esc(o.en)}</button>`); wrap.appendChild(b); return b; });
-        const k = await A.choose(btns); ok = opts[k] === q.it; btns[k].classList.add(ok ? 'right' : 'wrong'); await sleep(600);
-      } else if (q.k === 'fill') {
-        const body = A.head(stage, { ...meta, title: 'Complete the sentence', ins: 'Elige la opción correcta.' });
-        body.appendChild(h(`<div class="sent">${esc(q.it.s).replace('___', '<span class="blank">&nbsp;</span>')}</div>`)); const opts = shuffle([q.it.a, ...q.it.o]);
-        const wrap = h(`<div class="opts" style="grid-template-columns:repeat(${opts.length},1fr)"></div>`); body.appendChild(wrap); const btns = opts.map(o => { const b = h(`<button class="opt">${esc(o)}</button>`); wrap.appendChild(b); return b; });
-        const k = await A.choose(btns); ok = opts[k] === q.it.a; btns[k].classList.add(ok ? 'right' : 'wrong'); await sleep(600);
-      } else if (q.k === 'type') {
-        const body = A.head(stage, { ...meta, title: 'Listen and type', ins: 'Escucha y escribe la oración.' });
-        ok = await new Promise(res => { body.appendChild(A.playBtn(q.it.au)); const inp = h(`<input class="inp" autocomplete="off" spellcheck="false" placeholder="Escribe la oración…" style="margin-top:12px">`); body.appendChild(inp);
-          const bar = h(`<div class="actionbar"><button class="btn k lg">Siguiente →</button></div>`); body.appendChild(bar); setTimeout(() => { play(q.it.au); inp.focus(); }, 300);
-          const go = () => { if (!inp.value.trim()) return; res(M.norm(inp.value) === M.norm(q.it.en)); }; $('button', bar).onclick = go; inp.onkeydown = e => { if (e.key === 'Enter') go(); }; });
-      } else if (q.k === 'yn') {
-        const body = A.head(stage, { ...meta, title: `Reading: ${q.it.r.title}`, ins: 'Lee el texto y responde YES o NO.' });
-        body.appendChild(h(`<div class="reading" style="grid-template-columns:1fr"><div class="txt">${esc(q.it.r.text)}</div></div>`));
-        body.appendChild(h(`<div class="sent" style="font-size:20px">${esc(q.it.s)}</div>`)); const wrap = h(`<div class="opts"><button class="opt">YES</button><button class="opt">NO</button></div>`); body.appendChild(wrap);
-        const btns = $$('button', wrap); const k = await A.choose(btns); ok = (k === 0 ? 'yes' : 'no') === q.it.a; btns[k].classList.add(ok ? 'right' : 'wrong'); await sleep(600);
-      }
-      if (ok) { c++; sfx('ok'); } else sfx('bad');
-    }
-    const pct = Math.round(c / qs.length * 100); const pass = pct >= C.PASS_SCORE;
-    S.final = { best: Math.max((S.final && S.final.best) || 0, pct), last: pct, at: Date.now() }; S.xp += c * 10; save(); checkBadges(); topbar();
-    const date = new Date().toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' });
-    const wa = `https://wa.me/${C.WHATSAPP}?text=${encodeURIComponent(`🎓 Examen final Módulo 1\n👤 ${S.name}\n📊 Resultado: ${pct}% (${c}/${qs.length}) ${pass ? '✅ APROBADO' : ''}`)}`;
-    app.innerHTML = `<div class="player">${pass ? `<div class="cert">
-        <span class="lbl">mrarrieta.com</span><h1 style="margin-top:14px">Certificate of Achievement</h1><p class="muted">Se certifica que</p>
-        <div class="who">${esc(S.name)}</div><p style="font-size:18px">completó y aprobó el <b>Módulo 1 · Nivel A1</b><br>con un puntaje de <b>${pct}%</b></p>
-        <div style="display:flex;justify-content:center;margin:6px 0">${M.mascot('mascot', 'celebrate')}</div><p class="muted">${date} · ¡Aprende inglés HABLANDO!</p></div>` :
-      `<div class="card center">${M.mascot('mascot bounce', 'shrug')}<h2 style="font-size:28px">¡Casi lo logras!</h2><p style="font-size:20px"><b>${pct}%</b> (${c}/${qs.length})</p><p class="muted">Necesitas ${C.PASS_SCORE}% para aprobar. Repasa los temas donde tienes menos estrellas y vuelve a intentarlo. ¡Tú puedes! 💪</p></div>`}
-      <div class="row noprint" style="justify-content:center;margin-top:18px">${pass ? '<button class="btn w" id="pr">🖨️ Imprimir / guardar PDF</button>' : '<button class="btn w" id="rt">🔁 Intentar de nuevo</button>'}
-      <a class="btn" style="text-decoration:none;background:#25D366;color:#fff" target="_blank" rel="noopener" href="${wa}">💬 Enviar resultado a mi profe</a><button class="btn k" id="hm">🏠 Inicio</button></div></div>`;
-    if (pass) { sfx('win'); M.confetti(5000); $('#pr').onclick = () => print(); } else $('#rt').onclick = () => route('final');
-    $('#hm').onclick = () => route('home');
+    window.M1FINAL.run(app, { route, after: () => { checkBadges(); topbar(); } });
   }
+  function certificateView() { window.M1FINAL.certificate(app, { route }); }
 
   /* ---------------- boot ---------------- */
   M.touchStreak();

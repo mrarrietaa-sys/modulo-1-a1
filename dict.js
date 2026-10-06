@@ -123,35 +123,15 @@
 
   /* ---------- UI ---------- */
   let panel = null;
-  // botón flotante: se puede arrastrar (celular y computador) y ocultar
-  function fab() {
-    if ($('#dict-fab')) return;
-    const b = h(`<button id="dict-fab" title="Diccionario: pregunta cualquier palabra (puedes arrastrarlo)"><img src="mra-idea.webp" alt=""><span>Diccionario</span></button>`);
-    document.body.appendChild(b);
-    const place = () => { const p = S.dictPos; if (!p) { b.style.left = ''; b.style.top = ''; b.style.bottom = ''; return; }
-      const x = Math.min(Math.max(4, p.x * innerWidth), innerWidth - b.offsetWidth - 4), y = Math.min(Math.max(4, p.y * innerHeight), innerHeight - b.offsetHeight - 4);
-      b.style.left = x + 'px'; b.style.top = y + 'px'; b.style.bottom = 'auto'; };
-    place(); addEventListener('resize', place);
-    let sx, sy, ox, oy, moved = false, down = false;
-    b.addEventListener('pointerdown', e => { down = true; moved = false; sx = e.clientX; sy = e.clientY; const r = b.getBoundingClientRect(); ox = r.left; oy = r.top; b.setPointerCapture(e.pointerId); });
-    b.addEventListener('pointermove', e => { if (!down) return; const dx = e.clientX - sx, dy = e.clientY - sy; if (!moved && Math.hypot(dx, dy) < 8) return;
-      moved = true; b.classList.add('drag'); const x = Math.min(Math.max(4, ox + dx), innerWidth - b.offsetWidth - 4), y = Math.min(Math.max(4, oy + dy), innerHeight - b.offsetHeight - 4);
-      b.style.left = x + 'px'; b.style.top = y + 'px'; b.style.bottom = 'auto'; });
-    const up = () => { if (!down) return; down = false; b.classList.remove('drag');
-      if (moved) { const r = b.getBoundingClientRect(); S.dictPos = { x: r.left / innerWidth, y: r.top / innerHeight }; M.save(); } };
-    b.addEventListener('pointerup', up); b.addEventListener('pointercancel', up);
-    b.addEventListener('click', e => { if (moved) { e.preventDefault(); moved = false; return; } open(); });
-    b.style.touchAction = 'none';
-    applyHidden();
-  }
-  function applyHidden() { const b = $('#dict-fab'); if (b) b.classList.toggle('hidden', !!S.dictHidden); window.dispatchEvent(new Event('m1-dict-toggle')); }
-  function setHidden(v) { S.dictHidden = !!v; M.save(); applyHidden(); M.toast(v ? 'Listo: abre el diccionario con el botón 🔎 de arriba' : 'Botón del diccionario visible 📖'); }
+  // botón flotante: se arrastra; para quitarlo se suelta en la ✕ del centro
+  function fab() { M.floatBubble({ id: 'dict-fab', img: 'mra-idea.webp', label: 'Diccionario', posKey: 'dictPos', hiddenKey: 'dictHidden', onOpen: open }); }
+  function setHidden(v) { M.setBubbleHidden('dictHidden', v); }
   function open() {
     if (!IDX) buildIndex();
-    if (panel) { panel.classList.add('on'); $('#dq', panel).focus(); return; }
+    if (panel) { panel.classList.add('on'); panel._lab && panel._lab(); $('#dq', panel).focus(); return; }
     panel = h(`<div id="dict" class="on"><div class="dict-card">
-      <div class="dict-hd"><img src="mra-idea.webp" alt=""><div><h3>📖 Diccionario de Mr. Arrieta</h3><p>Escribe o pregunta en voz alta cualquier palabra o duda, en español o en inglés.</p></div><button class="dict-x" title="Cerrar">✕</button></div>
-      <form class="dict-form"><input id="dq" class="inp" placeholder="Ej: ¿cómo se dice perro?  ·  breakfast  ·  a o an" autocomplete="off">
+      <div class="dict-hd"><img src="mra-idea.webp" alt=""><div><h3>📖 Diccionario de Mr. Arrieta</h3><p>Escribe o pregunta en voz alta una palabra o duda <b>de inglés</b>, en español o en inglés.</p><p class="dict-only">ℹ️ Solo para inglés: palabras, frases, pronunciación y gramática. No responde temas de otras materias.</p></div><button class="dict-x" title="Cerrar">✕</button></div>
+      <form class="dict-form"><input id="dq" class="inp" placeholder="Ej: perro, breakfast…" autocomplete="off">
         <button class="btn k" type="submit">Buscar</button></form>
       <div class="row dict-mics">${SR ? '<button class="btn w sm" data-l="es-CO">🎤 Preguntar en español</button><button class="btn w sm" data-l="en-US">🎤 Say it in English</button>' : '<span class="muted">Tu navegador no permite dictado por voz; escribe tu pregunta.</span>'}</div>
       <div class="dict-out"></div><div class="dict-foot"><button class="linkbtn" id="dhide"></button></div></div></div>`);
@@ -160,11 +140,13 @@
     $('.dict-x', panel).onclick = close;
     $('.dict-form', panel).onsubmit = (e) => { e.preventDefault(); const v = $('#dq', panel).value.trim(); if (v) ask(v); };
     $$('.dict-mics button', panel).forEach(b => b.onclick = () => voice(b));
-    const dh = $('#dhide', panel); const lab = () => dh.textContent = S.dictHidden ? '📌 Mostrar el botón flotante del diccionario' : '🙈 Ocultar el botón flotante (lo abrirás con 🔎 arriba)';
-    lab(); dh.onclick = () => { setHidden(!S.dictHidden); lab(); };
+    const dh = $('#dhide', panel); const lab = () => { dh.innerHTML = S.dictHidden ? '📌 Mostrar otra vez el botón flotante' : '💡 Para quitar el botón flotante, arrástralo hasta la <b>✕</b> del centro de la pantalla.'; dh.disabled = !S.dictHidden; };
+    lab(); dh.onclick = () => { if (S.dictHidden) { setHidden(false); lab(); } };
+    panel._lab = lab;
     setTimeout(() => $('#dq', panel).focus(), 50);
   }
-  function close() { if (panel) panel.classList.remove('on'); M.stop(); if (window.speechSynthesis) speechSynthesis.cancel(); }
+  // al cerrar se borra la búsqueda: queda listo para una nueva
+  function close() { if (panel) { panel.classList.remove('on'); $('#dq', panel).value = ''; $('.dict-out', panel).innerHTML = ''; } M.stop(); if (window.speechSynthesis) speechSynthesis.cancel(); }
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && panel && panel.classList.contains('on')) close(); });
 
   function voice(btn) {
@@ -181,6 +163,9 @@
     const out = $('.dict-out', panel);
     out.innerHTML = `<div class="dict-think"><img src="mra-think.webp" alt=""><div class="dots"><i></i><i></i><i></i></div></div>`;
     const { term, lang } = extract(q); const L = lang || langHint || null; const sq = strip(q);
+    // solo inglés: rechaza preguntas de otras materias
+    const OFF = /\b(matematica|historia|quimica|fisica|biologia|geografia|filosofia|presidente|capital de|receta|futbol|politica|religion|horoscopo|cuanto es|resultado de|ecuacion|derivada|integral)\b|\d+\s*[+\-x*/÷×]\s*\d+/;
+    if (OFF.test(sq)) { out.innerHTML = `<div class="dict-res center"><img src="mra-shrug.webp" alt="" style="height:150px"><p><b>Este diccionario es solo para inglés.</b></p><p class="muted">Pregúntame palabras, frases, pronunciación o gramática en inglés. Ej: <i>¿cómo se dice perro?</i></p></div>`; return; }
     const blocks = [];
 
     // 1) gramática

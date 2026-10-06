@@ -495,22 +495,26 @@
       const mic = h(`<button class="mic" aria-label="Hablar">🎤</button>`); body.appendChild(mic);
       const st = h(`<p class="center" style="font-weight:700;margin:4px 0">${M.canSR ? 'Toca el micrófono y di la frase' : 'Tu navegador no reconoce voz: graba tu voz y compárala 👇'}</p>`); body.appendChild(st);
       const out = h(`<div></div>`); body.appendChild(out);
-      const recRow = h(`<div class="row" style="justify-content:center;margin-top:10px"><button class="btn w sm" id="rec">🎙️ Grabar mi voz y comparar</button></div>`); body.appendChild(recRow);
+      const recRow = h(`<div class="row" style="justify-content:center;margin-top:10px"><button class="btn w sm" id="rec">🎙️ Grabar mi voz y comprobar</button></div>`); body.appendChild(recRow);
       const bar = h(`<div class="actionbar">${allowSkip ? '<button class="btn w" id="skip">Saltar</button>' : ''}<button class="btn k lg hidden" id="nx">Continuar →</button></div>`); body.appendChild(bar);
       let tries = 0, best = 0;
       const finish = (ok) => { stop(); res({ ok, score: best }); };
       if (allowSkip) $('#skip', bar).onclick = () => finish(null);
       $('#nx', bar).onclick = () => finish(best >= 60);
-      $('#rec', recRow).onclick = async (e) => {
-        const b = e.currentTarget; try { b.disabled = true; const secs = Math.min(8, 2 + it.en.split(' ').length * .6);
-          const url = await M.recordVoice(secs * 1000, (f) => b.textContent = `🔴 Grabando… ${Math.max(0, Math.ceil(secs * (1 - f)))}s`);
-          b.textContent = '🎙️ Grabar otra vez'; b.disabled = false;
-          const cmp = h(`<div class="heardbox"><b>Compara:</b><div class="row" style="margin-top:8px"><button class="btn sm" id="me">▶ Mi voz</button><button class="btn sm k" id="nat">▶ Nativo</button></div></div>`);
-          $$('.cmpbox', out).forEach(x => x.remove()); cmp.classList.add('cmpbox'); out.appendChild(cmp);
-          const audio = new Audio(url); $('#me', cmp).onclick = () => { stop(); audio.currentTime = 0; audio.play(); }; $('#nat', cmp).onclick = () => play(it.au);
-          if (!M.canSR) { best = Math.max(best, 70); $('#nx', bar).classList.remove('hidden'); }
-        } catch (err) { b.disabled = false; M.toast('Permite el acceso al micrófono 🎤'); }
+      // grabar: ahora SIEMPRE evalúa y dice si estuvo bien o mal, con opción de intentar otra vez
+      const doRec = async () => {
+        const b = $('#rec', recRow); try { b.disabled = true; stop(); const secs = Math.min(9, 3 + it.en.split(' ').length * .7);
+          const r = await M.recordScore(it.en, secs * 1000, (f) => b.textContent = `🔴 Te escucho… ${Math.max(0, Math.ceil(secs * (1 - f)))}s`);
+          b.textContent = '🎙️ Grabar otra vez'; b.disabled = false; tries++;
+          if (r.score != null) best = Math.max(best, r.score);
+          $$('.cmpbox,.srbox', out).forEach(x => x.remove()); const vb = h('<div class="cmpbox"></div>'); out.appendChild(vb);
+          M.voiceResult(vb, { score: r.score, heard: r.heard, url: r.url, model: () => play(it.au), onRetry: doRec, pass: 70 });
+          vb.addEventListener('selfok', () => { best = Math.max(best, 75); $('#nx', bar).classList.remove('hidden'); }, { once: true });
+          if (r.score != null && (r.score >= 60 || tries >= 2)) $('#nx', bar).classList.remove('hidden');
+          if (r.score == null) $('#nx', bar).classList.remove('hidden');
+        } catch (err) { b.disabled = false; b.textContent = '🎙️ Grabar mi voz y comprobar'; M.toast('Permite el acceso al micrófono 🎤'); }
       };
+      $('#rec', recRow).onclick = doRec;
       mic.onclick = async () => {
         if (!M.canSR) { $('#rec', recRow).click(); return; }
         stop(); mic.classList.add('rec'); st.textContent = '🎧 Te escucho… habla ahora';
@@ -526,7 +530,8 @@
         else if (mid) { msg = `👍 ¡Muy bien! Practica: <b>${esc(missedW.join(', '))}</b>. Escucha el modelo y repite despacio.`; sfx('ok'); }
         else { msg = `💪 Escucha el modelo 🔊, repite palabra por palabra y vuelve a intentar.${missedW.length ? ` Revisa: <b>${esc(missedW.slice(0, 4).join(', '))}</b>` : ''}`; sfx('bad'); }
         out.querySelectorAll('.srbox').forEach(x => x.remove());
-        out.prepend(h(`<div class="heardbox srbox"><div class="muted" style="font-size:13px">Escuché: “${esc(sc.heard)}”</div><div class="meter"><div class="bar"><i style="width:${sc.score}%;background:${ok ? 'var(--ok)' : mid ? 'var(--k)' : 'var(--bad)'}"></i></div><b>${sc.score}%</b></div><p style="margin:8px 0 0">${msg}</p></div>`));
+        out.prepend(h(`<div class="heardbox srbox"><div class="muted" style="font-size:13px">Escuché: “${esc(sc.heard)}”</div><div class="meter"><div class="bar"><i style="width:${sc.score}%;background:${ok ? 'var(--ok)' : mid ? 'var(--k)' : 'var(--bad)'}"></i></div><b>${sc.score}%</b></div><p style="margin:8px 0 0"><b>${ok ? '✅ ¡Bien hecho!' : mid ? '🟡 ¡Casi!' : '❌ Todavía no.'}</b> ${msg}</p><div class="row" style="margin-top:8px"><button class="btn sm ${ok ? 'w' : 'k'} again">🔁 Intentar otra vez</button></div></div>`));
+        const ag = out.querySelector('.srbox .again'); if (ag) ag.onclick = () => mic.click();
         st.textContent = tries >= 3 || ok ? '' : 'Puedes intentarlo de nuevo 🎤';
         if (ok || mid || tries >= 2) $('#nx', bar).classList.remove('hidden');
       };

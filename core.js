@@ -207,6 +207,96 @@
     return best;
   }
 
+  /* ---------- grabar + evaluar al mismo tiempo (para TODAS las grabaciones) ---------- */
+  // devuelve { url, alts, score }  (score = null si el navegador no puede evaluar)
+  async function recordScore(target, ms, onTick, scorer) {
+    let rec = null, stream = null; const chunks = [];
+    try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); rec = new MediaRecorder(stream); rec.ondataavailable = e => chunks.push(e.data); rec.start(); }
+    catch (e) { if (!SR) throw e; }
+    const t0 = Date.now(); const iv = setInterval(() => onTick && onTick(Math.min(1, (Date.now() - t0) / ms)), 100);
+    let r = { alts: [] };
+    if (SR) { r = await listen(ms); if (Date.now() - t0 < 1200 && !r.alts.length) await sleep(Math.max(0, ms - (Date.now() - t0))); }
+    else await sleep(ms);
+    await sleep(250); clearInterval(iv);
+    let url = null;
+    if (rec) { const p = new Promise(x => rec.onstop = x); try { rec.stop(); } catch (e) { } await p; stream.getTracks().forEach(t => t.stop()); url = URL.createObjectURL(new Blob(chunks, { type: rec.mimeType || 'audio/webm' })); }
+    let score = null, heard = '';
+    if (r.alts.length) { if (scorer) { const s = scorer(r.alts); score = s.score; heard = s.heard; } else { const s = speechScore(target, r.alts); score = s.score; heard = s.heard; } }
+    else if (SR && r.error !== 'audio-capture' && r.error !== 'service-not-allowed' && r.error !== 'start') { score = 0; }
+    return { url, alts: r.alts, score, heard, error: r.error };
+  }
+  // deletreo: convierte lo que dijo el estudiante (ej. "jay oh h n") en letras y lo compara
+  const LETTER_WORDS = { a: 'a', ay: 'a', hey: 'a', eh: 'a', b: 'b', be: 'b', bee: 'b', c: 'c', see: 'c', sea: 'c', si: 'c', d: 'd', dee: 'd', de: 'd', e: 'e', ee: 'e', f: 'f', ef: 'f', eff: 'f', g: 'g', gee: 'g', ji: 'g', h: 'h', age: 'h', aitch: 'h', etch: 'h', i: 'i', eye: 'i', aye: 'i', j: 'j', jay: 'j', k: 'k', kay: 'k', okay: 'k', ok: 'k', l: 'l', el: 'l', elle: 'l', ell: 'l', m: 'm', em: 'm', n: 'n', en: 'n', and: 'n', o: 'o', oh: 'o', owe: 'o', p: 'p', pee: 'p', pea: 'p', q: 'q', cue: 'q', queue: 'q', r: 'r', are: 'r', our: 'r', ar: 'r', s: 's', es: 's', ess: 's', t: 't', tea: 't', tee: 't', u: 'u', you: 'u', v: 'v', vee: 'v', w: 'w', x: 'x', ex: 'x', y: 'y', why: 'y', z: 'z', zee: 'z', zed: 'z' };
+  function letterScorer(word) {
+    const W = word.toLowerCase().replace(/[^a-z]/g, '');
+    return (alts) => { let best = { score: 0, heard: alts[0] || '' };
+      for (const alt of alts) {
+        const t = alt.toLowerCase().replace(/double\s*(u|you)/g, ' w ').replace(/[^a-z\s]/g, ' ').split(/\s+/).filter(Boolean);
+        const asLetters = t.map(x => LETTER_WORDS[x] || (x.length === 1 ? x : x)).join('');
+        const cand = [asLetters, t.join('')];
+        for (const c of cand) { const d = lev(c, W); const sc = Math.max(0, Math.round((1 - d / Math.max(W.length, 1)) * 100)); if (sc > best.score) best = { score: sc, heard: alt }; }
+      }
+      return best; };
+  }
+  // tarjeta de resultado de voz: SIEMPRE dice si estuvo bien o mal y deja intentar otra vez
+  function voiceResult(box, { score, heard, url, model, onRetry, pass = 70 }) {
+    box.innerHTML = '';
+    const me = url ? new Audio(url) : null;
+    const ok = score != null && score >= pass, mid = score != null && score >= 45 && !ok;
+    const card = h(`<div class="vres ${score == null ? 'self' : ok ? 'ok' : mid ? 'mid' : 'bad'}">
+      ${score == null ? `<b>🎧 Escucha tu voz y el modelo. ¿Sonó parecido?</b>` :
+        `<div class="vres-t">${ok ? '✅ ¡Muy bien! Lo dijiste correctamente.' : mid ? '🟡 ¡Casi! Escucha el modelo y repite despacio.' : '❌ No sonó bien todavía. Escucha el modelo y vuelve a intentarlo.'}</div>
+         <div class="meter"><div class="bar"><i style="width:${score}%;background:${ok ? 'var(--ok)' : mid ? '#d4a017' : 'var(--bad)'}"></i></div><b>${score}%</b></div>
+         ${heard ? `<small class="muted">Te escuché: “${esc(heard)}”</small>` : ''}`}
+      <div class="row vres-b">${me ? '<button class="btn w sm" data-a="me">▶ Mi voz</button>' : ''}${model ? '<button class="btn sm" data-a="mo">▶ Modelo</button>' : ''}
+        ${score == null ? '<button class="btn k sm" data-a="y">👍 Sí, sonó igual</button><button class="btn w sm" data-a="r">🔁 No, intentar otra vez</button>' : `<button class="btn ${ok ? 'w' : 'k'} sm" data-a="r">🔁 Intentar otra vez</button>`}</div></div>`);
+    box.appendChild(card);
+    const q = (a) => card.querySelector(`[data-a="${a}"]`);
+    if (q('me')) q('me').onclick = () => { stop(); me.currentTime = 0; me.play(); };
+    if (q('mo')) q('mo').onclick = () => model();
+    q('r').onclick = () => onRetry && onRetry();
+    if (q('y')) q('y').onclick = () => { card.className = 'vres ok'; card.querySelector('b').textContent = '✅ ¡Muy bien! Sigue practicando así.'; q('y').remove(); sfx('ok'); box.dispatchEvent(new CustomEvent('selfok')); };
+    sfx(score == null ? 'tap' : ok || mid ? 'ok' : 'bad'); if (ok) praise();
+    return ok;
+  }
+
+  /* ---------- burbujas flotantes (diccionario, chat): arrastrables; se quitan soltándolas en la ✕ del centro ---------- */
+  let dropX = null;
+  function dropZone(show) {
+    if (!dropX) { dropX = h('<div id="drop-x"><span>✕</span><small>Suelta aquí para quitar</small></div>'); document.body.appendChild(dropX); }
+    dropX.classList.toggle('on', show);
+  }
+  function overDrop(x, y) { if (!dropX) return false; const r = dropX.getBoundingClientRect(); const cx = r.left + r.width / 2, cy = r.top + r.height / 2; return Math.hypot(x - cx, y - cy) < 70; }
+  function floatBubble({ id, img, label, posKey, hiddenKey, onOpen, onHide, cls = '' }) {
+    if (document.getElementById(id)) return document.getElementById(id);
+    const b = h(`<button id="${id}" class="fbub ${cls}" title="${esc(label)} (puedes arrastrarlo)"><img src="${img}" alt=""><span>${esc(label)}</span><i class="fbadge hidden"></i></button>`);
+    document.body.appendChild(b);
+    const place = () => { const p = S[posKey]; if (!p) { b.style.left = ''; b.style.top = ''; b.style.bottom = ''; return; }
+      const x = Math.min(Math.max(4, p.x * innerWidth), innerWidth - b.offsetWidth - 4), y = Math.min(Math.max(4, p.y * innerHeight), innerHeight - b.offsetHeight - 4);
+      b.style.left = x + 'px'; b.style.top = y + 'px'; b.style.bottom = 'auto'; };
+    place(); addEventListener('resize', place);
+    let sx, sy, ox, oy, moved = false, down = false;
+    b.addEventListener('pointerdown', e => { down = true; moved = false; sx = e.clientX; sy = e.clientY; const r = b.getBoundingClientRect(); ox = r.left; oy = r.top; try { b.setPointerCapture(e.pointerId); } catch (x) { } });
+    b.addEventListener('pointermove', e => { if (!down) return; const dx = e.clientX - sx, dy = e.clientY - sy; if (!moved && Math.hypot(dx, dy) < 8) return;
+      if (!moved) dropZone(true); moved = true; b.classList.add('drag');
+      const x = Math.min(Math.max(4, ox + dx), innerWidth - b.offsetWidth - 4), y = Math.min(Math.max(4, oy + dy), innerHeight - b.offsetHeight - 4);
+      b.style.left = x + 'px'; b.style.top = y + 'px'; b.style.bottom = 'auto'; dropX.classList.toggle('hot', overDrop(e.clientX, e.clientY)); });
+    const up = (e) => { if (!down) return; down = false; b.classList.remove('drag');
+      if (moved) { const hide = e && overDrop(e.clientX, e.clientY); dropZone(false); dropX.classList.remove('hot');
+        if (hide) { S[posKey] = null; place(); setBubbleHidden(hiddenKey, true); onHide && onHide(true); return; }
+        const r = b.getBoundingClientRect(); S[posKey] = { x: r.left / innerWidth, y: r.top / innerHeight }; save(); } };
+    b.addEventListener('pointerup', up); b.addEventListener('pointercancel', () => up(null));
+    b.addEventListener('click', e => { if (moved) { e.preventDefault(); moved = false; return; } onOpen(); });
+    b.classList.toggle('hidden', !!S[hiddenKey]);
+    return b;
+  }
+  function setBubbleHidden(key, v) {
+    S[key] = !!v; save();
+    const map = { dictHidden: '#dict-fab', chatHidden: '#chat-fab' }; const el = $(map[key]); if (el) el.classList.toggle('hidden', !!v);
+    window.dispatchEvent(new Event('m1-dict-toggle'));
+    toast(v ? `Listo. Lo abres con el botón ${key === 'dictHidden' ? '🔎' : '💬'} de arriba` : 'Botón visible de nuevo 👍');
+  }
+
   /* ---------- UI: feedback sheet, toast, modal, confetti, xp ---------- */
   function sheet({ ok, title, msg, tip, btn = 'Continuar', neutral }) {
     return new Promise(res => {
@@ -256,6 +346,6 @@
   function audioSrc(au) { return window.AUD && window.AUD[au] ? 'data:audio/mpeg;base64,' + window.AUD[au] : 'audio/' + au + '.mp3'; }
 
   window.M1 = { D, C, S, $, $$, h, esc, shuffle, sample, sleep, save, touchStreak, addSkill, addWeak, okWeak, skillPct, isUnlocked, finalUnlocked, redeem, codeHash,
-    allParts, partById, trackAudio, audioUI, floatStop, prevPart, nextPart, partStars, overallPct, imgURL, photo, play, playSeq, loadAudio, stop, sfx, praise, canSR, listen, recordVoice,
+    allParts, partById, trackAudio, audioUI, floatStop, recordScore, letterScorer, voiceResult, floatBubble, setBubbleHidden, prevPart, nextPart, partStars, overallPct, imgURL, photo, play, playSeq, loadAudio, stop, sfx, praise, canSR, listen, recordVoice,
     norm, words, lev, speechScore, sheet, good, bad, toast, modal, xpFly, confetti, mascot, audioSrc };
 })();

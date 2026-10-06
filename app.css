@@ -612,3 +612,43 @@ img{max-width:100%}
 .troom{display:flex;gap:10px;align-items:center;text-align:left;background:#fff;border:2px solid transparent;border-radius:12px;padding:8px;cursor:pointer}
 .troom.on{border-color:var(--k);background:var(--y3)}.troom small{display:block;color:#666;font-size:12.5px}
 @media (max-width:700px){.tchat{grid-template-columns:1fr}.chat-card{flex-direction:column;text-align:center}.chat-card .mascot{height:120px}.chat-thread{height:65vh}.cm{max-width:88%}}
+
+/* ---- v12: burbuja del chat (igual al diccionario) + zona ✕ para quitar ---- */
+#chat-fab{position:fixed;left:18px;bottom:96px;z-index:60;display:flex;align-items:center;gap:6px;background:#fff;color:var(--k);border:3px solid var(--k);border-radius:999px;padding:4px 16px 4px 4px;box-shadow:4px 4px 0 var(--k);font-family:var(--fh);font-weight:800;font-size:15px;cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:none}
+#chat-fab img{height:52px;width:52px;object-fit:cover;object-position:50% 4%;border-radius:50%;background:var(--y3);border:2px solid var(--k)}
+#chat-fab.drag{cursor:grabbing;transform:scale(1.06)}
+#chat-fab.hidden{display:none!important}
+.fbadge{position:absolute;top:-6px;right:-6px;min-width:24px;height:24px;border-radius:999px;background:#E11D48;color:#fff;font-style:normal;font-size:13px;display:grid;place-items:center;padding:0 6px;border:2px solid #fff}
+.fbub{position:fixed}
+#drop-x{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%) scale(.6);z-index:59;width:92px;height:92px;border-radius:50%;background:rgba(17,17,17,.82);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:.18s;border:3px solid #fff}
+#drop-x span{font-size:34px;font-weight:800;line-height:1}
+#drop-x small{position:absolute;top:100%;margin-top:8px;white-space:nowrap;background:var(--k);color:var(--y);padding:4px 10px;border-radius:99px;font-weight:800;font-size:12.5px}
+#drop-x.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
+#drop-x.hot{background:#E11D48;transform:translate(-50%,-50%) scale(1.18)}
+@media (max-width:600px){#chat-fab{bottom:166px;padding:3px}#chat-fab span{display:none}#chat-fab img{width:50px;height:50px}}
+@media print{#chat-fab,#drop-x{display:none}}
+
+/* ---- menú con ✕ y desplazable ---- */
+.modal .card{max-height:calc(100dvh - 32px);max-height:calc(100vh - 32px);overflow-y:auto;-webkit-overflow-scrolling:touch}
+.mhead{display:flex;align-items:center;justify-content:space-between;position:sticky;top:-20px;background:#fff;padding:4px 0;z-index:2}
+.mhead h3{margin:0}
+.mclose{background:#fff;border:3px solid var(--k);border-radius:12px;width:42px;height:42px;font-size:18px;font-weight:800;flex:none;cursor:pointer}
+
+/* ---- mensajes completos en celular ---- */
+.toast{white-space:normal;max-width:calc(100vw - 24px);text-align:center;border-radius:18px;line-height:1.35}
+.dict-only{margin:6px 0 0!important;font-size:13px!important;background:var(--y3);border:2px solid var(--k);border-radius:10px;padding:5px 8px;color:#222!important}
+.linkbtn:disabled{text-decoration:none;cursor:default;color:#666}
+
+/* ---- en qué tema estoy + continuar donde quedé ---- */
+.ptopic{background:#fff;border:2.5px solid var(--k);border-radius:12px;padding:7px 12px;font-size:14.5px;margin:0 0 8px;line-height:1.35}
+.ptopic .psec{color:#555;font-weight:700}
+.resume{display:block;width:100%;margin:0 0 10px;background:var(--ok);color:#fff;border:3px solid var(--k);border-radius:14px;padding:10px 14px;font-family:var(--fh);font-weight:800;font-size:16px;box-shadow:3px 3px 0 var(--k);cursor:pointer}
+.resume.hidden{display:none}
+
+/* ---- resultado de voz ---- */
+.vres{border:3px solid var(--k);border-radius:14px;padding:12px;margin-top:12px;text-align:left;background:#fff}
+.vres.ok{background:#dcfce7;border-color:#15803d}.vres.mid{background:#fef9c3}.vres.bad{background:#fee2e2;border-color:#b91c1c}.vres.self{background:var(--y3)}
+.vres-t{font-weight:800;font-size:16.5px;margin-bottom:6px}
+.vres-b{gap:8px;margin-top:10px;flex-wrap:wrap}
+.tr-es{margin:-2px 0 6px;font-size:16px;color:#444;font-style:italic}
+@media (max-width:600px){.ptopic{font-size:13.5px}}

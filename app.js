@@ -20,25 +20,28 @@
     tb.innerHTML = `<div class="brand" id="go-home"><span class="logo-pill"><img class="logo" src="mra-brand.png" alt="mrarrieta.com"></span><small>MÓDULO 1 · A1</small></div><div class="sp"></div>
       <span class="pill y" title="Puntos de experiencia">⚡ ${S.xp} XP</span>
       <span class="pill hide-s" title="Días seguidos estudiando">🔥 ${S.streak.n || 0}</span>
-      ${S.dictHidden ? '<button class="iconbtn" id="dict-b" title="Diccionario">🔎</button>' : ''}<button class="iconbtn" id="menu-b" title="Menú">☰</button>`;
+      ${S.chatHidden ? '<button class="iconbtn" id="chat-tb" title="Chat con mi profe">💬</button>' : ''}${S.dictHidden ? '<button class="iconbtn" id="dict-b" title="Diccionario">🔎</button>' : ''}<button class="iconbtn" id="menu-b" title="Menú">☰</button>`;
     $('#go-home', tb).onclick = () => { stop(); route('home'); };
     $('#menu-b', tb).onclick = menu;
     const db = $('#dict-b', tb); if (db) db.onclick = () => window.M1DICT && M1DICT.open();
+    const ct = $('#chat-tb', tb); if (ct) ct.onclick = openChat;
+    chatFab();
   }
   function menu() {
-    const m = M.modal(`<h3>☰ Menú</h3><div style="display:grid;gap:10px;margin-top:10px">
+    const m = M.modal(`<div class="mhead"><h3>☰ Menú</h3><button class="mclose" data-a="close" title="Cerrar">✕</button></div><div style="display:grid;gap:10px;margin-top:10px">
       <button class="btn w block" data-a="home">🏠 Inicio</button>
       <button class="btn w block" data-a="progress">📊 Mi progreso</button>
       <button class="btn w block" data-a="chat">💬 Chat con mi profe</button>
       <button class="btn w block" data-a="unlock">🔑 Tengo un código de acceso</button>
       <button class="btn w block" data-a="remind">🔔 Recordatorio diario</button>
-      <button class="btn w block" data-a="dict">${S.dictHidden ? '📌 Mostrar botón flotante del diccionario' : '🙈 Ocultar botón flotante del diccionario'}</button>
+      <button class="btn w block" data-a="dict">${S.dictHidden ? '📌 Mostrar botón flotante del diccionario' : '🙈 Quitar botón flotante del diccionario'}</button>
+      <button class="btn w block" data-a="chath">${S.chatHidden ? '📌 Mostrar botón flotante del chat' : '🙈 Quitar botón flotante del chat'}</button>
       <button class="btn w block" data-a="tour">🧭 Ver el tour guiado</button>
       <button class="btn w block" data-a="name">✏️ Cambiar mi nombre</button>
       <button class="btn w block" data-a="sound">${S.sound ? '🔔 Sonidos: activados' : '🔕 Sonidos: desactivados'}</button>
       <button class="btn k block" data-a="close">Cerrar</button></div>`);
     $$('button', m).forEach(b => b.onclick = () => { const a = b.dataset.a; m.remove();
-      if (a === 'home' || a === 'progress' || a === 'chat') route(a); else if (a === 'unlock') unlockModal(); else if (a === 'remind') reminderModal(); else if (a === 'name') onboarding(true); else if (a === 'dict') { window.M1DICT && M1DICT.setHidden(!S.dictHidden); } else if (a === 'tour') { route('home'); setTimeout(tour, 400); } else if (a === 'sound') { S.sound = !S.sound; save(); M.toast(S.sound ? 'Sonidos activados 🔔' : 'Sonidos desactivados 🔕'); } });
+      if (a === 'chat') openChat(); else if (a === 'home' || a === 'progress') route(a); else if (a === 'unlock') unlockModal(); else if (a === 'remind') reminderModal(); else if (a === 'name') onboarding(true); else if (a === 'chath') { M.setBubbleHidden('chatHidden', !S.chatHidden); } else if (a === 'dict') { window.M1DICT && M1DICT.setHidden(!S.dictHidden); } else if (a === 'tour') { route('home'); setTimeout(tour, 400); } else if (a === 'sound') { S.sound = !S.sound; save(); M.toast(S.sound ? 'Sonidos activados 🔔' : 'Sonidos desactivados 🔕'); } });
   }
 
   /* ---------------- router ---------------- */
@@ -82,6 +85,7 @@
       { sel: '#tgrid > :first-child', mood: 'pointside', t: 'Los 14 temas', d: 'Cada tema tiene <b>2 clases</b>. Los temas con 🔒 se desbloquean con un <b>código de acceso</b> que te da el profe.' },
       { mood: 'book', t: '¿Cómo es una clase?', d: 'Cada clase sigue el mismo orden: <b>Goal → Speaking → Reading → Explanation → Practice → Oral task → Music → Homework</b>.<br><br>🔊 escucha · 🎤 habla (permite el micrófono) · <b>← Atrás</b> para corregir · tu avance se guarda solo.' },
       { sel: '#dict-fab', mood: 'present', t: 'Tu diccionario', d: '¿No entiendes una palabra? Toca aquí, <b>escríbela o dila en voz alta</b> (en español o inglés) y te doy la respuesta con su pronunciación.' },
+      { sel: '#chat-fab', mood: 'present', t: 'Chat con tu profe', d: 'Aquí le escribes a tu docente cuando tengas dudas. Puedes <b>arrastrar</b> este botón y el del diccionario a donde quieras, o <b>quitarlos</b> soltándolos en la ✕ del centro.' },
       { sel: '#final-b', mood: 'celebrate', t: 'Examen final', d: 'Al terminar los 14 temas presentas el examen final. Si apruebas, ¡obtienes tu <b>certificado</b> del Módulo 1! 🎓' },
       { sel: '#menu-b', mood: 'watch', t: 'Menú', d: 'Aquí encuentras tu progreso, el código de acceso, el <b>recordatorio diario</b> y este tour por si quieres verlo otra vez.' },
       { mood: 'thumbs', t: '¡Listo! 🚀', d: 'Ya sabes todo lo necesario. Recuerda: un poquito cada día hace la diferencia. ¡Vamos a tu primera clase!', last: true },
@@ -124,6 +128,19 @@
     return `<div class="card chat-card">${M.mascot('mascot', 'present')}<div class="grow"><h3 style="margin:0 0 4px">💬 Chat con mi profe ${n ? `<span class="badge-n">${n}</span>` : ''}</h3>
       <p class="muted" style="margin:0 0 10px">${S.teacher ? `Escríbele a <b>${esc(S.teacher.name)}</b> cuando tengas una duda.` : 'Cuando te asignen un docente, podrás escribirle aquí tus dudas.'}</p>
       <button class="btn k sm" id="chat-b">${S.teacher ? 'Abrir chat →' : 'Conectar con mi docente →'}</button></div></div>`;
+  }
+  function openChat() {
+    if ($('.player', app)) {
+      const m = M.modal(`<div class="center">${M.mascot('mascot', 'present')}</div><h3 class="center">¿Ir al chat con tu profe?</h3><p class="muted center">Saldrás de la clase. Tu avance queda guardado y podrás continuar donde ibas.</p><div class="row" style="justify-content:center"><button class="btn k" id="cy">Ir al chat</button><button class="btn w" id="cn">Seguir en la clase</button></div>`);
+      $('#cy', m).onclick = () => { m.remove(); route('chat'); }; $('#cn', m).onclick = () => m.remove(); return;
+    }
+    route('chat');
+  }
+  function chatFab() {
+    if (!window.M1CHAT) return;
+    const b = M.floatBubble({ id: 'chat-fab', img: 'mra-present.webp', label: 'Chat con mi profe', posKey: 'chatPos', hiddenKey: 'chatHidden', onOpen: openChat, cls: 'chat' });
+    const room = S.teacher ? chatRoom() : null; const n = room ? M1CHAT.store.unread(room, S.sid) : 0;
+    const bd = b.querySelector('.fbadge'); bd.textContent = n; bd.classList.toggle('hidden', !n);
   }
   function chatScreen() {
     const CH = window.M1CHAT; if (!CH) return route('home');
@@ -174,7 +191,6 @@
         </div>
       </section>
       ${pendingBlock()}
-      ${chatCard()}
       <div class="sect-title"><h2>📚 Temas del Módulo 1</h2><div class="row"><button class="btn sm w" id="prog">📊 Mi progreso</button><button class="btn sm" id="code">🔑 Código de acceso</button></div></div>
       <div class="grid" id="tgrid"></div>
       <div class="sect-title"><h2>🏆 Final Test</h2></div>
@@ -311,15 +327,29 @@
     let startAt = 0;
     if (!rec.done && rec.step && rec.step < steps.length && rec.run) {
       const ok = await new Promise(r => { const m = M.modal(`<h3>¿Continuar donde quedaste?</h3><p class="muted">Ibas en la sección <b>${esc(steps[rec.step].sec)}</b>.</p><div class="row"><button class="btn k" id="y">Sí, continuar</button><button class="btn w" id="n">Empezar de nuevo</button></div>`); $('#y', m).onclick = () => { m.remove(); r(true); }; $('#n', m).onclick = () => { m.remove(); r(false); }; });
-      if (ok) startAt = rec.step;
+      if (ok) startAt = Math.max(rec.step, (rec.run && rec.run.max) || 0);
     }
     const run = (startAt && rec.run && !Array.isArray(rec.run.res)) ? rec.run : { res: {}, xp: 0 };
     app.innerHTML = `<div class="player"><div class="phead"><button class="x" title="Salir">✕</button><button class="back" title="Volver al paso anterior">← Atrás</button><div class="prog"><i style="width:0%"></i></div></div>
+      <div class="ptopic">📍 Estás en: <b>Topic ${p.topic} · ${esc(p._t.title)}</b> — Part ${p.part}: ${esc(p.title)} <span class="psec"></span></div>
+      <button class="resume hidden">⏩ Continuar donde quedé</button>
       <div class="secbar">${secs.map(s => `<span data-s="${esc(s)}">${esc(s)}</span>`).join('')}</div><div class="stage"></div></div>`;
     $('.x', app).onclick = () => { stop(); route('home'); };
     const player = $('.player', app);
-    let navBack = null;
+    let navBack = null, navJump = null;
     $('.back', app).onclick = () => { if (navBack) { sfx('tap'); navBack(); } };
+    $('.resume', app).onclick = () => { if (navJump) { sfx('tap'); navJump(); } };
+    // si el estudiante se fue un rato, Mr. Arrieta le recuerda en qué tema y sección está
+    let lastAct = Date.now(), hiddenAt = 0, curSec = '', curI = 0;
+    const where = () => { if (!app.contains(player) || $('.modal') || $('#tour')) return;
+      const m = M.modal(`<div class="center">${M.mascot('mascot', 'watch')}</div><h3 class="center">¡Hola de nuevo, ${esc(S.name.split(' ')[0])}! 👋</h3>
+        <p class="center" style="font-size:17px">Estás en <b>Topic ${p.topic} · ${esc(p._t.title)}</b><br>Part ${p.part}: ${esc(p.title)}<br>Sección: <b>${esc(curSec)}</b> (paso ${curI + 1} de ${steps.length})</p>
+        <button class="btn k block lg" id="wb">¡Seguir donde iba! →</button>`);
+      $('#wb', m).onclick = () => m.remove(); };
+    const act = () => { if (Date.now() - lastAct > 4 * 60 * 1000) where(); lastAct = Date.now(); };
+    const vis = () => { if (document.hidden) hiddenAt = Date.now(); else if (hiddenAt && Date.now() - hiddenAt > 90 * 1000) { hiddenAt = 0; where(); lastAct = Date.now(); } };
+    ['pointerdown', 'keydown'].forEach(ev => document.addEventListener(ev, act, true)); document.addEventListener('visibilitychange', vis);
+    const cleanup = () => { ['pointerdown', 'keydown'].forEach(ev => document.removeEventListener(ev, act, true)); document.removeEventListener('visibilitychange', vis); };
     let i = startAt;
     while (i < steps.length) {
       const s = steps[i];
@@ -328,20 +358,22 @@
       const old = $('.stage', player); const stage = document.createElement('div'); stage.className = 'stage'; old.replaceWith(stage);
       $('.prog i', app).style.width = (i / steps.length * 100) + '%';
       $('.back', app).disabled = i === 0;
+      run.max = Math.max(run.max || 0, i); curSec = s.sec; curI = i;
+      $('.psec', app).textContent = '· ' + s.sec;
+      $('.resume', app).classList.toggle('hidden', i >= run.max);
       $$('.secbar span', app).forEach(e => { const k = secs.indexOf(e.dataset.s), ck = secs.indexOf(s.sec); e.className = k === ck ? 'on' : k < ck ? 'ok' : ''; if (k === ck) e.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' }); });
       window.scrollTo({ top: 0, behavior: 'smooth' });
-      const back = new Promise(res => { navBack = () => res('__back'); });
+      const back = new Promise(res => { navBack = () => res('__back'); navJump = () => res('__jump'); });
       let r;
       try { r = await Promise.race([STEP[s.k](stage, p), back]); } catch (e) { console.error(s.k, e); r = null; }
-      navBack = null;
-      if (!app.contains(player)) return; // user left
+      navBack = null; navJump = null;
+      if (!app.contains(player)) { cleanup(); return; } // user left
+      if (r === '__jump') { stop(); const sh0 = $('#sheet'); if (sh0) sh0.remove(); i = run.max; continue; }
       const sh = $('#sheet'); if (sh) sh.remove();
       if (r === '__back') {
         stop();
-        // undo the score of the step we are returning to, so it can be done again
+        // volver a revisar: el resultado anterior se conserva (solo se reemplaza si vuelve a hacer el ejercicio)
         i = Math.max(0, i - 1);
-        const prev = run.res[i];
-        if (prev) { M.addSkill(prev.skill, -prev.c, -prev.t); run.xp -= prev.c * 10; S.xp -= prev.c * 10; delete run.res[i]; topbar(); }
         continue;
       }
       if (r && r.t) {
@@ -352,7 +384,7 @@
       save();
       i++;
     }
-    $('.prog i', app).style.width = '100%';
+    $('.prog i', app).style.width = '100%'; cleanup();
     results(p, run);
   }
 
@@ -378,6 +410,7 @@
         const body = A.head(stage, { lbl: 'Speaking', title: 'Listen and answer', ins: 'Calentamiento: escucha la pregunta y <b>respóndela en voz alta</b> con tus propias palabras. ¡No hay respuestas incorrectas!', count: `${i + 1} / ${p.warm.length}` });
         const ok = await new Promise(res => {
           const top = h(`<div class="row" style="justify-content:center;align-items:center;gap:16px;margin:6px 0 10px">${M.mascot('mascot', 'welcome')}<div class="bubble" style="font-size:19px">${esc(q.q)}</div></div>`); body.appendChild(top);
+          if (q.es) body.appendChild(h(`<p class="center tr-es">${esc(q.es)}</p>`));
           if (q.es) body.appendChild(h(`<div class="warm-es">${q.ex ? `<div class="ex">💡 Puedes responder: <b>${esc(q.ex)}</b></div>` : ''}</div>`));
           const pr = h(`<div class="center"></div>`); pr.appendChild(A.playBtn(q.au)); body.appendChild(pr);
           const mic = h(`<button class="mic">🎤</button>`); body.appendChild(mic);
@@ -385,7 +418,7 @@
           const alt = h(`<div class="${M.canSR ? 'hidden' : ''}"><input class="inp" placeholder="Escribe tu respuesta en inglés…" style="font-size:18px"></div>`); body.appendChild(alt);
           const bar = h(`<div class="actionbar">${M.canSR ? '<button class="btn w" id="ty">⌨️ Prefiero escribir</button>' : ''}<button class="btn w" id="sk">Saltar</button><button class="btn k lg" id="ok">Enviar ✓</button></div>`); body.appendChild(bar);
           setTimeout(() => play(q.au), 400);
-          const accept = async (txt) => { const n = M.words(txt).length; if (n >= 2) { sfx('ok'); M.praise(); await sheet({ ok: true, title: good(), msg: `Te escuché: “${esc(txt)}”`, tip: 'Intenta responder con oraciones completas, por ejemplo: <i>I\'m fine, thank you.</i>' }); res(true); } else { st.innerHTML = 'Intenta responder con al menos 2 palabras 😉'; } };
+          const accept = async (txt) => { const n = M.words(txt).length; if (n >= 2) { sfx('ok'); M.praise(); await sheet({ ok: true, title: good(), msg: `Te escuché: “${esc(txt)}”`, tip: 'Intenta responder con oraciones completas, por ejemplo: <i>I\'m fine, thank you.</i>' }); res(true); } else { st.innerHTML = '❌ Te escuché muy poco. Responde con al menos 2 palabras y toca 🎤 otra vez.'; } };
           mic.onclick = async () => { stop(); mic.classList.add('rec'); st.textContent = '🎧 Te escucho…'; const r = await M.listen(8000); mic.classList.remove('rec');
             if (!r.alts.length) { st.textContent = r.error === 'not-allowed' ? 'Permite el micrófono 🎤 o escribe tu respuesta.' : 'No te escuché 🙉 Intenta otra vez.'; if (r.error === 'not-allowed') alt.classList.remove('hidden'); return; } accept(r.alts[0]); };
           if ($('#ty', bar)) $('#ty', bar).onclick = () => { alt.classList.remove('hidden'); $('input', alt).focus(); };
@@ -456,7 +489,7 @@
           stop(); mic.textContent = '🎧 Te escucho…'; const r = await M.listen(8000); mic.textContent = '🎤 Decir la respuesta';
           if (!r.alts.length) { M.toast('No te escuché 🙉 intenta otra vez'); return; }
           const tgt = k.a.split(' / ')[0].replace(/___/g, ''); const sc = M.speechScore(tgt, r.alts); const okk = k.a.includes('___') ? M.words(r.alts[0]).length >= 2 && sc.score >= 50 : sc.score >= 60;
-          $('.out', e).innerHTML = `<div class="heardbox" style="font-size:15px">Escuché: “${esc(sc.heard)}” — ${okk ? '✅ ¡Muy bien!' : '🔁 Escucha la respuesta modelo y repite.'}</div>`;
+          $('.out', e).innerHTML = `<div class="heardbox" style="font-size:15px">Escuché: “${esc(sc.heard)}” — ${okk ? '✅ ¡Muy bien! Lo dijiste correctamente.' : '❌ Todavía no. Escucha la respuesta 🔊 y toca 🎤 para intentarlo otra vez.'}</div>`;
           if (okk) { sfx('ok'); e.classList.add('done'); if (!done.has(i)) { done.add(i); c++; } } else sfx('bad');
         };
         body.appendChild(e);
@@ -476,12 +509,19 @@
       body.appendChild(h(`<div class="lesson"><h3>🎤 Tu reto</h3><p>Deletrea tu nombre en inglés: <b style="font-size:22px;letter-spacing:4px">${esc(nm.split('').join('-'))}</b></p><p class="muted">Toca cada letra para escucharla y luego grábate.</p></div>`));
       const sp = h(`<div class="row" style="justify-content:center;margin-top:12px"></div>`); body.appendChild(sp);
       nm.split('').forEach(ch => { const b = h(`<button class="chip">${ch}</button>`); b.onclick = () => play(L[ch]); sp.appendChild(b); });
-      const rb = h(`<div class="center" style="margin-top:14px"><button class="btn k">🎙️ Grabar (6 s)</button><div class="out"></div></div>`); body.appendChild(rb);
-      let did = false;
-      $('button', rb).onclick = async (e) => { const b = e.currentTarget; try { b.disabled = true; const url = await M.recordVoice(6000, f => b.textContent = `🔴 Grabando… ${Math.ceil(6 * (1 - f))}s`); b.disabled = false; b.textContent = '🎙️ Grabar otra vez'; did = true; const a = new Audio(url);
-        $('.out', rb).innerHTML = ''; const pb = h(`<button class="btn w sm" style="margin-top:10px">▶ Escuchar mi grabación</button>`); pb.onclick = () => a.play(); $('.out', rb).appendChild(pb); sfx('ok'); } catch (err) { b.disabled = false; M.toast('Permite el micrófono 🎤'); } };
+      const rb = h(`<div class="center" style="margin-top:14px"><button class="btn k">🎙️ Grabar y comprobar</button><p class="muted" style="font-size:14px;margin:6px 0 0">Di cada letra despacio: ${esc(nm.split('').join(' – '))}</p><div class="out"></div></div>`); body.appendChild(rb);
+      let did = false, best = 0;
+      const playModel = async () => { for (const ch of nm.split('')) { await play(L[ch]); await sleep(180); } };
+      const go = async () => { const b = $('button', rb); const secs = Math.min(10, 3 + nm.length * 0.8);
+        try { b.disabled = true; stop();
+          const r = await M.recordScore(nm, secs * 1000, f => b.textContent = `🔴 Te escucho… ${Math.max(0, Math.ceil(secs * (1 - f)))}s`, M.letterScorer(nm));
+          b.disabled = false; b.textContent = '🎙️ Grabar otra vez'; did = true; if (r.score != null) best = Math.max(best, r.score);
+          const out = $('.out', rb); M.voiceResult(out, { score: r.score, heard: r.heard, url: r.url, model: playModel, onRetry: go, pass: 75 });
+          out.addEventListener('selfok', () => { best = Math.max(best, 80); }, { once: true });
+        } catch (err) { b.disabled = false; b.textContent = '🎙️ Grabar y comprobar'; M.toast('Permite el micrófono 🎤'); } };
+      $('button', rb).onclick = go;
       void items;
-      await A.waitNext(stage, 'Continuar'); return A.result(did ? 1 : 0, 1, 'speaking');
+      await A.waitNext(stage, 'Continuar'); return A.result(did && best >= 75 ? 1 : 0, 1, 'speaking');
     },
 
     music: async (stage, p) => playLearn(stage, p),

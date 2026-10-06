@@ -71,10 +71,15 @@
     welcome();
   }
   function welcome() {
-    shell(`${top()}<div class="card center">${M.mascot('mascot bounce', 'point')}
-      <h1 style="font-size:30px;margin:8px 0">Examen final · Módulo 1</h1><p class="muted" style="font-size:17px">Evaluación de los 14 temas del Módulo 1 (nivel A1)</p>
-      <div class="fx-skills"><div><b>10</b>🎧 Listening</div><div><b>10</b>📖 Reading</div><div><b>10</b>✍️ Writing</div><div><b>10</b>🎤 Speaking</div></div>
-      <p class="muted">⏱ ${CFG.TIME_MIN} minutos · ${CFG.ATTEMPTS} intentos ${ST.attempts ? `· Ya usaste <b>${ST.attempts}</b> de ${maxAttempts()}` : ''}</p>
+    const PX = (id) => `https://images.pexels.com/photos/${id}/pexels-photo-${id}.jpeg?auto=compress&cs=tinysrgb&w=500`;
+    const SK = [['Listening', '🎧', PX(1490844)], ['Reading', '📖', PX(115001)], ['Writing', '✍️', PX(5717066)], ['Speaking', '🎤', PX(7972505)]];
+    shell(`${top()}<div class="card center fx-welcome"><img class="fx-wlogo" src="mra-logo-cert.png" alt="mrarrieta.com — ¡Aprende inglés HABLANDO!">
+      <div class="fx-photos">${SK.map(([l, ic, u]) => `<div class="fx-pbox"><div class="fx-pimg"><img src="${u}" alt="${l}" loading="lazy" onerror="this.style.opacity=0"></div><div class="fx-pcap"><b>10</b> ${ic} ${l}</div></div>`).join('')}</div>
+      <span class="lbl" style="margin-top:6px">✦ Examen final interactivo</span>
+      <h1 style="font-size:clamp(26px,5.5vw,34px);margin:10px 0 4px">Examen final · Módulo 1</h1>
+      <p style="font-weight:800;margin:0">Listening + Reading + Writing + Speaking</p>
+      <p class="muted" style="margin:4px 0 12px">Nivel elemental (A1) — Evaluación de los 14 temas del Módulo 1</p>
+      <div class="fx-info">${M.mascot('fx-wmra', 'point')}<div>Vas a completar el examen final del Módulo 1. Primero te pediremos algunos datos, luego verás las instrucciones y comenzarás con la sección de <b>Listening</b>.<br><span class="muted">⏱ ${CFG.TIME_MIN} minutos · ${CFG.ATTEMPTS} intentos ${ST.attempts ? `· Ya usaste <b>${ST.attempts}</b> de ${maxAttempts()}` : ''}</span></div></div>
       <button class="btn k lg" id="go">Continuar →</button></div>`);
     wireExit(); $('#go').onclick = studentInfo;
   }

@@ -780,3 +780,26 @@ html,body{max-width:100%;overflow-x:hidden}
 .cert2-f .sigbox{border-top:0;padding-top:0;align-items:center}
 .cert2-sig{width:190px;max-width:60vw;height:auto;border-bottom:2px solid var(--k);padding-bottom:2px;margin-bottom:4px}
 .cert2-f .sigbox b{font-size:14px}
+
+/* ---- v16: icono de chat + opciones con imagen más compactas en PC ---- */
+.chat-ic{background:var(--y)!important;border-color:var(--k)!important}
+.chat-ic svg{width:26px;height:26px}
+@media (min-width:701px){
+  .opts:has(.imgopt){max-width:760px;margin-left:auto;margin-right:auto;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:12px}
+  .opt.imgopt .ph{aspect-ratio:4/3}
+  .imglbl{font-size:15px;padding:6px 4px}
+  .mainph{max-width:340px}
+  .opts:has(.odd){max-width:640px;margin-left:auto;margin-right:auto}
+  .opt.odd .odd-ph{max-width:200px;margin:0 auto}
+  .fx-photo{max-width:380px}
+}
+/* ---- bienvenida del examen con fotos ---- */
+.fx-wlogo{width:min(210px,55vw);height:auto;display:block;margin:0 auto 12px}
+.fx-photos{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:6px 0 14px}
+.fx-pbox{border:3px solid var(--k);border-radius:16px;overflow:hidden;background:#fff;box-shadow:4px 4px 0 var(--k)}
+.fx-pimg{aspect-ratio:4/3;background:#eee}.fx-pimg img{width:100%;height:100%;object-fit:cover;display:block}
+.fx-pcap{border-top:3px solid var(--k);background:var(--y3);padding:6px 4px;font-weight:800;font-size:14px}
+.fx-pcap b{font-family:var(--fh);font-size:18px}
+.fx-info{display:flex;gap:12px;align-items:center;text-align:left;background:var(--y3);border:2.5px dashed var(--k);border-radius:14px;padding:10px 14px;margin:0 auto 16px;max-width:620px}
+.fx-wmra{height:110px;width:auto;flex:none}
+@media (max-width:600px){.fx-photos{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.fx-wmra{height:80px}}

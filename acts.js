@@ -221,8 +221,15 @@
         chip.onclick = () => { sfx('tap'); chip.classList.add('used'); const c2 = h(`<button class="chip">${esc(o.t)}</button>`); line.appendChild(c2); picked.push(o);
           c2.onclick = () => { sfx('tap'); c2.remove(); chip.classList.remove('used'); picked.splice(picked.indexOf(o), 1); }; };
       });
-      const bar = h(`<div class="actionbar"><button class="btn k lg">Comprobar ✓</button></div>`); body.appendChild(bar);
-      $('button', bar).onclick = async () => {
+      const hintP = h(`<p class="center hidden" style="margin:10px 0 0"><span class="hint"></span></p>`); body.appendChild(hintP);
+      const bar = h(`<div class="actionbar"><button class="btn w" id="uh">💡 Pista</button><button class="btn k lg" id="uc">Comprobar ✓</button></div>`); body.appendChild(bar);
+      $('#uh', bar).onclick = () => {
+        let k = 0; while (k < picked.length && picked[k].t === toks[k]) k++;
+        if (k < picked.length) { $('.hint', hintP).innerHTML = '💡 Hay una palabra en el lugar equivocado: tócala arriba para quitarla.'; hintP.classList.remove('hidden'); return; }
+        const nxt = toks[k]; $('.hint', hintP).innerHTML = k === 0 ? `💡 La oración empieza con: <b>${esc(nxt)}</b>` : `💡 La siguiente palabra es: <b>${esc(nxt)}</b>`; hintP.classList.remove('hidden');
+        const ch = [...bank.children].find(c => !c.classList.contains('used') && c.textContent === nxt); if (ch) { ch.classList.remove('blink'); void ch.offsetWidth; ch.classList.add('blink'); } play(it.au);
+      };
+      $('#uc', bar).onclick = async () => {
         if (picked.length < toks.length) { M.toast('Usa todas las palabras 😉'); return; }
         const ans = picked.map(o => o.t).join(' '); const ok = M.norm(ans, false) === M.norm(toks.join(' '), false);
         line.classList.add(ok ? 'right' : 'wrong'); bar.remove(); play(it.au);

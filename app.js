@@ -194,7 +194,7 @@
       <div class="grid" id="tgrid"></div>
       <div class="sect-title"><h2>🏆 Final Test</h2></div>
       <div class="card final">${M.mascot('mascot', 'point')}<div><h3>Well done! Get ready for the test.</h3><p style="margin:6px 0 0;color:#ddd">40 preguntas de los 14 temas (Listening, Reading, Writing y Speaking) · 45 minutos · 2 intentos. Si apruebas con ${(C.PASS_SCORE / 10).toFixed(1)}/10 o más, obtienes tu certificado 🎓</p>
-        ${S.final ? `<p style="margin:8px 0 0;color:var(--y);font-weight:800">Tu mejor resultado: ${(S.final.best / 10).toFixed(1)} / 10 ${S.final.passed ? '✅ Aprobado' : ''}</p>` : ''}${S.final && S.final.passed ? `<button class="btn sm" id="cert-b" style="margin-top:8px">🎓 Ver mi certificado</button>` : ''}
+        ${S.final ? `<p style="margin:8px 0 0;color:#fff;font-weight:800">Tu mejor resultado: ${(S.final.best / 10).toFixed(1)} / 10 ${S.final.passed ? '✅ Aprobado' : ''}</p>` : ''}${S.final && S.final.passed ? `<button class="btn sm" id="cert-b" style="margin-top:8px">🎓 Ver mi certificado</button>` : ''}
         <button class="btn lg" id="final-b">${M.finalUnlocked() ? 'FINAL TEST →' : '🔒 Bloqueado'}</button></div>
       <p class="center muted" style="margin-top:30px;font-size:13px">mrarrieta.com · ¡Aprende inglés HABLANDO! · WhatsApp ${esc(C.WHATSAPP.replace(/^57/, ''))}</p>
     </div>`;
@@ -302,21 +302,22 @@
      ================================================================= */
   // Cada clase tiene su propia combinación de juegos para que ninguna se sienta igual
   const PLAN = {
-    t1p1: ['learn', 'bubblePop', 'matchLines', 'fill', 'quizShow', 'speakWords'], t1p2: ['learn', 'dialogue', 'oddOneOut', 'unscramble', 'typeSentence', 'speak'],
-    t2p1: ['learn', 'bubblePop', 'typeLetter', 'spell', 'speed'], t2p2: ['learn', 'spellName', 'dialogue', 'spell', 'quizShow'],
-    t3p1: ['learn', 'listenChoose', 'wordSearch', 'crossword', 'speak'], t3p2: ['learn', 'matchLines', 'sort', 'typeWord', 'speak'],
-    t4p1: ['learn', 'bubblePop', 'typeNumber', 'phone', 'speak'], t4p2: ['learn', 'pickWord', 'hangman', 'unscramble', 'speed', 'speakWords'],
-    t5p1: ['learn', 'fill', 'quizShow', 'unscramble', 'typeSentence', 'speak'], t5p2: ['learn', 'sort', 'fill', 'bubblePop', 'speak'],
-    t6p1: ['learn', 'listenChoose', 'wordSearch', 'crossword', 'speed', 'speak'], t6p2: ['learn', 'dialogue', 'sort', 'fill', 'unscramble', 'speak'],
-    t7p1: ['learn', 'hangman', 'memory', 'matchLines', 'speak'], t7p2: ['learn', 'bubblePop', 'sort', 'crossword', 'oddOneOut'],
-    t8p1: ['learn', 'pickWord', 'fill', 'wordSearch', 'speed', 'speak'], t8p2: ['learn', 'sort', 'memory', 'hangman', 'oddOneOut'],
-    t9p1: ['learn', 'listenChoose', 'fill', 'wordSearch', 'speak'], t9p2: ['learn', 'quizShow', 'spell', 'fill', 'dialogue'],
-    t10p1: ['learn', 'matchLines', 'pickWord', 'typeSentence', 'bubblePop', 'speak'], t10p2: ['learn', 'listenChoose', 'memory', 'sort', 'hangman', 'speak'],
-    t11p1: ['learn', 'pickWord', 'spell', 'wordSearch', 'crossword', 'oddOneOut'], t11p2: ['learn', 'quizShow', 'sort', 'fill', 'unscramble', 'speak'],
-    t12p1: ['learn', 'listenChoose', 'sort', 'plural', 'matchLines', 'speakWords'], t12p2: ['learn', 'memory', 'plural', 'fill', 'bubblePop'],
-    t13p1: ['learn', 'fill', 'matchLines', 'unscramble', 'typeSentence', 'speak'], t13p2: ['learn', 'sort', 'fill', 'dialogue', 'quizShow', 'speak'],
-    t14p1: ['learn', 'fill', 'bubblePop', 'unscramble', 'typeSentence', 'speak'], t14p2: ['learn', 'fill', 'dialogue', 'oddOneOut', 'speak'],
+    t1p1: ['learn', 'bubblePop', 'matchLines', 'sayPop', 'fill', 'quizShow', 'speakWords'], t1p2: ['learn', 'dialogue', 'oddOneOut', 'unscramble', 'spinWheel', 'speak'],
+    t2p1: ['learn', 'catchWord', 'typeLetter', 'spell', 'raceGame'], t2p2: ['learn', 'spellName', 'dialogue', 'spell', 'catchWord'],
+    t3p1: ['learn', 'catchWord', 'wordSearch', 'crossword', 'sayPop', 'speak'], t3p2: ['learn', 'matchLines', 'sort', 'spinWheel', 'typeWord', 'speak'],
+    t4p1: ['learn', 'bubblePop', 'typeNumber', 'raceGame', 'phone', 'speak'], t4p2: ['learn', 'catchWord', 'hangman', 'unscramble', 'sayPop', 'speakWords'],
+    t5p1: ['learn', 'fill', 'quizShow', 'unscramble', 'sayPop', 'speak'], t5p2: ['learn', 'sort', 'fill', 'raceGame', 'speak'],
+    t6p1: ['learn', 'catchWord', 'wordSearch', 'crossword', 'spinWheel', 'speak'], t6p2: ['learn', 'dialogue', 'sort', 'raceGame', 'unscramble', 'speak'],
+    t7p1: ['learn', 'hangman', 'memory', 'sayPop', 'matchLines', 'speak'], t7p2: ['learn', 'bubblePop', 'sort', 'raceGame', 'oddOneOut'],
+    t8p1: ['learn', 'catchWord', 'fill', 'wordSearch', 'spinWheel', 'speak'], t8p2: ['learn', 'sort', 'memory', 'hangman', 'sayPop', 'oddOneOut'],
+    t9p1: ['learn', 'raceGame', 'fill', 'wordSearch', 'speak'], t9p2: ['learn', 'quizShow', 'spell', 'catchWord', 'dialogue'],
+    t10p1: ['learn', 'matchLines', 'spinWheel', 'typeSentence', 'bubblePop', 'speak'], t10p2: ['learn', 'catchWord', 'memory', 'sort', 'hangman', 'sayPop'],
+    t11p1: ['learn', 'raceGame', 'spell', 'wordSearch', 'crossword', 'oddOneOut'], t11p2: ['learn', 'quizShow', 'sort', 'spinWheel', 'unscramble', 'speak'],
+    t12p1: ['learn', 'catchWord', 'sort', 'plural', 'matchLines', 'speakWords'], t12p2: ['learn', 'memory', 'plural', 'raceGame', 'bubblePop'],
+    t13p1: ['learn', 'fill', 'matchLines', 'unscramble', 'sayPop', 'speak'], t13p2: ['learn', 'sort', 'fill', 'dialogue', 'catchWord', 'speak'],
+    t14p1: ['learn', 'fill', 'catchWord', 'unscramble', 'typeSentence', 'speak'], t14p2: ['learn', 'fill', 'dialogue', 'raceGame', 'spinWheel', 'speak'],
   };
+
   function buildSteps(p) {
     const st = [];
     st.push({ sec: 'Goal', k: 'goal' });
@@ -547,7 +548,7 @@
     hw: async (stage, p) => homework(stage, p),
   };
   // practice activities map
-  ['learn', 'listenChoose', 'pickWord', 'typeWord', 'typeLetter', 'typeNumber', 'phone', 'spellName', 'typeSentence', 'fill', 'unscramble', 'memory', 'sort', 'crossword', 'speed', 'spell', 'plural', 'dialogue', 'speak', 'speakWords', 'wordSearch', 'hangman', 'bubblePop', 'matchLines', 'quizShow', 'oddOneOut']
+  ['learn', 'listenChoose', 'pickWord', 'typeWord', 'typeLetter', 'typeNumber', 'phone', 'spellName', 'typeSentence', 'fill', 'unscramble', 'memory', 'sort', 'crossword', 'speed', 'spell', 'plural', 'dialogue', 'speak', 'speakWords', 'wordSearch', 'hangman', 'bubblePop', 'matchLines', 'quizShow', 'oddOneOut', 'catchWord', 'spinWheel', 'raceGame', 'sayPop']
     .forEach(k => { STEP[k] = (stage, p) => A[k](stage, p); });
 
   /* ---------- MUSIC · PLAY & LEARN (una canción A1 por clase) ---------- */
@@ -664,8 +665,16 @@
         chip.onclick = () => { if (chip.classList.contains('used')) return; sfx('tap'); chip.classList.add('used'); const c2 = h(`<button class="chip">${esc(o.t)}</button>`); line.appendChild(c2); picked.push(o);
           c2.onclick = () => { sfx('tap'); c2.remove(); chip.classList.remove('used'); picked.splice(picked.indexOf(o), 1); }; };
       });
-      const bar = h(`<div class="actionbar"><button class="btn k lg">Comprobar ✓</button></div>`); body.appendChild(bar);
-      $('button', bar).onclick = () => {
+      const hintP = h(`<p class="center hidden" style="margin:10px 0 0"><span class="hint"></span></p>`); body.appendChild(hintP);
+      const bar = h(`<div class="actionbar"><button class="btn w" id="oh">💡 Pista</button><button class="btn k lg" id="oc">Comprobar ✓</button></div>`); body.appendChild(bar);
+      // pista: dice qué palabra va después y la hace parpadear (sin ponerla)
+      $('#oh', bar).onclick = () => {
+        let k = 0; while (k < picked.length && picked[k].t === correct[k]) k++;
+        if (k < picked.length) { $('.hint', hintP).innerHTML = '💡 Hay una palabra en el lugar equivocado: tócala arriba para quitarla.'; hintP.classList.remove('hidden'); return; }
+        const nxt = correct[k]; $('.hint', hintP).innerHTML = k === 0 ? `💡 La oración empieza con: <b>${esc(nxt)}</b>` : `💡 La siguiente palabra es: <b>${esc(nxt)}</b>`; hintP.classList.remove('hidden');
+        const ch = [...bank.children].find(c => !c.classList.contains('used') && c.textContent === nxt); if (ch) { ch.classList.remove('blink'); void ch.offsetWidth; ch.classList.add('blink'); }
+      };
+      $('#oc', bar).onclick = () => {
         if (picked.length < words.length) { M.toast('Usa todas las palabras 😉'); return; }
         const ok = M.norm(picked.map(o => o.t).join(' '), false) === M.norm(correct.join(' '), false);
         line.classList.add(ok ? 'right' : 'wrong'); bar.remove(); res(ok);

@@ -318,9 +318,9 @@
   async function reportPDF() {
     if (!(await jspdf())) return M.toast('No se pudo cargar el generador de PDF. Revisa tu conexión.');
     const r = last_; const { jsPDF } = window.jspdf; const d = new jsPDF({ unit: 'pt', format: 'a4' });
-    d.setFillColor(17, 17, 17); d.rect(0, 0, 595, 90, 'F'); d.setFillColor(255, 212, 59); d.rect(0, 90, 595, 6, 'F');
+    d.setFillColor(11, 42, 91); d.rect(0, 0, 595, 90, 'F'); d.setFillColor(227, 36, 43); d.rect(0, 90, 595, 6, 'F');
     const logo = await logoData(); if (logo) d.addImage(logo, 'PNG', 455, 14, 110, 64);
-    d.setTextColor(255, 212, 59); d.setFont('helvetica', 'bold'); d.setFontSize(18); d.text('Reporte del Examen Final — Módulo 1', 40, 44);
+    d.setTextColor(255, 255, 255); d.setFont('helvetica', 'bold'); d.setFontSize(18); d.text('Reporte del Examen Final — Módulo 1', 40, 44);
     d.setTextColor(255, 255, 255); d.setFontSize(11); d.setFont('helvetica', 'normal'); d.text('Elementary A1 — mrarrieta.com', 40, 66);
     let y = 130; d.setTextColor(17, 17, 17); d.setFont('helvetica', 'bold'); d.setFontSize(13); d.text('Estudiante: ' + r.name, 40, y); y += 22;
     d.setFont('helvetica', 'normal'); d.setFontSize(11);
@@ -354,10 +354,10 @@
     $('#dl').onclick = async () => {
       if (!(await jspdf())) return M.toast('No se pudo cargar el generador de PDF.');
       const { jsPDF } = window.jspdf; const d = new jsPDF({ unit: 'pt', format: 'a4', orientation: 'landscape' }); const W = 842, H = 595;
-      d.setFillColor(255, 212, 59); d.rect(0, 0, W, H, 'F'); d.setFillColor(255, 255, 255); d.rect(22, 22, W - 44, H - 44, 'F');
-      d.setDrawColor(17, 17, 17); d.setLineWidth(4); d.rect(34, 34, W - 68, H - 68); d.setLineWidth(1); d.rect(44, 44, W - 88, H - 88);
+      d.setFillColor(227, 36, 43); d.rect(0, 0, W, H, 'F'); d.setFillColor(11, 42, 91); d.triangle(W, 0, W, H, 0, H, 'F'); d.setFillColor(255, 255, 255); d.rect(22, 22, W - 44, H - 44, 'F');
+      d.setDrawColor(11, 42, 91); d.setLineWidth(4); d.rect(34, 34, W - 68, H - 68); d.setLineWidth(1); d.rect(44, 44, W - 88, H - 88);
       const logo = await logoData(); if (logo) d.addImage(logo, 'PNG', W / 2 - 85, 62, 170, 99);
-      d.setTextColor(17, 17, 17); d.setFont('helvetica', 'bold'); d.setFontSize(34); d.text('CERTIFICATE OF COMPLETION', W / 2, 205, { align: 'center' });
+      d.setTextColor(11, 42, 91); d.setFont('helvetica', 'bold'); d.setFontSize(34); d.text('CERTIFICATE OF COMPLETION', W / 2, 205, { align: 'center' });
       d.setFont('helvetica', 'normal'); d.setFontSize(15); d.setTextColor(80); d.text('This is to certify that', W / 2, 240, { align: 'center' });
       d.setFont('times', 'bolditalic'); d.setFontSize(40); d.setTextColor(17, 17, 17); d.text(r.name, W / 2, 292, { align: 'center' });
       d.setDrawColor(17, 17, 17); d.setLineWidth(1.5); d.line(W / 2 - 220, 304, W / 2 + 220, 304);

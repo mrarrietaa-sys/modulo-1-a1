@@ -327,7 +327,7 @@
   function confetti(ms = 2500) {
     const cv = h('<canvas id="confetti"></canvas>'); document.body.appendChild(cv); const ctx = cv.getContext('2d');
     cv.width = innerWidth; cv.height = innerHeight;
-    const cols = ['#FFD43B', '#111111', '#ffffff', '#16A34A', '#E11D48'];
+    const cols = ['#E3242B', '#0B2A5B', '#ffffff', '#1D5FD1', '#E3242B'];
     const P = Array.from({ length: 160 }, () => ({ x: Math.random() * cv.width, y: -20 - Math.random() * cv.height * .5, r: 4 + Math.random() * 6, c: cols[Math.floor(Math.random() * cols.length)], vx: -2 + Math.random() * 4, vy: 2 + Math.random() * 4, a: Math.random() * 6, va: -.2 + Math.random() * .4 }));
     const t0 = performance.now();
     (function fr(t) {

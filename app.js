@@ -206,7 +206,7 @@
       t.parts.forEach(p => {
         const st = M.partStars(p.id); const pd = S.parts[p.id];
         const b = h(`<button class="partbtn"><span class="t">PART ${p.part}<small>${esc(p.title)}</small></span><span class="stars">${[1, 2, 3].map(i => `<span class="${i <= st ? '' : 'off'}">⭐</span>`).join('')}</span></button>`);
-        if (pd && !pd.done && pd.step) b.querySelector('small').innerHTML += ' · <b>en curso</b>';
+        if (pd && !pd.done && pd.step) { b.classList.add('cur'); b.querySelector('small').innerHTML += ' <b class="curtag">▶ EN CURSO</b>'; }
         b.onclick = () => route('class', p.id); $('.bd', card).appendChild(b);
       });
       if (!un) { const lk = h(`<div class="lock"><div class="lk">🔒</div><b>Tema bloqueado</b><span style="font-size:13px">Desbloquéalo para continuar tu aprendizaje</span><button class="btn sm">🔓 Desbloquear</button></div>`); $('button', lk).onclick = unlockModal; card.appendChild(lk); }

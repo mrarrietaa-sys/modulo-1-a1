@@ -875,3 +875,7 @@ html,body{max-width:100%;overflow-x:hidden}
 @media (max-width:600px){.cw-sky{height:330px}.rc-lane{grid-template-columns:70px minmax(0,1fr)}.cw-word{width:30%}}
 .sw-n{position:absolute;font-style:normal;font-family:var(--fh);font-weight:800;font-size:22px;line-height:1}
 .dict-q{font-weight:700;color:var(--mut);margin-top:8px}
+/* v21 — parte en curso resaltada en verde */
+.partbtn.cur{background:#DDF7E6!important;border-color:#16A34A!important;box-shadow:0 4px 0 #15803D!important}
+.partbtn.cur .t,.partbtn.cur small{color:#0B3D22}
+.partbtn .curtag{display:inline-block;margin-left:6px;background:#16A34A;color:#fff;font-size:11px;letter-spacing:.5px;padding:2px 8px;border-radius:999px;vertical-align:middle}

@@ -73,7 +73,7 @@
   function welcome() {
     const PX = (id) => `https://images.pexels.com/photos/${id}/pexels-photo-${id}.jpeg?auto=compress&cs=tinysrgb&w=500`;
     const SK = [['Listening', '🎧', PX(1490844)], ['Reading', '📖', PX(115001)], ['Writing', '✍️', PX(5717066)], ['Speaking', '🎤', PX(7972505)]];
-    shell(`${top()}<div class="card center fx-welcome"><img class="fx-wlogo" src="mra-logo-cert.png" alt="mrarrieta.com — ¡Aprende inglés HABLANDO!">
+    shell(`${top()}<div class="card center fx-welcome">
       <div class="fx-photos">${SK.map(([l, ic, u]) => `<div class="fx-pbox"><div class="fx-pimg"><img src="${u}" alt="${l}" loading="lazy" onerror="this.style.opacity=0"></div><div class="fx-pcap"><b>10</b> ${ic} ${l}</div></div>`).join('')}</div>
       <span class="lbl" style="margin-top:6px">✦ Examen final interactivo</span>
       <h1 style="font-size:clamp(26px,5.5vw,34px);margin:10px 0 4px">Examen final · Módulo 1</h1>

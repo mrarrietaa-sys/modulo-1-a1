@@ -37,7 +37,7 @@
   function login() {
     app.innerHTML = `<div class="wrap pt-wrap"><div class="card pt-login">
       
-      ${(() => { const lu = P.lastUser(); return lu && lu.first ? `<div class="pt-hello">${lu.pic ? `<span class="pt-av big pt-lu has"><img src="${lu.pic}" alt=""></span>` : M.mascot('pt-mra', 'wink')}<div class="bubble">Welcome back, ${esc(lu.first)}! 👋<small>¡Qué bueno verte de nuevo! Escribe tu código para continuar tu ruta.</small></div></div>`
+      ${(() => { const lu = P.lastUser(); return lu && lu.first ? `<div class="pt-hello">${lu.pic ? `<span class="pt-av big pt-lu has"><img src="${lu.pic}" alt=""></span>` : M.mascot('pt-mra', 'wink')}<div class="bubble">Welcome back, ${esc(lu.first)}! 👋</div></div>`
         : `<div class="pt-hello">${M.mascot('pt-mra', 'welcome')}<div class="bubble">Welcome, my friend! 👋<small>Bienvenido(a) a tu plataforma de inglés</small></div></div>`; })()}
       <h1>Ingresa a tu perfil</h1><p class="muted">Escribe el código que te entregó administración.</p>
       <input class="inp" id="cd" placeholder="Ej: ABC-123" autocapitalize="characters" autocomplete="off">

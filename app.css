@@ -1343,3 +1343,7 @@ a.iconbtn{display:inline-grid;place-items:center;text-decoration:none}
 .tb-tag{flex:none;background:#E3242B;color:#fff;font-family:var(--fh);font-weight:800;font-size:12px;letter-spacing:.6px;padding:6px 10px;border-radius:8px;border:2px solid var(--k);white-space:nowrap}
 @media (max-width:600px){.tb-tag{display:none}}
 .pt-lu{width:96px;height:96px;margin:0}.wb h2{margin:8px 0 4px}
+.mod-back{display:inline-flex;align-items:center;gap:6px;margin-bottom:10px;padding:7px 12px;border:2px solid var(--k);border-radius:10px;background:#fff;color:var(--k);font-weight:800;font-size:14px;text-decoration:none;box-shadow:2px 2px 0 var(--k)}
+.mod-back:hover{background:var(--y)}
+.hello .mod-back{display:flex;width:max-content;max-width:100%}
+@media (max-width:600px){.mb-x{display:none}}

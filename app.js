@@ -168,7 +168,7 @@
   }
 
   /* ---------------- home ---------------- */
-  function greeting() { if (window.MRAP && MRAP.isBack && MRAP.isBack()) return 'Welcome back'; const hr = new Date().getHours(); return hr < 12 ? 'Good morning' : hr < 18 ? 'Good afternoon' : 'Good evening'; }
+  function greeting() { const hr = new Date().getHours(); return hr < 12 ? 'Good morning' : hr < 18 ? 'Good afternoon' : 'Good evening'; }
   function nextUp() { return M.allParts().find(p => !(S.parts[p.id] && S.parts[p.id].done) && M.isUnlocked(p.topic)) || null; }
   function home() {
     const pct = M.overallPct(); const nu = nextUp(); const first = (window.MRAP && MRAP.look().nick) || S.name.split(' ')[0];
@@ -176,8 +176,8 @@
     app.innerHTML = `<div class="wrap">
       <section class="hero">
         <div class="card hello">
-          <span class="lbl">${greeting()}!</span>${window.MRAP && MRAP.get() ? (MRAP.isTrial() ? ' <span class="rolechip trial">🟢 Acceso gratuito</span>' : MRAP.role(C.MODULE_ID || 'A1') === 'review' && !MRAP.isStaff() ? ' <span class="rolechip rev">🔁 Modo repaso</span>' : MRAP.isStaff() ? ' <span class="rolechip rev">👨‍🏫 Profe</span>' : ' <span class="rolechip cur">🧭 Tu ruta de aprendizaje</span>') : ''}
-          <h1 style="margin-top:10px">¡Bienvenido(a)${window.MRAP && MRAP.isBack && MRAP.isBack() ? ' de nuevo' : ''}, <span class="nm">${esc(first)}</span>! 👋</h1>
+          ${window.MRAP && MRAP.get() ? '<a class="mod-back" href="index.html">← Mi perfil<span class="mb-x"> · Mi ruta de aprendizaje</span></a>' : ''}<span class="lbl">${esc(M.MOD.es)} · ${esc(M.MOD.levelEs || M.MOD.id)}</span>${window.MRAP && MRAP.get() ? (MRAP.isTrial() ? ' <span class="rolechip trial">🟢 Acceso gratuito</span>' : MRAP.role(C.MODULE_ID || 'A1') === 'review' && !MRAP.isStaff() ? ' <span class="rolechip rev">🔁 Modo repaso</span>' : MRAP.isStaff() ? ' <span class="rolechip rev">👨‍🏫 Profe</span>' : ' <span class="rolechip cur">🧭 Tu ruta de aprendizaje</span>') : ''}
+          <h1 style="margin-top:10px">${greeting()}, <span class="nm">${esc(first)}</span>! 👋</h1>
           <div class="ringbox"><div class="ring" style="--p:${pct}"><b>${pct}%</b></div>
             <div><div style="font-weight:800;font-size:18px">Tu progreso del ${M.MOD.es}</div><div class="muted">${doneN} de ${M.MOD.classes} clases completadas · 🔥 ${S.streak.n || 0} día(s) seguidos</div>
             ${nu ? `<button class="btn k" style="margin-top:12px" id="cont">▶ ${doneN ? 'Continuar' : 'Empezar'}: ${esc(nu._t.title)} · Part ${nu.part}</button>` : (M.finalUnlocked() ? `<button class="btn k" style="margin-top:12px" id="tofinal">🏆 Presentar examen final</button>` : (window.MRAP && MRAP.isTrial() ? `<button class="btn k" style="margin-top:12px" id="buy3">🎁 Inscribirme para seguir</button>` : `<button class="btn k" style="margin-top:12px" id="buy2">🔓 Desbloquear más temas</button>`))}</div></div>

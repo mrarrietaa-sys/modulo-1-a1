@@ -27,6 +27,20 @@ window.M1CONFIG = {
     { hash: "hawb2iq1c9", topics: "all", note: "Código general de ejemplo (MRARRIETA-A1)" }
   ],
 
+  // ===== PERFIL DEL ESTUDIANTE (index.html) =====
+  // Códigos de ESTUDIANTE: entran a su perfil, toman la clasificación y estudian su módulo completo.
+  //   module: 1-4 (opcional) = asignarle el módulo directamente sin examen de clasificación.
+  // Código de ejemplo incluido: ESTUDIANTE-DEMO  (crea los tuyos en admin.html)
+  STUDENT_CODES: [
+    { hash: "h7kthe217u", note: "Estudiante de ejemplo (ESTUDIANTE-DEMO)" }
+  ],
+  // Códigos de CORTESÍA (clientes que quieren conocernos): clasificación + solo los 2 primeros temas.
+  // Código de ejemplo incluido: CORTESIA-DEMO
+  TRIAL_CODES: [
+    { hash: "hy1dmj81xe", note: "Clase de cortesía de ejemplo (CORTESIA-DEMO)" }
+  ],
+  MODULE_ID: "A1",
+
   // WhatsApp de la escuela (con indicativo de país, sin + ni espacios)
   WHATSAPP: "573017810841",
 

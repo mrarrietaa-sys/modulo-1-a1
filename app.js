@@ -20,7 +20,7 @@
     tb.innerHTML = `<div class="brand" id="go-home"><span class="logo-pill"><img class="logo" src="mra-brand.png" alt="mrarrieta.com"></span><small>MÓDULO 1 · A1</small></div><div class="sp"></div>
       <span class="pill y" title="Puntos de experiencia">⚡ ${S.xp} XP</span>
       <span class="pill hide-s" title="Días seguidos estudiando">🔥 ${S.streak.n || 0}</span>
-      <button class="iconbtn chat-ic" id="chat-tb" title="Chat con mi profe" aria-label="Chat con mi profe"><svg viewBox="0 0 32 32" width="26" height="26" aria-hidden="true"><path d="M13 4C7.5 4 3 7.8 3 12.5c0 2.6 1.4 4.9 3.6 6.5L5.8 23.5l4.6-2.6c.8.2 1.7.3 2.6.3 5.5 0 10-3.8 10-8.5S18.5 4 13 4z" fill="#111"/><circle cx="8.6" cy="12.6" r="1.6" fill="#FFD43B"/><circle cx="13" cy="12.6" r="1.6" fill="#FFD43B"/><circle cx="17.4" cy="12.6" r="1.6" fill="#FFD43B"/><path d="M25.2 12.2c2.3 1.4 3.8 3.6 3.8 6.1 0 1.9-.9 3.7-2.3 5l.9 4-4.2-2.2c-.9.2-1.8.3-2.7.3-3.1 0-5.9-1.3-7.5-3.3" fill="none" stroke="#111" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><i class="fbadge hidden" id="chat-n"></i></button>${S.dictHidden ? '<button class="iconbtn" id="dict-b" title="Diccionario">🔎</button>' : ''}<button class="iconbtn" id="menu-b" title="Menú">☰</button>`;
+      <button class="iconbtn chat-ic" id="chat-tb" title="Chat con mi profe" aria-label="Chat con mi profe"><svg viewBox="0 0 32 32" width="26" height="26" aria-hidden="true"><path d="M13 4C7.5 4 3 7.8 3 12.5c0 2.6 1.4 4.9 3.6 6.5L5.8 23.5l4.6-2.6c.8.2 1.7.3 2.6.3 5.5 0 10-3.8 10-8.5S18.5 4 13 4z" fill="#111"/><circle cx="8.6" cy="12.6" r="1.6" fill="#FFD43B"/><circle cx="13" cy="12.6" r="1.6" fill="#FFD43B"/><circle cx="17.4" cy="12.6" r="1.6" fill="#FFD43B"/><path d="M25.2 12.2c2.3 1.4 3.8 3.6 3.8 6.1 0 1.9-.9 3.7-2.3 5l.9 4-4.2-2.2c-.9.2-1.8.3-2.7.3-3.1 0-5.9-1.3-7.5-3.3" fill="none" stroke="#111" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><i class="fbadge hidden" id="chat-n"></i></button>${S.dictHidden ? '<button class="iconbtn" id="dict-b" title="Diccionario">🔎</button>' : ''}${window.MRAP && MRAP.get() ? '<a class="iconbtn" id="prof-b" href="index.html" title="Mi perfil">👤</a>' : ''}<button class="iconbtn" id="menu-b" title="Menú">☰</button>`;
     $('#go-home', tb).onclick = () => { stop(); route('home'); };
     $('#menu-b', tb).onclick = menu;
     const db = $('#dict-b', tb); if (db) db.onclick = () => window.M1DICT && M1DICT.open();
@@ -29,10 +29,11 @@
   }
   function menu() {
     const m = M.modal(`<div class="mhead"><h3>☰ Menú</h3><button class="mclose" data-a="close" title="Cerrar">✕</button></div><div style="display:grid;gap:10px;margin-top:10px">
+      ${window.MRAP && MRAP.get() ? '<a class="btn w block" style="text-decoration:none" href="index.html">👤 Mi perfil y mis módulos</a>' : ''}
       <button class="btn w block" data-a="home">🏠 Inicio</button>
       <button class="btn w block" data-a="progress">📊 Mi progreso</button>
       <button class="btn w block" data-a="chat">💬 Chat con mi profe</button>
-      <button class="btn w block" data-a="unlock">🔑 Tengo un código de acceso</button>
+      ${M.hasProfile() ? '' : '<button class="btn w block" data-a="unlock">🔑 Tengo un código de acceso</button>'}
       <button class="btn w block" data-a="remind">🔔 Recordatorio diario</button>
       <button class="btn w block" data-a="dict">${S.dictHidden ? '📌 Mostrar botón flotante del diccionario' : '🙈 Quitar botón flotante del diccionario'}</button>
       <button class="btn w block" data-a="tour">🧭 Ver el tour guiado</button>
@@ -89,12 +90,12 @@
       { sel: '#chat-tb', mood: 'present', t: 'Chat con tu profe', d: 'Con este botón le escribes a tu docente cuando tengas dudas. El botón del diccionario lo puedes <b>arrastrar</b> a donde quieras o <b>quitarlo</b> soltándolo en la ✕ del centro.' },
       { sel: '#final-b', mood: 'celebrate', t: 'Examen final', d: 'Al terminar los 14 temas presentas el examen final. Si apruebas, ¡obtienes tu <b>certificado</b> del Módulo 1! 🎓' },
       { sel: '#menu-b', mood: 'watch', t: 'Menú', d: 'Aquí encuentras tu progreso, el código de acceso, el <b>recordatorio diario</b> y este tour por si quieres verlo otra vez.' },
-      { mood: 'thumbs', t: '¡Listo! 🚀', d: 'Ya sabes todo lo necesario. Recuerda: un poquito cada día hace la diferencia. ¡Vamos a tu primera clase!', last: true },
+      { mood: 'thumbs', t: '¡Listo! 🚀', d: 'Ya sabes todo lo necesario. Recuerda: un poquito cada día hace la diferencia. ' + (Object.values(S.parts).some(x => x.done) ? '¡Vamos a tu siguiente clase!' : '¡Vamos a tu primera clase!'), last: true },
     ];
     const ov = h(`<div id="tour"><div class="tour-hole"></div><div class="tour-card"></div></div>`); document.body.appendChild(ov);
     const hole = $('.tour-hole', ov), card = $('.tour-card', ov);
     let i = 0;
-    const end = (start) => { ov.remove(); window.removeEventListener('resize', place); window.removeEventListener('scroll', place); S.tourDone = true; save(); if (start) { const nu = nextUp(); if (nu && M.isUnlocked(nu.topic)) route('class', nu.id); } };
+    const end = (start) => { ov.remove(); window.removeEventListener('resize', place); window.removeEventListener('scroll', place); S.tourDone = true; save(); if (start) { M.confetti(2200); sfx('win'); const nu = nextUp(); if (nu && M.isUnlocked(nu.topic)) route('class', nu.id); } };
     function place() {
       const s = steps[i]; const el = s.sel && $(s.sel);
       if (!el) { hole.style.cssText = 'left:50%;top:40%;width:0;height:0'; card.classList.add('center'); card.style.cssText = ''; return; }
@@ -176,12 +177,12 @@
     app.innerHTML = `<div class="wrap">
       <section class="hero">
         <div class="card hello">
-          <span class="lbl">${greeting()}!</span>
+          <span class="lbl">${greeting()}!</span>${window.MRAP && MRAP.get() ? (MRAP.isTrial() ? ' <span class="rolechip trial">🎁 Clase de cortesía</span>' : MRAP.role(C.MODULE_ID || 'A1') === 'review' && !MRAP.isStaff() ? ' <span class="rolechip rev">🔁 Modo repaso</span>' : MRAP.isStaff() ? ' <span class="rolechip rev">👨‍🏫 Profe</span>' : ' <span class="rolechip cur">⭐ Tu módulo</span>') : ''}
           <h1 style="margin-top:10px">¡Bienvenido(a), <span class="nm">${esc(first)}</span>! 👋</h1>
           <p>${MOTTO[new Date().getDate() % MOTTO.length]}</p>
           <div class="ringbox"><div class="ring" style="--p:${pct}"><b>${pct}%</b></div>
             <div><div style="font-weight:800;font-size:18px">Tu progreso del Módulo 1</div><div class="muted">${doneN} de 28 clases completadas · 🔥 ${S.streak.n || 0} día(s) seguidos</div>
-            ${nu ? `<button class="btn k" style="margin-top:12px" id="cont">▶ ${doneN ? 'Continuar' : 'Empezar'}: ${esc(nu._t.title)} · Part ${nu.part}</button>` : (M.finalUnlocked() ? `<button class="btn k" style="margin-top:12px" id="tofinal">🏆 Presentar examen final</button>` : `<button class="btn k" style="margin-top:12px" id="buy2">🔓 Desbloquear más temas</button>`)}</div></div>
+            ${nu ? `<button class="btn k" style="margin-top:12px" id="cont">▶ ${doneN ? 'Continuar' : 'Empezar'}: ${esc(nu._t.title)} · Part ${nu.part}</button>` : (M.finalUnlocked() ? `<button class="btn k" style="margin-top:12px" id="tofinal">🏆 Presentar examen final</button>` : (window.MRAP && MRAP.isTrial() ? `<button class="btn k" style="margin-top:12px" id="buy3">🎁 Inscribirme para seguir</button>` : `<button class="btn k" style="margin-top:12px" id="buy2">🔓 Desbloquear más temas</button>`))}</div></div>
           <div class="skills">${SKILLS.map(([k, ic, nm]) => `<div class="skill"><div class="ic">${ic}</div><div class="nm">${nm}</div><div class="bar"><i style="width:${M.skillPct(k)}%"></i></div><small class="muted">${S.skills[k][1] ? M.skillPct(k) + '%' : '—'}</small></div>`).join('')}</div>
         </div>
         <div class="mascot-box">
@@ -191,7 +192,7 @@
         </div>
       </section>
       ${pendingBlock()}
-      <div class="sect-title"><h2>📚 Temas del Módulo 1</h2><div class="row"><button class="btn sm w" id="prog">📊 Mi progreso</button><button class="btn sm" id="code">🔑 Código de acceso</button></div></div>
+      <div class="sect-title"><h2>📚 Temas del Módulo 1</h2><div class="row"><button class="btn sm w" id="prog">📊 Mi progreso</button>${M.hasProfile() ? '' : '<button class="btn sm" id="code">🔑 Código de acceso</button>'}</div></div>
       <div class="grid" id="tgrid"></div>
       <div class="sect-title"><h2>🏆 Final Test</h2></div>
       <div class="card final">${M.mascot('mascot', 'point')}<div><h3>Well done! Get ready for the test.</h3><p style="margin:6px 0 0;color:#ddd">40 preguntas de los 14 temas (Listening, Reading, Writing y Speaking) · 45 minutos · 2 intentos. Si apruebas con ${(C.PASS_SCORE / 10).toFixed(1)}/10 o más, obtienes tu certificado 🎓</p>${M.finalUnlocked() ? '' : `<p style="margin:8px 0 0;color:#fff;font-weight:800">🔒 Se abre cuando termines las ${M.totalParts()} clases del módulo.</p>`}
@@ -200,6 +201,7 @@
       <p class="center fx-foot" style="margin-top:22px;font-size:13.5px;color:#fff;grid-column:1/-1;font-weight:600">mrarrieta.com · ¡Aprende inglés HABLANDO! · WhatsApp ${esc(C.WHATSAPP.replace(/^57/, ''))}</p>
     </div>`;
     const g = $('#tgrid');
+    const nuP = nextUp(); const curId = (M.allParts().find(x => M.isUnlocked(x.topic) && S.parts[x.id] && !S.parts[x.id].done && S.parts[x.id].step) || nuP || {}).id;
     D.topics.forEach(t => {
       const un = M.isUnlocked(t.n); const done = t.parts.every(p => S.parts[p.id] && S.parts[p.id].done);
       const card = h(`<div class="topic"><div class="cov" style="background-image:url('${M.imgURL(t.cover, 640, 360)}')"><span class="num">${t.n}</span>${done ? '<span class="done">✓ COMPLETO</span>' : ''}</div>
@@ -207,19 +209,18 @@
       t.parts.forEach(p => {
         const st = M.partStars(p.id); const pd = S.parts[p.id];
         const b = h(`<button class="partbtn"><span class="t">PART ${p.part}<small>${esc(p.title)}</small></span><span class="stars">${[1, 2, 3].map(i => `<span class="${i <= st ? '' : 'off'}">⭐</span>`).join('')}</span></button>`);
-        if (pd && !pd.done && pd.step) { b.classList.add('cur'); b.querySelector('small').innerHTML += ' <b class="curtag">▶ EN CURSO</b>'; }
+        if (p.id === curId) { b.classList.add('cur'); b.querySelector('small').innerHTML += ' <b class="curtag">▶ EN CURSO</b>'; }
         b.onclick = () => route('class', p.id); $('.bd', card).appendChild(b);
       });
       if (!un) { const why = M.lockReason(t.n);
-        const lk = why === 'progress' ? h(`<div class="lock"><div class="lk">🔒</div><b>Tema bloqueado</b><span style="font-size:13px">Termina el Topic ${t.n - 1} (Part 1 y Part 2) para abrirlo</span><button class="btn sm">📍 ¿Por qué?</button></div>`)
-          : h(`<div class="lock"><div class="lk">🔒</div><b>Tema bloqueado</b><span style="font-size:13px">Desbloquéalo para continuar tu aprendizaje</span><button class="btn sm">🔓 Desbloquear</button></div>`);
-        $('button', lk).onclick = () => lockGate(t.n); card.appendChild(lk); }
+        const lk = h(`<div class="lock" role="button" tabindex="0"><div class="lk">🔒</div><button class="btn sm">🔒 Bloqueado</button></div>`);
+        lk.onclick = () => lockGate(t.n); card.appendChild(lk); }
       g.appendChild(card);
     });
     if ($('#cont')) $('#cont').onclick = () => route('class', nu.id);
     if ($('#tofinal')) $('#tofinal').onclick = () => route('final');
-    if ($('#buy2')) $('#buy2').onclick = unlockModal;
-    $('#prog').onclick = () => route('progress'); $('#code').onclick = unlockModal;
+    if ($('#buy2')) $('#buy2').onclick = unlockModal; if ($('#buy3')) $('#buy3').onclick = trialModal;
+    $('#prog').onclick = () => route('progress'); if ($('#code')) $('#code').onclick = unlockModal;
     $('#final-b').onclick = () => M.finalUnlocked() ? route('final') : finalLockedModal();
     if ($('#cert-b')) $('#cert-b').onclick = () => route('cert');
     $$('[data-hw]', app).forEach(b => b.onclick = () => route('hw', b.dataset.hw));
@@ -293,7 +294,7 @@
       <input class="inp" id="cd" placeholder="Ej: ABC-123" autocapitalize="characters" style="margin:8px 0 12px">
       <button class="btn k block lg" id="ok">Desbloquear</button>
       <p class="center" style="margin:16px 0 6px;font-weight:700">¿Aún no tienes código?</p>
-      <a class="btn block" style="text-decoration:none;background:#25D366;color:#fff" target="_blank" rel="noopener" href="${wa}">💬 Comprar acceso por WhatsApp</a>`);
+      <a class="btn block" style="text-decoration:none;background:#25D366;color:#fff" target="_blank" rel="noopener" href="${wa}">💬 Comprar acceso por WhatsApp</a>`, { x: true });
     const i = $('#cd', m); i.focus();
     const go = () => { const r = M.redeem(i.value); if (!r) { i.classList.add('wrong'); sfx('bad'); setTimeout(() => i.classList.remove('wrong'), 500); M.toast('Código no válido 😕'); return; }
       m.remove(); sfx('win'); M.confetti(); M.toast(r.review ? '👨‍🏫 Modo revisión activado en este dispositivo' : r.topics === 'all' ? '¡Módulo activado! Los temas se abren a medida que avanzas 🎉' : '¡Temas desbloqueados! 🎉'); route('home'); };
@@ -302,20 +303,27 @@
 
   // ¿Por qué está bloqueado? progreso (debe terminar el tema anterior) o acceso (código)
   function progressModal(n) {
-    const prev = D.topics.find(t => t.n === n - 1);
+    const prev = D.topics.find(t => t.n < n && !t.parts.every(x => S.parts[x.id] && S.parts[x.id].done)) || D.topics.find(t => t.n === n - 1);
     const m = M.modal(`<div class="center">${M.mascot('mascot', 'pointside')}</div><h3 class="center">🔒 Este tema aún no está abierto</h3>
       <p class="center" style="font-size:17px">Primero termina <b>Topic ${prev.n} · ${esc(prev.title)}</b><br>(Part 1 y Part 2). ¡Así aprendes paso a paso! 💪</p>
-      <button class="btn k block lg" id="gp">▶ Ir al Topic ${prev.n}</button><button class="btn w block" style="margin-top:8px" id="cl">Cerrar</button>`);
+      <button class="btn k block lg" id="gp">▶ Ir al Topic ${prev.n}</button><button class="btn w block" style="margin-top:8px" id="cl">Cerrar</button>`, { x: true });
     $('#cl', m).onclick = () => m.remove();
     $('#gp', m).onclick = () => { m.remove(); const p = prev.parts.find(x => !(S.parts[x.id] && S.parts[x.id].done)) || prev.parts[0]; if (M.isUnlocked(prev.n)) route('class', p.id); else lockGate(prev.n); };
   }
-  function lockGate(n) { const r = M.lockReason(n); if (r === 'progress') progressModal(n); else if (r === 'access') unlockModal(); }
+  function lockGate(n) { const r = M.lockReason(n); if (r === 'progress') progressModal(n); else if (r === 'trial') trialModal(); else if (r === 'access') unlockModal(); else if (r === 'module') location.href = 'index.html'; }
+  function trialModal() {
+    const m = M.modal(`<div class="center">${M.mascot('mascot', 'present')}</div><h3 class="center">🎁 Fin de tu clase de cortesía</h3>
+      <p class="center" style="font-size:17px">Tu clase de cortesía incluye los <b>2 primeros temas</b> del módulo. ¿Te gustó la experiencia? <b>Inscríbete</b> y sigue aprendiendo con todos los temas, el examen final y tu certificado 🎓</p>
+      <a class="btn block" style="text-decoration:none;background:#25D366;color:#fff" target="_blank" rel="noopener" href="https://wa.me/${C.WHATSAPP}?text=${encodeURIComponent(`¡Hola! Soy ${S.name}. Hice la clase de cortesía en la plataforma y quiero inscribirme 🚀`)}">💬 Quiero inscribirme</a>
+      <button class="btn w block" style="margin-top:8px" id="cl">Seguir explorando</button>`, { x: true });
+    $('#cl', m).onclick = () => m.remove();
+  }
   function finalLockedModal() {
     const d = M.doneCount(), tot = M.totalParts();
     const m = M.modal(`<div class="center">${M.mascot('mascot', 'watch')}</div><h3 class="center">🔒 Examen final bloqueado</h3>
       <p class="center" style="font-size:17px">Para presentar el examen y obtener tu <b>certificado</b> debes terminar <b>todas las clases</b> del Módulo 1.</p>
       <div class="fl-prog"><i style="width:${Math.round(d / tot * 100)}%"></i></div><p class="center" style="font-weight:800;margin:6px 0 14px">${d} de ${tot} clases completadas</p>
-      <button class="btn k block lg" id="cl">¡Seguir estudiando! 🚀</button>`);
+      <button class="btn k block lg" id="cl">¡Seguir estudiando! 🚀</button>`, { x: true });
     $('#cl', m).onclick = () => { m.remove(); const nu = nextUp(); if (nu) route('class', nu.id); };
   }
 
@@ -442,7 +450,7 @@
         <div class="lesson" style="text-align:left;margin-top:6px"><h3>🎯 Goal</h3><p style="font-size:18px;margin:4px 0"><b>${esc(p.goal ? p.goal.en : p.title)}</b></p><p class="muted" style="margin:0">${esc(p.goal ? p.goal.es : p.es)}</p></div>
         ${prev && !(S.parts[prev.id] && S.parts[prev.id].done) ? `<p class="hint" style="margin-top:6px">💡 Te recomendamos completar primero: ${esc(prev._t.title)} · Part ${prev.part}</p>` : ''}
       </div>`;
-      await A.waitNext(stage, '¡Empezar clase! 🚀'); return null;
+      await A.waitNext(stage, '¡Empezar clase! 🚀'); M.confetti(2200); sfx('win'); return null;
     },
 
     warm: async (stage, p) => {
@@ -692,10 +700,10 @@
       const bar = h(`<div class="actionbar"><button class="btn w" id="oh">💡 Pista</button><button class="btn k lg" id="oc">Comprobar ✓</button></div>`); body.appendChild(bar);
       // pista: dice qué palabra va después y la hace parpadear (sin ponerla)
       $('#oh', bar).onclick = () => {
-        let k = 0; while (k < picked.length && picked[k].t === correct[k]) k++;
+        const eqw = (x, y) => M.norm(x, false) === M.norm(y, false); let k = 0; while (k < picked.length && eqw(picked[k].t, correct[k])) k++;
         if (k < picked.length) { $('.hint', hintP).innerHTML = '💡 Hay una palabra en el lugar equivocado: tócala arriba para quitarla.'; hintP.classList.remove('hidden'); return; }
         const nxt = correct[k]; $('.hint', hintP).innerHTML = k === 0 ? `💡 La oración empieza con: <b>${esc(nxt)}</b>` : `💡 La siguiente palabra es: <b>${esc(nxt)}</b>`; hintP.classList.remove('hidden');
-        const ch = [...bank.children].find(c => !c.classList.contains('used') && c.textContent === nxt); if (ch) { ch.classList.remove('blink'); void ch.offsetWidth; ch.classList.add('blink'); }
+        const ch = [...bank.children].find(c => !c.classList.contains('used') && eqw(c.textContent, nxt)); if (ch) { ch.classList.remove('blink'); void ch.offsetWidth; ch.classList.add('blink'); }
       };
       $('#oc', bar).onclick = () => {
         if (picked.length < words.length) { M.toast('Usa todas las palabras 😉'); return; }
@@ -883,6 +891,11 @@
   function certificateView() { window.M1FINAL.certificate(app, { route }); }
 
   /* ---------------- boot ---------------- */
+  // el módulo se abre desde el perfil del estudiante (index.html)
+  const PF = window.MRAP;
+  if (PF) { const pr = PF.get(); const rl = pr ? PF.role(C.MODULE_ID || 'A1') : 'none';
+    if (!pr || !['current', 'review'].includes(rl)) { location.replace('index.html'); return; }
+    if (!S.name && pr.name) { S.name = pr.name; save(); } }
   M.touchStreak();
-  route('home');
+  route(location.hash === '#cert' && S.final && S.final.passed ? 'cert' : 'home');
 })();

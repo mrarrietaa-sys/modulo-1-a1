@@ -40,15 +40,21 @@
 
   /* ---------- access ---------- */
   // ACCESO (código pagado) + PROGRESO (los temas se abren en orden)
-  const review = () => !!(C.UNLOCK_ALL || S.review);
+  const PF = window.MRAP; const MID = C.MODULE_ID || 'A1';
+  const hasProfile = () => !!(PF && PF.get());
+  const review = () => !!(C.UNLOCK_ALL || S.review || (PF && PF.isStaff()));
   const partDone = (id) => !!(S.parts[id] && S.parts[id].done);
   function hasAccess(n) { return review() || S.all || (C.FREE_TOPICS || []).includes(n) || S.unlocked.includes(n); }
-  function progressOpen(n) { if (review() || n <= 1) return true; const prev = D.topics.find(t => t.n === n - 1); return !prev || prev.parts.every(p => partDone(p.id)); }
-  function lockReason(n) { if (review()) return null; if (!progressOpen(n)) return 'progress'; if (!hasAccess(n)) return 'access'; return null; }
+  function progressOpen(n) { if (review() || n <= 1) return true; return D.topics.filter(t => t.n < n).every(t => t.parts.every(p => partDone(p.id))); }
+  function lockReason(n) {
+    if (review()) return null;
+    if (hasProfile()) { const r = PF.role(MID); if (r === 'review') return null; if (r !== 'current') return 'module';
+      if (PF.isTrial() && n > PF.TRIAL_TOPICS) return 'trial'; if (!progressOpen(n)) return 'progress'; return null; }
+    if (!progressOpen(n)) return 'progress'; if (!hasAccess(n)) return 'access'; return null; }
   function isUnlocked(topicN) { return !lockReason(topicN); }
   const doneCount = () => D.topics.reduce((a, t) => a + t.parts.filter(p => partDone(p.id)).length, 0);
   const totalParts = () => D.topics.reduce((a, t) => a + t.parts.length, 0);
-  function finalUnlocked() { return review() || doneCount() === totalParts(); }
+  function finalUnlocked() { if (review()) return true; if (hasProfile() && (PF.isTrial() || !['current', 'review'].includes(PF.role(MID)))) return false; return doneCount() === totalParts(); }
   function redeem(code) {
     const hh = codeHash(code);
     if ((C.REVIEW_CODES || []).includes(hh)) { S.review = true; save(); return { topics: 'all', review: true }; }
@@ -323,8 +329,9 @@
   const good = () => GOOD[Math.floor(Math.random() * GOOD.length)];
   const bad = () => BAD[Math.floor(Math.random() * BAD.length)];
   function toast(msg) { let t = $('#toast'); if (!t) { t = h('<div id="toast" class="toast"></div>'); document.body.appendChild(t); } t.textContent = msg; t.classList.add('show'); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 2200); }
-  function modal(html) {
-    const m = h(`<div class="modal"><div class="card">${html}</div></div>`); document.body.appendChild(m);
+  function modal(html, opts = {}) {
+    const m = h(`<div class="modal"><div class="card">${opts.x ? '<button class="mx" aria-label="Cerrar" title="Cerrar">✕</button>' : ''}${html}</div></div>`); document.body.appendChild(m);
+    if (opts.x) m.querySelector('.mx').onclick = () => m.remove();
     m.addEventListener('click', e => { if (e.target === m) m.remove(); }); return m;
   }
   function xpFly(n, x, y) {
@@ -352,7 +359,7 @@
   }
   function audioSrc(au) { return window.AUD && window.AUD[au] ? 'data:audio/mpeg;base64,' + window.AUD[au] : 'audio/' + au + '.mp3'; }
 
-  window.M1 = { D, C, S, $, $$, h, esc, shuffle, sample, sleep, save, touchStreak, addSkill, addWeak, okWeak, skillPct, isUnlocked, finalUnlocked, hasAccess, progressOpen, lockReason, review, doneCount, totalParts, redeem, codeHash,
+  window.M1 = { D, C, S, $, $$, h, esc, shuffle, sample, sleep, save, touchStreak, addSkill, addWeak, okWeak, skillPct, isUnlocked, finalUnlocked, hasAccess, progressOpen, lockReason, review, hasProfile, doneCount, totalParts, redeem, codeHash,
     allParts, partById, trackAudio, audioUI, floatStop, recordScore, letterScorer, voiceResult, floatBubble, setBubbleHidden, prevPart, nextPart, partStars, overallPct, imgURL, photo, play, playSeq, loadAudio, stop, sfx, praise, encourage, canSR, listen, recordVoice,
     norm, words, lev, speechScore, sheet, good, bad, toast, modal, xpFly, confetti, mascot, audioSrc };
 })();

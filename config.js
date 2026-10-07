@@ -37,7 +37,7 @@ window.M1CONFIG = {
   // Códigos de CORTESÍA (clientes que quieren conocernos): clasificación + solo los 2 primeros temas.
   // Código de ejemplo incluido: CORTESIA-DEMO
   TRIAL_CODES: [
-    { hash: "hy1dmj81xe", note: "Clase de cortesía de ejemplo (CORTESIA-DEMO)" }
+    { hash: "hy1dmj81xe", note: "Acceso de cortesía de ejemplo (CORTESIA-DEMO)" }
   ],
   MODULE_ID: "A1",
 

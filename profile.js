@@ -1,6 +1,6 @@
 /* =====================================================================
    PERFIL DEL ESTUDIANTE — compartido por el portal (index.html) y los módulos
-   · Tipo de ingreso: student (código de administración) · trial (clase de cortesía) · staff (profe)
+   · Tipo de ingreso: student (código de administración) · trial (acceso de cortesía) · staff (profe)
    · Clasificación → módulo asignado. Se abren el asignado + los inferiores (repaso);
      los superiores se abren cuando aprueba el examen final de su módulo.
    · Cortesía: solo los 2 primeros temas del módulo asignado.
@@ -10,7 +10,7 @@
   const KEY = 'mra_profile_v1';
   const MODS = [
     { id: 'A1', n: 1, name: 'Módulo 1', level: 'Elementary A1', es: 'Elemental (A1)', url: 'modulo-a1.html', key: 'mra_m1_progress_v1', ready: true, classes: 28, topics: 14, img: 'photo-1491438590914-bc09fcaaf77a', desc: 'Saludos, alfabeto, números, verbo To Be, familia, comida, clima, la casa y más.' },
-    { id: 'A2', n: 2, name: 'Módulo 2', level: 'Pre-intermediate A2', es: 'Básico (A2)', url: 'modulo-a2.html', key: 'mra_m2_progress_v1', ready: false, classes: 22, topics: 11, img: 'photo-1522202176988-66273c2fd55f', desc: 'La hora, presente y pasado simple, el cuerpo, apariencia, personalidad, modales y phrasal verbs.' },
+    { id: 'A2', n: 2, name: 'Módulo 2', level: 'Pre-intermediate A2', es: 'Básico (A2)', url: 'modulo-a2.html', key: 'mra_m2_progress_v1', ready: true, classes: 22, topics: 11, img: 'photo-1522202176988-66273c2fd55f', desc: 'La hora, presente y pasado simple, el cuerpo, apariencia, personalidad, modales y phrasal verbs.' },
     { id: 'B1', n: 3, name: 'Módulo 3', level: 'Intermediate B1', es: 'Intermedio (B1)', url: 'modulo-b1.html', key: 'mra_m3_progress_v1', ready: false, classes: 0, topics: 0, img: 'photo-1517048676732-d65bc937f952', desc: 'Futuro, presente perfecto, comparativos, pasado perfecto, conectores y más.' },
     { id: 'B2', n: 4, name: 'Módulo 4', level: 'Upper-intermediate B2-C1', es: 'Avanzado (B2-C1)', url: 'modulo-b2.html', key: 'mra_m4_progress_v1', ready: false, classes: 0, topics: 0, img: 'photo-1552664730-d307ca884978', desc: 'Condicionales, voz pasiva, reported speech, cláusulas relativas y fluidez avanzada.' },
   ];

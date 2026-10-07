@@ -17,7 +17,7 @@
   /* ---------------- top bar ---------------- */
   function topbar() {
     const tb = $('#topbar');
-    tb.innerHTML = `<div class="brand" id="go-home"><span class="logo-pill"><img class="logo" src="mra-brand.png" alt="mrarrieta.com"></span><small>MÓDULO 1 · A1</small></div><div class="sp"></div>
+    tb.innerHTML = `<div class="brand" id="go-home"><span class="logo-pill"><img class="logo" src="mra-brand.png" alt="mrarrieta.com"></span><small>${M.MOD.es.toUpperCase()} · ${M.MOD.id}</small></div><div class="sp"></div>
       <span class="pill y" title="Puntos de experiencia">⚡ ${S.xp} XP</span>
       <span class="pill hide-s" title="Días seguidos estudiando">🔥 ${S.streak.n || 0}</span>
       <button class="iconbtn chat-ic" id="chat-tb" title="Chat con mi profe" aria-label="Chat con mi profe"><svg viewBox="0 0 32 32" width="26" height="26" aria-hidden="true"><path d="M13 4C7.5 4 3 7.8 3 12.5c0 2.6 1.4 4.9 3.6 6.5L5.8 23.5l4.6-2.6c.8.2 1.7.3 2.6.3 5.5 0 10-3.8 10-8.5S18.5 4 13 4z" fill="#111"/><circle cx="8.6" cy="12.6" r="1.6" fill="#FFD43B"/><circle cx="13" cy="12.6" r="1.6" fill="#FFD43B"/><circle cx="17.4" cy="12.6" r="1.6" fill="#FFD43B"/><path d="M25.2 12.2c2.3 1.4 3.8 3.6 3.8 6.1 0 1.9-.9 3.7-2.3 5l.9 4-4.2-2.2c-.9.2-1.8.3-2.7.3-3.1 0-5.9-1.3-7.5-3.3" fill="none" stroke="#111" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><i class="fbadge hidden" id="chat-n"></i></button>${S.dictHidden ? '<button class="iconbtn" id="dict-b" title="Diccionario">🔎</button>' : ''}${window.MRAP && MRAP.get() ? '<a class="iconbtn" id="prof-b" href="index.html" title="Mi perfil">👤</a>' : ''}<button class="iconbtn" id="menu-b" title="Menú">☰</button>`;
@@ -66,7 +66,7 @@
     app.innerHTML = `<div class="wrap" style="max-width:620px;padding-top:40px"><div class="card center">
       ${M.mascot('mascot bounce', 'thumbs')}
       <div class="bubble" style="margin:6px auto 18px">Hi! I'm Mr. Arrieta. Welcome! 👋</div>
-      <h1 style="font-size:30px">${edit ? 'Cambia tu nombre' : '¡Bienvenido(a) al Módulo 1!'}</h1>
+      <h1 style="font-size:30px">${edit ? 'Cambia tu nombre' : `¡Bienvenido(a) al ${M.MOD.es}!`}</h1>
       <p class="muted" style="font-size:17px">${edit ? '' : 'Vas a aprender inglés <b>hablando</b>, escuchando, leyendo y escribiendo. Primero, ¿cómo te llamas?'}</p>
       <input class="inp" id="nm" placeholder="Escribe tu nombre" maxlength="30" value="${esc(S.name)}" style="margin:10px 0 16px">
       <button class="btn k lg block" id="go">${edit ? 'Guardar' : '¡Empezar! 🚀'}</button></div></div>`;
@@ -82,13 +82,13 @@
     const first = esc(S.name.split(' ')[0]);
     const steps = [
       { mood: 'welcome', t: `¡Hola, ${first}! 👋`, d: 'Soy Mr. Arrieta, tu profe. Te muestro en 1 minuto cómo funciona tu plataforma.' },
-      { sel: '.ringbox', mood: 'point', t: 'Tu progreso', d: 'Aquí ves cuánto llevas del Módulo 1 y el botón para <b>empezar o continuar</b> tu clase.' },
+      { sel: '.ringbox', mood: 'point', t: 'Tu progreso', d: `Aquí ves cuánto llevas del ${M.MOD.es} y el botón para <b>empezar o continuar</b> tu clase.` },
       { sel: '.hello .skills', mood: 'idea', t: 'Tus 4 habilidades', d: 'Escuchar 🎧, leer 📖, hablar 🗣️ y escribir ✍️. Las barras suben con cada clase que haces.' },
-      { sel: '#tgrid > :first-child', mood: 'pointside', t: 'Los 14 temas', d: 'Cada tema tiene <b>2 clases</b>. Los temas con 🔒 se desbloquean con un <b>código de acceso</b> que te da el profe.' },
+      { sel: '#tgrid > :first-child', mood: 'pointside', t: `Los ${M.MOD.topics} temas`, d: 'Cada tema tiene <b>2 clases</b>. Los temas se abren <b>en orden</b>: termina un tema para abrir el siguiente.' },
       { mood: 'book', t: '¿Cómo es una clase?', d: 'Cada clase sigue el mismo orden: <b>Goal → Speaking → Reading → Explanation → Practice → Oral task → Music → Homework</b>.<br><br>🔊 escucha · 🎤 habla (permite el micrófono) · <b>← Atrás</b> para corregir · tu avance se guarda solo.' },
       { sel: '#dict-fab', mood: 'present', t: 'Tu diccionario', d: '¿No entiendes una palabra? Toca aquí, <b>escríbela o dila en voz alta</b> (en español o inglés) y te doy la respuesta con su pronunciación.' },
       { sel: '#chat-tb', mood: 'present', t: 'Chat con tu profe', d: 'Con este botón le escribes a tu docente cuando tengas dudas. El botón del diccionario lo puedes <b>arrastrar</b> a donde quieras o <b>quitarlo</b> soltándolo en la ✕ del centro.' },
-      { sel: '#final-b', mood: 'celebrate', t: 'Examen final', d: 'Al terminar los 14 temas presentas el examen final. Si apruebas, ¡obtienes tu <b>certificado</b> del Módulo 1! 🎓' },
+      { sel: '#final-b', mood: 'celebrate', t: 'Examen final', d: `Al terminar los ${M.MOD.topics} temas presentas el examen final. Si apruebas, ¡obtienes tu <b>certificado</b> del ${M.MOD.es}! 🎓` },
       { sel: '#menu-b', mood: 'watch', t: 'Menú', d: 'Aquí encuentras tu progreso, el código de acceso, el <b>recordatorio diario</b> y este tour por si quieres verlo otra vez.' },
       { mood: 'thumbs', t: '¡Listo! 🚀', d: 'Ya sabes todo lo necesario. Recuerda: un poquito cada día hace la diferencia. ' + (Object.values(S.parts).some(x => x.done) ? '¡Vamos a tu siguiente clase!' : '¡Vamos a tu primera clase!'), last: true },
     ];
@@ -177,11 +177,11 @@
     app.innerHTML = `<div class="wrap">
       <section class="hero">
         <div class="card hello">
-          <span class="lbl">${greeting()}!</span>${window.MRAP && MRAP.get() ? (MRAP.isTrial() ? ' <span class="rolechip trial">🎁 Clase de cortesía</span>' : MRAP.role(C.MODULE_ID || 'A1') === 'review' && !MRAP.isStaff() ? ' <span class="rolechip rev">🔁 Modo repaso</span>' : MRAP.isStaff() ? ' <span class="rolechip rev">👨‍🏫 Profe</span>' : ' <span class="rolechip cur">⭐ Tu módulo</span>') : ''}
+          <span class="lbl">${greeting()}!</span>${window.MRAP && MRAP.get() ? (MRAP.isTrial() ? ' <span class="rolechip trial">🎁 Acceso de cortesía</span>' : MRAP.role(C.MODULE_ID || 'A1') === 'review' && !MRAP.isStaff() ? ' <span class="rolechip rev">🔁 Modo repaso</span>' : MRAP.isStaff() ? ' <span class="rolechip rev">👨‍🏫 Profe</span>' : ' <span class="rolechip cur">⭐ Tu módulo</span>') : ''}
           <h1 style="margin-top:10px">¡Bienvenido(a), <span class="nm">${esc(first)}</span>! 👋</h1>
           <p>${MOTTO[new Date().getDate() % MOTTO.length]}</p>
           <div class="ringbox"><div class="ring" style="--p:${pct}"><b>${pct}%</b></div>
-            <div><div style="font-weight:800;font-size:18px">Tu progreso del Módulo 1</div><div class="muted">${doneN} de 28 clases completadas · 🔥 ${S.streak.n || 0} día(s) seguidos</div>
+            <div><div style="font-weight:800;font-size:18px">Tu progreso del ${M.MOD.es}</div><div class="muted">${doneN} de ${M.MOD.classes} clases completadas · 🔥 ${S.streak.n || 0} día(s) seguidos</div>
             ${nu ? `<button class="btn k" style="margin-top:12px" id="cont">▶ ${doneN ? 'Continuar' : 'Empezar'}: ${esc(nu._t.title)} · Part ${nu.part}</button>` : (M.finalUnlocked() ? `<button class="btn k" style="margin-top:12px" id="tofinal">🏆 Presentar examen final</button>` : (window.MRAP && MRAP.isTrial() ? `<button class="btn k" style="margin-top:12px" id="buy3">🎁 Inscribirme para seguir</button>` : `<button class="btn k" style="margin-top:12px" id="buy2">🔓 Desbloquear más temas</button>`))}</div></div>
           <div class="skills">${SKILLS.map(([k, ic, nm]) => `<div class="skill"><div class="ic">${ic}</div><div class="nm">${nm}</div><div class="bar"><i style="width:${M.skillPct(k)}%"></i></div><small class="muted">${S.skills[k][1] ? M.skillPct(k) + '%' : '—'}</small></div>`).join('')}</div>
         </div>
@@ -192,10 +192,10 @@
         </div>
       </section>
       ${pendingBlock()}
-      <div class="sect-title"><h2>📚 Temas del Módulo 1</h2><div class="row"><button class="btn sm w" id="prog">📊 Mi progreso</button>${M.hasProfile() ? '' : '<button class="btn sm" id="code">🔑 Código de acceso</button>'}</div></div>
+      <div class="sect-title"><h2>📚 Temas del ${M.MOD.es}</h2><div class="row"><button class="btn sm w" id="prog">📊 Mi progreso</button>${M.hasProfile() ? '' : '<button class="btn sm" id="code">🔑 Código de acceso</button>'}</div></div>
       <div class="grid" id="tgrid"></div>
       <div class="sect-title"><h2>🏆 Final Test</h2></div>
-      <div class="card final">${M.mascot('mascot', 'point')}<div><h3>Well done! Get ready for the test.</h3><p style="margin:6px 0 0;color:#ddd">40 preguntas de los 14 temas (Listening, Reading, Writing y Speaking) · 45 minutos · 2 intentos. Si apruebas con ${(C.PASS_SCORE / 10).toFixed(1)}/10 o más, obtienes tu certificado 🎓</p>${M.finalUnlocked() ? '' : `<p style="margin:8px 0 0;color:#fff;font-weight:800">🔒 Se abre cuando termines las ${M.totalParts()} clases del módulo.</p>`}
+      <div class="card final">${M.mascot('mascot', 'point')}<div><h3>Well done! Get ready for the test.</h3><p style="margin:6px 0 0;color:#ddd">40 preguntas de los ${M.MOD.topics} temas (Listening, Reading, Writing y Speaking) · 45 minutos · 2 intentos. Si apruebas con ${(C.PASS_SCORE / 10).toFixed(1)}/10 o más, obtienes tu certificado 🎓</p>${M.finalUnlocked() ? '' : `<p style="margin:8px 0 0;color:#fff;font-weight:800">🔒 Se abre cuando termines las ${M.totalParts()} clases del módulo.</p>`}
         ${S.final ? `<p style="margin:8px 0 0;color:#fff;font-weight:800">Tu mejor resultado: ${(S.final.best / 10).toFixed(1)} / 10 ${S.final.passed ? '✅ Aprobado' : ''}</p>` : ''}${S.final && S.final.passed ? `<button class="btn sm" id="cert-b" style="margin-top:8px">🎓 Ver mi certificado</button>` : ''}
         <button class="btn lg" id="final-b">${M.finalUnlocked() ? 'FINAL TEST →' : `🔒 ${M.doneCount()}/${M.totalParts()} clases`}</button></div>
       <p class="center fx-foot" style="margin-top:22px;font-size:13.5px;color:#fff;grid-column:1/-1;font-weight:600">mrarrieta.com · ¡Aprende inglés HABLANDO! · WhatsApp ${esc(C.WHATSAPP.replace(/^57/, ''))}</p>
@@ -246,7 +246,7 @@
     const pend = pendingHW(); const t = new Date().toISOString().slice(0, 10);
     if (!pend.length || S.remindDay === t) return;
     S.remindDay = t; save();
-    if (window.Notification && Notification.permission === 'granted') { try { new Notification('📚 Mr. Arrieta', { body: `Tienes ${pend.length} tarea(s) pendiente(s) en el Módulo 1. ¡Vamos!`, icon: 'mra-point.webp' }); } catch (e) { } }
+    if (window.Notification && Notification.permission === 'granted') { try { new Notification('📚 Mr. Arrieta', { body: `Tienes ${pend.length} tarea(s) pendiente(s) en el ${M.MOD.es}. ¡Vamos!`, icon: 'mra-point.webp' }); } catch (e) { } }
     setTimeout(() => {
       const m = M.modal(`<div class="center">${M.mascot('mascot', 'watch')}</div><h3 class="center">¡Hola, ${esc(S.name.split(' ')[0])}! 👋</h3>
         <p class="center" style="font-size:17px">Te recuerdo que tienes <b>${pend.length} ${pend.length === 1 ? 'tarea pendiente' : 'tareas pendientes'}</b>.<br>Hazla ahora y suma XP ⚡</p>
@@ -266,7 +266,7 @@
     const build = () => { const [hh, mm] = ($('#rt', m).value || '19:00').split(':'); S.remindTime = `${hh}:${mm}`; save();
       const d = new Date(); d.setDate(d.getDate() + (d.getHours() * 60 + d.getMinutes() >= (+hh) * 60 + (+mm) ? 1 : 0));
       const ymd = d.toISOString().slice(0, 10).replace(/-/g, ''); const st = `${ymd}T${hh}${mm}00`; const en = `${ymd}T${hh}${String(Math.min(59, +mm + 15)).padStart(2, '0')}00`;
-      const title = '📚 Mr. Arrieta: practica inglés y haz tu tarea'; const det = `¡Es hora de practicar! Entra al Módulo 1: ${url}`;
+      const title = '📚 Mr. Arrieta: practica inglés y haz tu tarea'; const det = `¡Es hora de practicar! Entra al ${M.MOD.es}: ${url}`;
       $('#gcal', m).href = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&details=${encodeURIComponent(det)}&dates=${st}/${en}&recur=${encodeURIComponent('RRULE:FREQ=DAILY')}`;
       return { st, en, title, det }; };
     build(); $('#rt', m).onchange = build;
@@ -289,7 +289,7 @@
   /* ---------------- unlock ---------------- */
   function unlockModal() {
     const wa = `https://wa.me/${C.WHATSAPP}?text=${encodeURIComponent(C.BUY_MESSAGE + (S.name ? ` (Soy ${S.name})` : ''))}`;
-    const m = M.modal(`<div class="center">${M.mascot('mascot', 'present')}</div><h3 class="center">🔓 Desbloquea el Módulo 1</h3>
+    const m = M.modal(`<div class="center">${M.mascot('mascot', 'present')}</div><h3 class="center">🔓 Desbloquea el ${M.MOD.es}</h3>
       <p class="muted center">Ingresa el código de acceso que te dio tu profe.</p>
       <input class="inp" id="cd" placeholder="Ej: ABC-123" autocapitalize="characters" style="margin:8px 0 12px">
       <button class="btn k block lg" id="ok">Desbloquear</button>
@@ -312,16 +312,16 @@
   }
   function lockGate(n) { const r = M.lockReason(n); if (r === 'progress') progressModal(n); else if (r === 'trial') trialModal(); else if (r === 'access') unlockModal(); else if (r === 'module') location.href = 'index.html'; }
   function trialModal() {
-    const m = M.modal(`<div class="center">${M.mascot('mascot', 'present')}</div><h3 class="center">🎁 Fin de tu clase de cortesía</h3>
-      <p class="center" style="font-size:17px">Tu clase de cortesía incluye los <b>2 primeros temas</b> del módulo. ¿Te gustó la experiencia? <b>Inscríbete</b> y sigue aprendiendo con todos los temas, el examen final y tu certificado 🎓</p>
-      <a class="btn block" style="text-decoration:none;background:#25D366;color:#fff" target="_blank" rel="noopener" href="https://wa.me/${C.WHATSAPP}?text=${encodeURIComponent(`¡Hola! Soy ${S.name}. Hice la clase de cortesía en la plataforma y quiero inscribirme 🚀`)}">💬 Quiero inscribirme</a>
+    const m = M.modal(`<div class="center">${M.mascot('mascot', 'present')}</div><h3 class="center">🎁 Fin de tu acceso de cortesía</h3>
+      <p class="center" style="font-size:17px">Tu acceso de cortesía incluye los <b>2 primeros temas</b> del módulo. ¿Te gustó la experiencia? <b>Inscríbete</b> y sigue aprendiendo con todos los temas, el examen final y tu certificado 🎓</p>
+      <a class="btn block" style="text-decoration:none;background:#25D366;color:#fff" target="_blank" rel="noopener" href="https://wa.me/${C.WHATSAPP}?text=${encodeURIComponent(`¡Hola! Soy ${S.name}. Probé el acceso de cortesía en la plataforma y quiero inscribirme 🚀`)}">💬 Quiero inscribirme</a>
       <button class="btn w block" style="margin-top:8px" id="cl">Seguir explorando</button>`, { x: true });
     $('#cl', m).onclick = () => m.remove();
   }
   function finalLockedModal() {
     const d = M.doneCount(), tot = M.totalParts();
     const m = M.modal(`<div class="center">${M.mascot('mascot', 'watch')}</div><h3 class="center">🔒 Examen final bloqueado</h3>
-      <p class="center" style="font-size:17px">Para presentar el examen y obtener tu <b>certificado</b> debes terminar <b>todas las clases</b> del Módulo 1.</p>
+      <p class="center" style="font-size:17px">Para presentar el examen y obtener tu <b>certificado</b> debes terminar <b>todas las clases</b> del ${M.MOD.es}.</p>
       <div class="fl-prog"><i style="width:${Math.round(d / tot * 100)}%"></i></div><p class="center" style="font-weight:800;margin:6px 0 14px">${d} de ${tot} clases completadas</p>
       <button class="btn k block lg" id="cl">¡Seguir estudiando! 🚀</button>`, { x: true });
     $('#cl', m).onclick = () => { m.remove(); const nu = nextUp(); if (nu) route('class', nu.id); };
@@ -357,7 +357,7 @@
     if (M.prevPart(p)) st.push({ sec: 'Review', k: 'review' });
     st.push({ sec: 'Explanation', k: 'learn' });
     if (p.keyq) st.push({ sec: 'Listen & practice', k: 'keyq' });
-    const acts = PLAN[p.id] || p.acts;
+    const acts = (C.PLAN || PLAN)[p.id] || p.acts;
     acts.filter(a => !['learn', 'speak', 'speakWords'].includes(a)).forEach(a => st.push({ sec: 'Practice', k: a }));
     const sp = acts.find(a => a === 'speak' || a === 'speakWords') || (p.sentences ? 'speak' : 'speakWords');
     if (!p.letters) st.push({ sec: 'Oral task', k: sp });
@@ -371,7 +371,7 @@
     const p = M.partById(id);
     if (!M.isUnlocked(p.topic)) { route('home'); return lockGate(p.topic); }
     app.innerHTML = `<div class="wrap center" style="padding-top:80px">${M.mascot('mascot bounce', 'book')}<h2>Cargando tu clase…</h2></div>`;
-    const pv = M.prevPart(p); await M.loadAudio(['common', 'g3', 't' + p.topic].concat(pv ? ['t' + pv.topic] : []));
+    const pv = M.prevPart(p); await M.loadAudio(['common', M.MOD.games, M.MOD.audio + p.topic].concat(pv ? [M.MOD.audio + pv.topic] : []));
     const steps = buildSteps(p); const secs = [...new Set(steps.map(s => s.sec))];
     const rec = S.parts[id] = S.parts[id] || { done: false, stars: 0, best: 0 };
     let startAt = 0;
@@ -415,7 +415,7 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
       const back = new Promise(res => { navBack = () => res('__back'); navJump = () => res('__jump'); });
       let r;
-      try { r = await Promise.race([STEP[s.k](stage, p), back]); } catch (e) { console.error(s.k, e); r = null; }
+      try { r = await Promise.race([(STEP[s.k] || ((st2, pp) => A[s.k](st2, pp)))(stage, p), back]); } catch (e) { console.error(s.k, e); r = null; }
       navBack = null; navJump = null;
       if (!app.contains(player)) { cleanup(); return; } // user left
       if (r === '__jump') { stop(); const sh0 = $('#sheet'); if (sh0) sh0.remove(); i = run.max; continue; }
@@ -733,7 +733,7 @@
         const fb = checkWriting(txt, hw); out.innerHTML = '';
         fb.items.forEach(f => out.appendChild(h(`<li class="${f.cls}"><span>${f.cls === 'ok' ? '✅' : f.cls === 'no' ? '❌' : '💡'}</span><span>${f.msg}</span></li>`)));
         S.hw[p.id] = { text: txt, at: Date.now(), score: fb.score }; save();
-        const wa = `https://wa.me/${C.WHATSAPP}?text=${encodeURIComponent(`📚 Tarea Módulo 1 — ${p._t.title} Part ${p.part}\n👤 ${S.name}\n\n${txt}`)}`;
+        const wa = `https://wa.me/${C.WHATSAPP}?text=${encodeURIComponent(`📚 Tarea ${M.MOD.es} — ${p._t.title} Part ${p.part}\n👤 ${S.name}\n\n${txt}`)}`;
         bar.innerHTML = '';
         const again = h(`<button class="btn w">✏️ Corregir</button>`);
         const send = h(`<a class="btn" target="_blank" rel="noopener" style="text-decoration:none;background:#25D366;color:#fff" href="${wa}">💬 Enviar a mi profe</a>`);
@@ -827,7 +827,7 @@
     ['xp1000', '⚡', '1000 XP', 'Acumula 1000 puntos', () => S.xp >= 1000],
     ['speaker', '🎤', 'Gran speaker', 'Speaking por encima de 80%', () => S.skills.speaking[1] >= 10 && M.skillPct('speaking') >= 80],
     ['half', '⭐', 'Mitad del camino', 'Completa 14 clases', () => M.allParts().filter(p => S.parts[p.id] && S.parts[p.id].done).length >= 14],
-    ['grad', '🎓', 'Graduado A1', 'Aprueba el examen final', () => S.final && S.final.best >= C.PASS_SCORE],
+    ['grad', '🎓', 'Graduado ' + M.MOD.id, 'Aprueba el examen final', () => S.final && S.final.best >= C.PASS_SCORE],
   ];
   function checkBadges() { S.badges = S.badges || []; BADGES.forEach(([id, e, n]) => { if (!S.badges.includes(id) && BADGES.find(b => b[0] === id)[4]()) { S.badges.push(id); setTimeout(() => M.toast(`🏅 ¡Nueva insignia: ${n} ${e}!`), 1500); } }); save(); }
 
@@ -840,7 +840,7 @@
     const sk = SKILLS.map(([k]) => [k, M.skillPct(k), S.skills[k][1]]).filter(x => x[2]);
     const low = sk.sort((a, b) => a[1] - b[1])[0];
     app.innerHTML = `<div class="wrap">
-      <div class="card"><div class="row"><div class="ring" style="--p:${M.overallPct()}"><b>${M.overallPct()}%</b></div><div class="grow"><span class="lbl">Mi progreso</span><h1 style="font-size:30px;margin-top:8px">${esc(S.name)}</h1><p class="muted" style="margin:4px 0">Módulo 1 · Nivel A1</p></div></div>
+      <div class="card"><div class="row"><div class="ring" style="--p:${M.overallPct()}"><b>${M.overallPct()}%</b></div><div class="grow"><span class="lbl">Mi progreso</span><h1 style="font-size:30px;margin-top:8px">${esc(S.name)}</h1><p class="muted" style="margin:4px 0">${M.MOD.es} · Nivel ${M.MOD.id}</p></div></div>
         <div class="stats" style="grid-template-columns:repeat(4,1fr)"><div class="stat"><b>${done}/28</b><small>Clases</small></div><div class="stat"><b>${stars}/84</b><small>Estrellas</small></div><div class="stat"><b>${S.xp}</b><small>XP</small></div><div class="stat"><b>🔥 ${S.streak.n || 0}</b><small>Racha (días)</small></div></div>
         <h3 style="margin:14px 0 8px">Tus 4 habilidades</h3>
         <div class="skills" style="margin-top:0">${SKILLS.map(([k, ic, nm]) => `<div class="skill"><div class="ic">${ic}</div><div class="nm">${nm}</div><div class="bar"><i style="width:${M.skillPct(k)}%"></i></div><small class="muted">${S.skills[k][1] ? M.skillPct(k) + '% · ' + S.skills[k][1] + ' ejercicios' : 'Sin datos aún'}</small></div>`).join('')}</div>
@@ -856,7 +856,7 @@
       <div class="card"><p class="muted" style="margin-top:0">Tu progreso se guarda en este dispositivo y navegador. Puedes descargar una copia de respaldo o restaurarla en otro dispositivo.</p>
         <div class="row"><button class="btn sm w" id="exp">⬇️ Descargar respaldo</button><label class="btn sm w" style="cursor:pointer">⬆️ Restaurar respaldo<input type="file" accept=".json" id="imp" hidden></label><button class="btn sm w" id="rst" style="color:var(--bad)">🗑️ Reiniciar progreso</button></div></div>
     </div>`;
-    $$('.weak button', app).forEach(b => b.onclick = async () => { await M.loadAudio(['common', ...D.topics.map(t => 't' + t.n)]); play(weak[+b.dataset.i][1].au, { btn: b }); });
+    $$('.weak button', app).forEach(b => b.onclick = async () => { await M.loadAudio(['common', ...D.topics.map(t => M.MOD.audio + t.n)]); play(weak[+b.dataset.i][1].au, { btn: b }); });
     if ($('#pw')) $('#pw').onclick = () => practiceWeak(weak);
     $('#exp').onclick = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(S, null, 1)], { type: 'application/json' })); a.download = `progreso-modulo1-${S.name.replace(/\s+/g, '_')}.json`; a.click(); };
     $('#imp').onchange = async (e) => { try { const d = JSON.parse(await e.target.files[0].text()); if (!d.v) throw 0; Object.keys(S).forEach(k => delete S[k]); Object.assign(S, d); save(); M.toast('Progreso restaurado ✅'); route('progress'); } catch (er) { M.toast('Archivo no válido'); } };
@@ -867,7 +867,7 @@
     const all = M.allParts().flatMap(p => p.vocab.map(v => ({ ...v })));
     const items = weak.map(([w]) => all.find(v => v.en === w)).filter(Boolean).slice(0, 8);
     if (items.length < 2) { M.toast('Necesitas al menos 2 palabras para practicar'); return; }
-    await M.loadAudio(['common', ...D.topics.map(t => 't' + t.n)]);
+    await M.loadAudio(['common', ...D.topics.map(t => M.MOD.audio + t.n)]);
     app.innerHTML = `<div class="player"><div class="phead"><button class="x">✕</button><div class="prog"><i style="width:0%"></i></div></div><div class="stage"></div></div>`;
     $('.x', app).onclick = () => route('progress');
     const stage = $('.stage', app); const pool = all.filter((v, i, a) => a.findIndex(x => x.en === v.en) === i);

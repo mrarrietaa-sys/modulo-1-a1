@@ -34,13 +34,13 @@
   }
   function login() {
     app.innerHTML = `<div class="wrap pt-wrap"><div class="card pt-login">
-      <img class="pt-logo" src="mra-logo-cert.png" alt="mrarrieta.com — ¡Aprende inglés HABLANDO!">
+      
       <div class="pt-hello">${M.mascot('pt-mra', 'welcome')}<div class="bubble">Welcome, my friend! 👋<small>Bienvenido(a) a tu plataforma de inglés</small></div></div>
       <h1>Ingresa a tu perfil</h1><p class="muted">Escribe el código que te entregó administración.</p>
       <input class="inp" id="cd" placeholder="Ej: ABC-123" autocapitalize="characters" autocomplete="off">
       <button class="btn k block lg" id="ok">Entrar →</button>
       <div class="pt-or"><span>¿Aún no eres estudiante?</span></div>
-      <a class="btn block pt-wa" target="_blank" rel="noopener" href="${WA('¡Hola! 👋 Quiero conocer la plataforma de mrarrieta.com. ¿Me pueden dar un código para mi clase de cortesía? 🎁')}">🎁 Pide tu clase de cortesía gratis</a>
+      <a class="btn block pt-wa" target="_blank" rel="noopener" href="${WA('¡Hola! 👋 Quiero conocer la plataforma de mrarrieta.com. ¿Me pueden dar un código para mi acceso de cortesía? 🎁')}">🎁 Pide tu acceso de cortesía gratis</a>
       <p class="muted pt-small">Con el código de cortesía tomas el examen de clasificación y vives la experiencia con los 2 primeros temas de tu módulo.</p></div></div>`;
     const i = $('#cd'); setTimeout(() => i.focus(), 200);
     const go = () => { const r = codeType(i.value); if (!r) { i.classList.add('wrong'); sfx('bad'); setTimeout(() => i.classList.remove('wrong'), 500); M.toast('Código no válido 😕'); return; }
@@ -85,14 +85,14 @@
       main = `<div class="card pt-mymod">${a ? `<div class="pt-mymod-img" style="background-image:url('${U(a.img)}')"><span>${a.n}</span></div>` : ''}<div><span class="lbl">${staff ? 'Modo profe' : 'Tu módulo'}</span>
         <h2>${staff ? 'Todos los módulos abiertos para revisión' : `${esc(a.name)} · ${esc(a.es)}`}</h2>
         ${a ? `<p class="muted">${pl && p.assignedBy !== 'admin' ? `Ubicado por tu examen de clasificación (${new Date(pl.date).toLocaleDateString('es-CO')}).` : 'Asignado por administración.'}${a.n > (p.module || 1) ? ' ¡Subiste de nivel al aprobar tu módulo anterior! 🎉' : ''}</p>` : ''}
-        ${a && ready ? `<div class="pt-bar"><i style="width:${P.progress(a.id).pct}%"></i></div><p class="muted" style="margin:4px 0 10px">${P.progress(a.id).done} de ${trial ? '4 clases de cortesía' : a.classes + ' clases'} completadas</p><a class="btn k lg" href="${a.url}">▶ ${P.progress(a.id).done ? 'Continuar' : 'Empezar'} mi módulo</a>` : ''}
-        ${a && !ready && trial && P.trialMod() ? `<p class="pt-soon">🚧 Tu ${esc(a.name)} se está terminando de construir. Mientras tanto, vive tu clase de cortesía con los 2 primeros temas del <b>${esc(P.trialMod().name)}</b>.</p><a class="btn k lg" href="${P.trialMod().url}">▶ Empezar mi clase de cortesía</a>` : ''}
+        ${a && ready ? `<div class="pt-bar"><i style="width:${P.progress(a.id).pct}%"></i></div><p class="muted" style="margin:4px 0 10px">${P.progress(a.id).done} de ${trial ? '4 clases de tu acceso de cortesía' : a.classes + ' clases'} completadas</p><a class="btn k lg" href="${a.url}">▶ ${P.progress(a.id).done ? 'Continuar' : 'Empezar'} mi módulo</a>` : ''}
+        ${a && !ready && trial && P.trialMod() ? `<p class="pt-soon">🚧 Tu ${esc(a.name)} se está terminando de construir. Mientras tanto, usa tu acceso de cortesía con los 2 primeros temas del <b>${esc(P.trialMod().name)}</b>.</p><a class="btn k lg" href="${P.trialMod().url}">▶ Entrar con mi acceso de cortesía</a>` : ''}
         ${a && !ready && !trial ? `<p class="pt-soon">🚧 Tu ${esc(a.name)} se está terminando de construir. ¡Muy pronto estará listo! Mientras tanto puedes repasar los módulos anteriores.</p>` : ''}</div></div>`;
     }
     app.innerHTML = `<div class="wrap">
       <section class="card pt-head"><div class="pt-av">${esc(ini)}</div><div class="pt-hi"><span class="lbl">${greet}!</span><h1>¡Hola, <span class="nm">${esc(p.first)}</span>! 👋</h1>
-        <p class="muted">${staff ? '👨‍🏫 Perfil de profesor — puedes revisar todo.' : trial ? '🎁 Clase de cortesía — conoce nuestra plataforma.' : '🎓 Estudiante de mrarrieta.com'}</p></div>${M.mascot('pt-headmra', 'welcome')}</section>
-      ${trial ? `<div class="pt-trialbar">🎁 <div><b>Estás en tu clase de cortesía.</b> Tienes acceso al examen de clasificación y a los <b>2 primeros temas</b> de tu módulo. ¿Te gustó? <a target="_blank" rel="noopener" href="${WA(`¡Hola! Soy ${p.name}. Hice la clase de cortesía en la plataforma y quiero inscribirme 🚀`)}">Inscríbete aquí 💬</a></div></div>` : ''}
+        <p class="muted">${staff ? '👨‍🏫 Perfil de profesor — puedes revisar todo.' : trial ? '🎁 Acceso de cortesía — conoce nuestra plataforma.' : '🎓 Estudiante de mrarrieta.com'}</p></div>${M.mascot('pt-headmra', 'welcome')}</section>
+      ${trial ? `<div class="pt-trialbar">🎁 <div><b>Estás en tu acceso de cortesía.</b> Tienes acceso al examen de clasificación y a los <b>2 primeros temas</b> de tu módulo. ¿Te gustó? <a target="_blank" rel="noopener" href="${WA(`¡Hola! Soy ${p.name}. Probé el acceso de cortesía en la plataforma y quiero inscribirme 🚀`)}">Inscríbete aquí 💬</a></div></div>` : ''}
       ${main}
       <div class="sect-title"><h2>📚 Mis módulos</h2></div>
       <div class="pt-mods-grid">${P.MODS.map(m => modCard(m)).join('')}</div>
@@ -117,7 +117,7 @@
     const m = P.mod(id), r = P.role(id), a = P.assigned();
     if (r === 'current' || r === 'review') { location.href = m.url; return; }
     if (r === 'soon') return M.modal(`<div class="center">${M.mascot('mascot', 'think')}</div><h3 class="center">🚧 ${esc(m.name)} · ${esc(m.es)}</h3><p class="center">Este módulo está en construcción. ¡Muy pronto estará disponible en tu perfil!</p>`, { x: true });
-    const msg = P.isTrial() ? `Tu clase de cortesía incluye solo tu módulo asignado. ¡Inscríbete para estudiar todos los módulos!`
+    const msg = P.isTrial() ? `Tu acceso de cortesía incluye solo tu módulo asignado. ¡Inscríbete para estudiar todos los módulos!`
       : !a ? 'Primero toma tu examen de clasificación para saber en qué módulo empiezas.'
       : `Para abrir el ${m.name} primero debes <b>terminar y aprobar el examen final del ${esc(a.name)}</b>. ¡Paso a paso! 💪`;
     const mm = M.modal(`<div class="center">${M.mascot('mascot', 'pointside')}</div><h3 class="center">🔒 ${esc(m.name)} bloqueado</h3><p class="center" style="font-size:17px">${msg}</p>

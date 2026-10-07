@@ -339,14 +339,17 @@
   // ---------- certificado (en inglés, con el logo, sin el personaje adentro) ----------
   function certificate(data) {
     const r = data || last_ || { name: (S.final && S.final.name) || S.name, fin: (S.final && S.final.score) || 0, date: new Date((S.final && S.final.date) || Date.now()) };
-    const date = new Date(r.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    const dd = new Date(r.date); const dn = dd.getDate(); const ord = (dn % 100 >= 11 && dn % 100 <= 13) ? 'th' : ({ 1: 'st', 2: 'nd', 3: 'rd' }[dn % 10] || 'th');
+    const date = `${dd.toLocaleDateString('en-US', { month: 'long' })} ${dn}${ord}, ${dd.getFullYear()}`;
+    const nm = String(r.name || '').trim().toLowerCase().replace(/(^|[\s'-])(\p{L})/gu, (m, a, b) => a + b.toUpperCase());
     stopTimer();
     app.innerHTML = `<div class="wrap fx"><div class="fx-congrats noprint">${M.mascot('mascot bounce', 'celebrate')}<div class="bubble">Congratulations, ${esc(r.name.split(' ')[0])}! 🎉 You did it!</div></div>
       <div class="cert2" id="cert"><div class="cert2-in"><img class="cert2-logo" src="mra-logo-cert.png" alt="mrarrieta.com">
-        <div class="cert2-t">Certificate of Completion</div><div class="cert2-s">This is to certify that</div><div class="cert2-n">${esc(r.name)}</div>
+        <div class="cert2-t">Certificate of Completion</div><div class="cert2-s">This is to certify that</div><div class="cert2-n">${esc(nm)}</div>
         <div class="cert2-s">has satisfactorily completed</div><div class="cert2-m">Module 1 · Elementary A1</div>
         <div class="cert2-s">of the English program at <b>MRARRIETA.COM</b>${r.fin ? `, with a final score of <b>${Number(r.fin).toFixed(1)}/10</b>` : ''}.</div>
-        <div class="cert2-f"><div><b>${esc(date)}</b><span>Date</span></div><div class="sigbox"><img class="cert2-sig" src="mra-signature.png" alt="Firma"><b>John Jairo Arrieta Jaramillo</b><span>Director · mrarrieta.com</span></div></div></div></div>
+        <div class="cert2-s cert2-held">Held on <b>${esc(date)}</b></div>
+        <div class="cert2-f c"><div class="sigbox"><img class="cert2-sig" src="mra-signature.png" alt="Firma"><b>John Jairo Arrieta Jaramillo</b><span>Director · mrarrieta.com</span></div></div></div></div>
       <div class="row noprint" style="justify-content:center;margin-top:16px"><button class="btn k lg" id="dl">⬇️ Descargar certificado (PDF)</button><button class="btn w" id="pr">🖨️ Imprimir</button>
         <a class="btn" style="text-decoration:none;background:#25D366;color:#fff" target="_blank" rel="noopener" href="https://wa.me/${C.WHATSAPP}?text=${encodeURIComponent(`🎓 ¡Aprobé el Módulo 1 (A1) de mrarrieta.com!\n👤 ${r.name}\n⭐ Nota final: ${Number(r.fin || 0).toFixed(1)}/10`)}">💬 Compartir con mi profe</a><button class="btn w" id="hm">🏠 Inicio</button></div></div>`;
     window.scrollTo(0, 0);
@@ -359,16 +362,17 @@
       const logo = await logoData(); if (logo) d.addImage(logo, 'PNG', W / 2 - 85, 62, 170, 99);
       d.setTextColor(11, 42, 91); d.setFont('helvetica', 'bold'); d.setFontSize(34); d.text('CERTIFICATE OF COMPLETION', W / 2, 205, { align: 'center' });
       d.setFont('helvetica', 'normal'); d.setFontSize(15); d.setTextColor(80); d.text('This is to certify that', W / 2, 240, { align: 'center' });
-      d.setFont('times', 'bolditalic'); d.setFontSize(40); d.setTextColor(17, 17, 17); d.text(r.name, W / 2, 292, { align: 'center' });
+      d.setFont('times', 'bolditalic'); d.setFontSize(40); d.setTextColor(17, 17, 17); d.text(nm, W / 2, 292, { align: 'center' });
       d.setDrawColor(17, 17, 17); d.setLineWidth(1.5); d.line(W / 2 - 220, 304, W / 2 + 220, 304);
       d.setFont('helvetica', 'normal'); d.setFontSize(15); d.setTextColor(80); d.text('has satisfactorily completed', W / 2, 336, { align: 'center' });
       d.setFont('helvetica', 'bold'); d.setFontSize(24); d.setTextColor(17, 17, 17); d.text('MODULE 1 · ELEMENTARY A1', W / 2, 372, { align: 'center' });
       d.setFont('helvetica', 'normal'); d.setFontSize(14); d.setTextColor(80);
       d.text('of the English program at MRARRIETA.COM' + (r.fin ? `, with a final score of ${Number(r.fin).toFixed(1)}/10.` : '.'), W / 2, 402, { align: 'center' });
-      d.setDrawColor(17, 17, 17); d.line(150, 480, 330, 480); d.line(W - 330, 480, W - 150, 480);
-      d.setTextColor(17, 17, 17); d.setFont('helvetica', 'bold'); d.setFontSize(13); d.text(date, 240, 472, { align: 'center' }); const sig = await logoData('mra-signature.png'); if (sig) d.addImage(sig, 'PNG', W - 330, 428, 180, 38);
-      d.setFont('helvetica', 'normal'); d.setFontSize(11); d.setTextColor(100); d.text('Date', 240, 496, { align: 'center' }); d.setFont('helvetica', 'bold'); d.setFontSize(12); d.setTextColor(17, 17, 17); d.text('John Jairo Arrieta Jaramillo', W - 240, 496, { align: 'center' }); d.setFont('helvetica', 'normal'); d.setFontSize(10); d.setTextColor(100); d.text('Director - mrarrieta.com', W - 240, 511, { align: 'center' });
-      d.save('Certificate_Module1_A1_' + r.name.replace(/\s+/g, '_') + '.pdf');
+      d.setFont('helvetica', 'italic'); d.setFontSize(13); d.setTextColor(80); d.text('Held on ' + date, W / 2, 426, { align: 'center' });
+      const sig = await logoData('mra-signature.png'); if (sig) d.addImage(sig, 'PNG', W / 2 - 90, 444, 180, 38);
+      d.setDrawColor(17, 17, 17); d.setLineWidth(1); d.line(W / 2 - 120, 486, W / 2 + 120, 486);
+      d.setFont('helvetica', 'bold'); d.setFontSize(12); d.setTextColor(17, 17, 17); d.text('John Jairo Arrieta Jaramillo', W / 2, 502, { align: 'center' }); d.setFont('helvetica', 'normal'); d.setFontSize(10); d.setTextColor(100); d.text('Director - mrarrieta.com', W / 2, 516, { align: 'center' });
+      d.save('Certificate_Module1_A1_' + nm.replace(/\s+/g, '_') + '.pdf');
     };
   }
 

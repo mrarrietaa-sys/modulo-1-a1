@@ -39,14 +39,19 @@
   function skillPct(k) { const [c, t] = S.skills[k]; return t ? Math.round(c / t * 100) : 0; }
 
   /* ---------- access ---------- */
-  function isUnlocked(topicN) {
-    if (S.all || C.UNLOCK_ALL) return true;
-    if ((C.FREE_TOPICS || []).includes(topicN)) return true;
-    return S.unlocked.includes(topicN);
-  }
-  function finalUnlocked() { return S.all || C.UNLOCK_ALL || D.topics.every(t => isUnlocked(t.n)); }
+  // ACCESO (código pagado) + PROGRESO (los temas se abren en orden)
+  const review = () => !!(C.UNLOCK_ALL || S.review);
+  const partDone = (id) => !!(S.parts[id] && S.parts[id].done);
+  function hasAccess(n) { return review() || S.all || (C.FREE_TOPICS || []).includes(n) || S.unlocked.includes(n); }
+  function progressOpen(n) { if (review() || n <= 1) return true; const prev = D.topics.find(t => t.n === n - 1); return !prev || prev.parts.every(p => partDone(p.id)); }
+  function lockReason(n) { if (review()) return null; if (!progressOpen(n)) return 'progress'; if (!hasAccess(n)) return 'access'; return null; }
+  function isUnlocked(topicN) { return !lockReason(topicN); }
+  const doneCount = () => D.topics.reduce((a, t) => a + t.parts.filter(p => partDone(p.id)).length, 0);
+  const totalParts = () => D.topics.reduce((a, t) => a + t.parts.length, 0);
+  function finalUnlocked() { return review() || doneCount() === totalParts(); }
   function redeem(code) {
     const hh = codeHash(code);
+    if ((C.REVIEW_CODES || []).includes(hh)) { S.review = true; save(); return { topics: 'all', review: true }; }
     const hit = (C.ACCESS_CODES || []).find(c => c.hash === hh);
     if (!hit) return false;
     if (hit.topics === 'all') S.all = true;
@@ -347,7 +352,7 @@
   }
   function audioSrc(au) { return window.AUD && window.AUD[au] ? 'data:audio/mpeg;base64,' + window.AUD[au] : 'audio/' + au + '.mp3'; }
 
-  window.M1 = { D, C, S, $, $$, h, esc, shuffle, sample, sleep, save, touchStreak, addSkill, addWeak, okWeak, skillPct, isUnlocked, finalUnlocked, redeem, codeHash,
+  window.M1 = { D, C, S, $, $$, h, esc, shuffle, sample, sleep, save, touchStreak, addSkill, addWeak, okWeak, skillPct, isUnlocked, finalUnlocked, hasAccess, progressOpen, lockReason, review, doneCount, totalParts, redeem, codeHash,
     allParts, partById, trackAudio, audioUI, floatStop, recordScore, letterScorer, voiceResult, floatBubble, setBubbleHidden, prevPart, nextPart, partStars, overallPct, imgURL, photo, play, playSeq, loadAudio, stop, sfx, praise, encourage, canSR, listen, recordVoice,
     norm, words, lev, speechScore, sheet, good, bad, toast, modal, xpFly, confetti, mascot, audioSrc };
 })();

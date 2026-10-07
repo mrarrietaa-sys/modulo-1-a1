@@ -4,9 +4,14 @@
    ===================================================================== */
 window.M1CONFIG = {
 
-  // MODO REVISIÓN (solo para el profe): true = TODAS las clases y el examen final abiertos.
-  // ⚠️ Cuando la plataforma esté lista para los estudiantes, cámbialo a false.
-  UNLOCK_ALL: true,
+  // MODO REVISIÓN GLOBAL: true = TODAS las clases y el examen abiertos para TODOS (no usar con estudiantes).
+  // Los temas se abren en orden: el Topic 2 se abre al terminar Part 1 y Part 2 del Topic 1, etc.
+  // El examen final solo se abre cuando el estudiante termina las 28 clases.
+  UNLOCK_ALL: false,
+
+  // CÓDIGO DE REVISIÓN DEL PROFE: escríbelo en "🔑 Código de acceso" para abrir todo SOLO en tu dispositivo.
+  // Código incluido: PROFE-REVISION  (crea otro en admin.html si quieres cambiarlo)
+  REVIEW_CODES: ["h12g15om1sv"],
 
   // Temas GRATIS (todos los estudiantes pueden entrar sin código).
   // Ejemplo: [1, 2] = The Greetings y The Alphabet son gratis.

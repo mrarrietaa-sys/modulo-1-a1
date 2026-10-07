@@ -128,7 +128,7 @@
     for (let k = 0; k < R && live(stage); k++) {
       const seq = sample(L, 3); const num = String(100 + Math.floor(Math.random() * 899));
       const body = head(stage, { lbl: 'Game', title: '🚗 La placa del carro', ins: 'Un policía te dicta las <b>letras de una placa</b>. Escucha y escribe las 3 letras.', count: `${k + 1} / ${R}` });
-      const plate = h(`<div class="g3-plate"><small>COLOMBIA</small><div><b id="pl">? ? ?</b> ${num}</div><small>BOGOTÁ D.C.</small></div>`); body.appendChild(plate);
+      const plate = h(`<div class="g3-plate"><small>NEW YORK</small><div><b id="pl">? ? ?</b> ${num}</div><small>THE EMPIRE STATE</small></div>`); body.appendChild(plate);
       const sayIt = async () => { for (const v of seq) { if (!live(stage)) return; await play(v.au); await sleep(350); } };
       const tools = h(`<div class="row" style="justify-content:center;gap:10px;margin:8px 0"></div>`); const r = rep(null, '🔊 Escuchar otra vez'); r.onclick = sayIt; tools.appendChild(r);
       const hb = h(`<button class="btn w sm">💡 Pista</button>`); tools.appendChild(hb); body.appendChild(tools);

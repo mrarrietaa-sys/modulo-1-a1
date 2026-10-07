@@ -34,10 +34,11 @@ window.M1CONFIG = {
   STUDENT_CODES: [
     { hash: "h7kthe217u", note: "Estudiante de ejemplo (ESTUDIANTE-DEMO)" }
   ],
-  // Códigos de CORTESÍA (clientes que quieren conocernos): clasificación + solo los 2 primeros temas.
-  // Código de ejemplo incluido: CORTESIA-DEMO
+  // Códigos de ACCESO GRATUITO ("Empieza gratis"): clasificación + solo los 2 primeros temas.
+  // Código de ejemplo incluido: GRATIS-DEMO
   TRIAL_CODES: [
-    { hash: "hy1dmj81xe", note: "Acceso de cortesía de ejemplo (CORTESIA-DEMO)" }
+    { hash: "h1hi92961dc", note: "Acceso gratuito de ejemplo (GRATIS-DEMO)" },
+    { hash: "hy1dmj81xe", note: "Código de ejemplo anterior" }
   ],
   MODULE_ID: "A1",
 

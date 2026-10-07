@@ -12,14 +12,16 @@
   function topbar() {
     const p = P.get();
     $('#topbar').innerHTML = `<div class="brand" id="go-home"><span class="logo-pill"><img class="logo" src="mra-brand.png" alt="mrarrieta.com"></span><small>MI PERFIL</small></div><div class="sp"></div>
-      ${p ? `<span class="pill hide-s">${p.type === 'staff' ? '👨‍🏫 Profe' : p.type === 'trial' ? '🎁 Cortesía' : '🎓 Estudiante'}</span><button class="iconbtn" id="out" title="Salir">⏻</button>` : ''}`;
+      ${p ? `<span class="pill hide-s">${p.type === 'staff' ? '👨‍🏫 Profe' : p.type === 'trial' ? '🟢 Acceso gratis' : '🎓 Estudiante'}</span>${p.first ? `<button class="tb-avbtn" id="me-b" title="Personaliza tu perfil">${P.avHTML('tb-av')}</button>` : ''}<button class="iconbtn" id="out" title="Salir">⏻</button>` : ''}`;
     $('#go-home').onclick = () => route('home');
+    if ($('#me-b')) $('#me-b').onclick = () => route('me');
     if ($('#out')) $('#out').onclick = logout;
   }
   function route(r) { M.stop && M.stop(); window.scrollTo(0, 0); topbar(); const p = P.get();
     if (!p) return login();
     if (!p.first) return nameStep();
     if (r === 'placement') return placement();
+    if (r === 'me' || r === 'me-photo' || r === 'me-av' || r === 'me-plat') return personalize(r === 'me' ? 'av' : r.slice(3));
     return home();
   }
 
@@ -40,8 +42,10 @@
       <input class="inp" id="cd" placeholder="Ej: ABC-123" autocapitalize="characters" autocomplete="off">
       <button class="btn k block lg" id="ok">Entrar →</button>
       <div class="pt-or"><span>¿Aún no eres estudiante?</span></div>
-      <a class="btn block pt-wa" target="_blank" rel="noopener" href="${WA('¡Hola! 👋 Quiero conocer la plataforma de mrarrieta.com. ¿Me pueden dar un código para mi acceso de cortesía? 🎁')}">🎁 Pide tu acceso de cortesía gratis</a>
-      <p class="muted pt-small">Con el código de cortesía tomas el examen de clasificación y vives la experiencia con los 2 primeros temas de tu módulo.</p></div></div>`;
+      <div class="pt-free"><h2>🟢 EMPIEZA GRATIS</h2>
+        <p><b>Crea tu acceso gratuito y descubre tu ruta de aprendizaje.</b></p>
+        <p class="muted">Realiza nuestro examen de clasificación y explora los primeros temas de tu módulo.</p>
+        <a class="btn block lg pt-wa" target="_blank" rel="noopener" href="${WA('¡Hola! 👋 Quiero EMPEZAR GRATIS en la plataforma de mrarrieta.com y descubrir mi ruta de aprendizaje. ¿Me envían mi código de acceso gratuito? 🟢')}">EMPEZAR GRATIS →</a></div></div></div>`;
     const i = $('#cd'); setTimeout(() => i.focus(), 200);
     const go = () => { const r = codeType(i.value); if (!r) { i.classList.add('wrong'); sfx('bad'); setTimeout(() => i.classList.remove('wrong'), 500); M.toast('Código no válido 😕'); return; }
       const old = P.get() || {};
@@ -77,47 +81,53 @@
     let main = '';
     if (!p.module && !staff) {
       main = `<div class="card pt-step"><div class="pt-stepn">1</div><div><span class="lbl">Primer paso</span><h2>Toma tu examen de clasificación</h2>
-        <p>Son <b>45 preguntas</b> (Listening, Reading, Writing y Speaking) que van de fáciles a difíciles. Al terminar, la plataforma te <b>ubica automáticamente</b> en el módulo que te corresponde: A1, A2, B1 o B2-C1.</p>
+        <p>Son <b>40 preguntas</b> (Listening, Reading, Writing y Speaking) que van de fáciles a difíciles. Al terminar, la plataforma te <b>ubica automáticamente</b> en el módulo que te corresponde: A1, A2, B1 o B2-C1.</p>
         <p class="muted">⏱ 45 minutos · ${pst.max} intentos${pst.attempts ? ` · Ya usaste ${pst.attempts}` : ''}${pst.inProgress ? ' · <b>Tienes un examen en progreso</b>' : ''}</p>
         <button class="btn k lg" id="pt">📝 ${pst.inProgress ? 'Continuar' : 'Tomar'} mi examen de clasificación</button></div></div>`;
     } else if (a || staff) {
       const ready = a && a.ready;
-      main = `<div class="card pt-mymod">${a ? `<div class="pt-mymod-img" style="background-image:url('${U(a.img)}')"><span>${a.n}</span></div>` : ''}<div><span class="lbl">${staff ? 'Modo profe' : 'Tu módulo'}</span>
-        <h2>${staff ? 'Todos los módulos abiertos para revisión' : `${esc(a.name)} · ${esc(a.es)}`}</h2>
-        ${a ? `<p class="muted">${pl && p.assignedBy !== 'admin' ? `Ubicado por tu examen de clasificación (${new Date(pl.date).toLocaleDateString('es-CO')}).` : 'Asignado por administración.'}${a.n > (p.module || 1) ? ' ¡Subiste de nivel al aprobar tu módulo anterior! 🎉' : ''}</p>` : ''}
-        ${a && ready ? `<div class="pt-bar"><i style="width:${P.progress(a.id).pct}%"></i></div><p class="muted" style="margin:4px 0 10px">${P.progress(a.id).done} de ${trial ? '4 clases de tu acceso de cortesía' : a.classes + ' clases'} completadas</p><a class="btn k lg" href="${a.url}">▶ ${P.progress(a.id).done ? 'Continuar' : 'Empezar'} mi módulo</a>` : ''}
-        ${a && !ready && trial && P.trialMod() ? `<p class="pt-soon">🚧 Tu ${esc(a.name)} se está terminando de construir. Mientras tanto, usa tu acceso de cortesía con los 2 primeros temas del <b>${esc(P.trialMod().name)}</b>.</p><a class="btn k lg" href="${P.trialMod().url}">▶ Entrar con mi acceso de cortesía</a>` : ''}
+      main = `<div class="card pt-mymod">${a ? `<div class="pt-mymod-img" style="background-image:url('${U(a.img)}')"><span>${a.n}</span></div>` : ''}<div><span class="lbl">${staff ? 'Modo profe' : '🧭 Tu ruta de aprendizaje'}</span>
+        <h2>${staff ? 'Todos los módulos abiertos para revisión' : `<small class="pt-here">📍 Estás aquí</small>${esc(a.name)} · ${esc(a.es)}`}</h2>
+        ${a ? `<p class="muted">${pl && p.assignedBy !== 'admin' ? `Tu ruta se creó con tu examen de clasificación (${new Date(pl.date).toLocaleDateString('es-CO')}).` : 'Tu ruta fue asignada por administración.'}${a.n > (p.module || 1) ? ' ¡Avanzaste en tu ruta al aprobar el módulo anterior! 🎉' : ''}</p>` : ''}
+        ${a && ready ? `<div class="pt-bar"><i style="width:${P.progress(a.id).pct}%"></i></div><p class="muted" style="margin:4px 0 10px">${P.progress(a.id).done} de ${trial ? '4 clases de tu acceso gratuito' : a.classes + ' clases'} completadas</p><a class="btn k lg" href="${a.url}">▶ ${P.progress(a.id).done ? 'Continuar' : 'Empezar'} mi ruta</a>` : ''}
+        ${a && !ready && trial && P.trialMod() ? `<p class="pt-soon">🚧 Tu ${esc(a.name)} se está terminando de construir. Mientras tanto, usa tu acceso gratuito con los 2 primeros temas del <b>${esc(P.trialMod().name)}</b>.</p><a class="btn k lg" href="${P.trialMod().url}">▶ Entrar con mi acceso gratuito</a>` : ''}
         ${a && !ready && !trial ? `<p class="pt-soon">🚧 Tu ${esc(a.name)} se está terminando de construir. ¡Muy pronto estará listo! Mientras tanto puedes repasar los módulos anteriores.</p>` : ''}</div></div>`;
     }
     app.innerHTML = `<div class="wrap">
-      <section class="card pt-head"><div class="pt-av">${esc(ini)}</div><div class="pt-hi"><span class="lbl">${greet}!</span><h1>¡Hola, <span class="nm">${esc(p.first)}</span>! 👋</h1>
-        <p class="muted">${staff ? '👨‍🏫 Perfil de profesor — puedes revisar todo.' : trial ? '🎁 Acceso de cortesía — conoce nuestra plataforma.' : '🎓 Estudiante de mrarrieta.com'}</p></div>${M.mascot('pt-headmra', 'welcome')}</section>
-      ${trial ? `<div class="pt-trialbar">🎁 <div><b>Estás en tu acceso de cortesía.</b> Tienes acceso al examen de clasificación y a los <b>2 primeros temas</b> de tu módulo. ¿Te gustó? <a target="_blank" rel="noopener" href="${WA(`¡Hola! Soy ${p.name}. Probé el acceso de cortesía en la plataforma y quiero inscribirme 🚀`)}">Inscríbete aquí 💬</a></div></div>` : ''}
+      <section class="card pt-head ban-${esc(P.look().banner || 'w')}"><button class="pt-avwrap" id="me-av" title="Personaliza tu foto">${P.avHTML('pt-av')}<i class="pt-pen">✏️</i></button><div class="pt-hi"><span class="lbl">${greet}!</span><h1>¡Hola, <span class="nm">${esc(P.look().nick || p.first)}</span>! 👋</h1>
+        <p class="muted">${staff ? '👨‍🏫 Perfil de profesor — puedes revisar todo.' : trial ? '🟢 Acceso gratuito — descubre tu ruta de aprendizaje.' : '🎓 Estudiante de mrarrieta.com'}</p></div>${M.mascot('pt-headmra', 'welcome')}</section>
+      ${trial ? `<div class="pt-trialbar">🟢 <div><b>Estás en tu acceso gratuito.</b> Tienes acceso al examen de clasificación y a los <b>2 primeros temas</b> de tu módulo. ¿Te gustó? <a target="_blank" rel="noopener" href="${WA(`¡Hola! Soy ${p.name}. Empecé gratis en la plataforma y quiero inscribirme 🚀`)}">Inscríbete aquí 💬</a></div></div>` : ''}
       ${main}
-      <div class="sect-title"><h2>📚 Mis módulos</h2></div>
-      <div class="pt-mods-grid">${P.MODS.map(m => modCard(m)).join('')}</div>
+      ${P.look().pic ? '' : `<div class="card pt-perso"><div class="pt-perso-img">${M.mascot('', 'wink')}</div><div><span class="lbl">Nuevo ✨</span><h2>Personaliza tu perfil</h2><p class="muted">Tómate una foto o crea <b>tu propio Mr. Arrieta</b>: vístelo, ponle sombrero y elige su fondo. ¡Haz tu plataforma más tuya!</p><button class="btn k" id="me-go">🎨 Personalizar ahora</button></div></div>`}
+      <div class="sect-title"><h2>🧭 Mi ruta de aprendizaje</h2></div>
+      ${routeBar()}
+      <div class="pt-mods-grid pt-route">${P.MODS.map(m => modCard(m)).join('')}</div>
       ${pl ? `<div class="sect-title"><h2>📝 Mi examen de clasificación</h2></div><div class="card pt-plres"><div><b>Resultado:</b> ${esc(P.mod(pl.module).name)} · ${esc(P.mod(pl.module).es)}<br><span class="muted">${new Date(pl.date).toLocaleDateString('es-CO')}${pl.mods ? ' · ' + [1, 2, 3, 4].map(k => `${P.mod(k).id}: ${pl.mods[k]}%`).join(' · ') : ''}</span></div>${pst.attempts < pst.max ? '<button class="btn w sm" id="pt2">🔁 Repetir examen</button>' : ''}</div>` : ''}
       ${staff ? `<div class="sect-title"><h2>📝 Examen de clasificación</h2></div><div class="card pt-plres"><div>Puedes presentar o revisar el examen de clasificación como lo verá el estudiante.</div><button class="btn w sm" id="pt2">📝 Abrir examen</button></div>` : ''}
       ${certs()}
       <p class="center fx-foot" style="margin-top:22px;font-size:13.5px;font-weight:600">mrarrieta.com · ¡Aprende inglés HABLANDO! · WhatsApp ${esc(C.WHATSAPP.replace(/^57/, ''))}</p></div>`;
     if ($('#pt')) $('#pt').onclick = () => route('placement');
+    $('#me-av').onclick = () => route('me'); if ($('#me-go')) $('#me-go').onclick = () => route('me');
     if ($('#pt2')) $('#pt2').onclick = () => { if (staff) return route('placement'); const m = M.modal(`<h3>¿Repetir el examen de clasificación?</h3><p class="muted">Tu nuevo resultado reemplazará la ubicación actual de tu perfil. Usaste ${pst.attempts} de ${pst.max} intentos.</p><div class="row"><button class="btn k" id="y">Sí, repetir</button><button class="btn w" id="n">Cancelar</button></div>`, { x: true }); $('#n', m).onclick = () => m.remove(); $('#y', m).onclick = () => { m.remove(); route('placement'); }; };
     $$('.pt-mod').forEach(el => el.onclick = () => openMod(el.dataset.id));
   }
+  function routeBar() {
+    return `<div class="pt-routebar">${P.MODS.map((m, i) => { const r = P.role(m.id); return `${i ? `<i class="ln ${r === 'locked' || r === 'soon' ? '' : 'on'}"></i>` : ''}<div class="st ${r}${P.passed(m.id) ? ' ok' : ''}"><b>${P.passed(m.id) ? '✓' : r === 'current' ? '📍' : m.n}</b><small>${esc(m.id === 'B2' ? 'B2-C1' : m.id)}</small></div>`; }).join('')}</div>`;
+  }
   function modCard(m) {
     const r = P.role(m.id); const pr = P.progress(m.id); const trial = P.isTrial();
-    const chip = { current: '⭐ TU MÓDULO', review: '🔁 REPASO', locked: '🔒 BLOQUEADO', soon: '🚧 PRÓXIMAMENTE' }[r];
+    const chip = { current: '📍 ESTÁS AQUÍ', review: P.passed(m.id) ? '✅ SUPERADO' : '🔁 REPASO', locked: '🔒 PRÓXIMA ETAPA', soon: '🚧 PRÓXIMAMENTE' }[r];
     const showBar = (r === 'current' || r === 'review') && m.ready;
     return `<button class="pt-mod ${r}" data-id="${m.id}"><div class="pt-mod-img" style="background-image:url('${U(m.img, 640, 360)}')"><span class="pt-mod-n">${m.n}</span><span class="pt-chip ${r}">${chip}</span></div>
       <div class="pt-mod-bd"><h3>${esc(m.name)} · ${esc(m.id === 'B2' ? 'B2-C1' : m.id)}</h3><div class="es">${esc(m.es)}</div><p>${esc(m.desc)}</p>
       ${showBar ? `<div class="pt-bar"><i style="width:${pr.pct}%"></i></div><small class="muted">${pr.done} de ${r === 'current' && trial ? 4 : m.classes} clases${P.passed(m.id) ? ' · 🎓 Aprobado' : ''}</small>` : ''}
-      ${r === 'locked' ? `<small class="muted">${trial ? 'Disponible al inscribirte' : 'Se abre al aprobar tu módulo'}</small>` : ''}</div></button>`;
+      ${r === 'locked' ? `<small class="muted">${trial ? 'Disponible al inscribirte' : 'Se abre cuando avances en tu ruta'}</small>` : ''}</div></button>`;
   }
   function openMod(id) {
     const m = P.mod(id), r = P.role(id), a = P.assigned();
     if (r === 'current' || r === 'review') { location.href = m.url; return; }
     if (r === 'soon') return M.modal(`<div class="center">${M.mascot('mascot', 'think')}</div><h3 class="center">🚧 ${esc(m.name)} · ${esc(m.es)}</h3><p class="center">Este módulo está en construcción. ¡Muy pronto estará disponible en tu perfil!</p>`, { x: true });
-    const msg = P.isTrial() ? `Tu acceso de cortesía incluye solo tu módulo asignado. ¡Inscríbete para estudiar todos los módulos!`
+    const msg = P.isTrial() ? `Tu acceso gratuito incluye solo el inicio de tu ruta. ¡Inscríbete para estudiar todos los módulos!`
       : !a ? 'Primero toma tu examen de clasificación para saber en qué módulo empiezas.'
       : `Para abrir el ${m.name} primero debes <b>terminar y aprobar el examen final del ${esc(a.name)}</b>. ¡Paso a paso! 💪`;
     const mm = M.modal(`<div class="center">${M.mascot('mascot', 'pointside')}</div><h3 class="center">🔒 ${esc(m.name)} bloqueado</h3><p class="center" style="font-size:17px">${msg}</p>
@@ -127,6 +137,97 @@
   function certs() {
     const done = P.MODS.filter(m => m.ready && P.passed(m.id)); if (!done.length) return '';
     return `<div class="sect-title"><h2>🎓 Mis certificados</h2></div><div class="pt-certs">${done.map(m => `<a class="card pt-cert" href="${m.url}#cert">🎓 <div><b>${esc(m.name)} · ${esc(m.level)}</b><small>Nota: ${(P.modState(m.id).final.score || 0).toFixed ? Number(P.modState(m.id).final.score).toFixed(1) : ''}/10 · Ver y descargar</small></div></a>`).join('')}</div>`;
+  }
+  /* ---------- personalización del perfil ---------- */
+  const EN = { '': 'Original', '#E3242B': 'Red', '#0B2A5B': 'Navy blue', '#f2f2f2': 'White', '#FFC21A': 'Yellow', '#2E9E5B': 'Green', '#3AA0E8': 'Light blue', '#7B4BC4': 'Purple', '#F07AB0': 'Pink', '#8A8F98': 'Gray', '#8a8f98': 'Gray', '#F27A1A': 'Orange',
+    '#2a2a2a': 'Black', '#222222': 'Black', '#c8a97a': 'Khaki', '#ececec': 'White', '#6b4a2e': 'Brown' };
+  const POSE_EN = { welcome: 'Welcome!', smile: 'Smile', thumbs: 'Thumbs up', celebrate: 'Celebrate', wink: 'Wink', wow: 'Wow!', idea: 'Idea', point: 'Number one', pointside: 'Look!', present: 'Present', shrug: 'I don\'t know', think: 'Think', watch: 'Time!' };
+  const HAT_EN = { none: ['🚫', 'No hat'], cap: ['🧢', 'Cap'], grad: ['🎓', 'Graduation cap'], beanie: ['🧶', 'Beanie'], cowboy: ['🤠', 'Cowboy hat'], crown: ['👑', 'Crown'], party: ['🥳', 'Party hat'], tophat: ['🎩', 'Top hat'], chef: ['👨‍🍳', 'Chef\'s hat'], helmet: ['⛑️', 'Hard hat'] };
+  const BG_EN = { red: 'Red', navy: 'Navy', yellow: 'Yellow', sky: 'Sky blue', green: 'Green', purple: 'Purple', pink: 'Pink', white: 'White', usa: 'USA' };
+  const BANNERS = [['w', 'White', '#fff'], ['red', 'Red', '#E3242B'], ['navy', 'Navy', '#0B2A5B'], ['yellow', 'Yellow', '#FFC21A'], ['green', 'Green', '#2E9E5B'], ['sky', 'Sky blue', '#3AA0E8'], ['purple', 'Purple', '#7B4BC4']];
+  function squareJPEG(src, size = 320) {
+    const cv = document.createElement('canvas'); cv.width = cv.height = size; const ctx = cv.getContext('2d');
+    const w = src.videoWidth || src.naturalWidth || src.width, hh = src.videoHeight || src.naturalHeight || src.height, m = Math.min(w, hh);
+    ctx.drawImage(src, (w - m) / 2, (hh - m) / 2, m, m, 0, 0, size, size); return cv.toDataURL('image/jpeg', .85);
+  }
+  function personalize(tab) {
+    const p = P.get(); const L = P.look(); let av = Object.assign(MRAV.def(), L.av || {});
+    app.innerHTML = `<div class="wrap me-wrap">
+      <div class="me-top"><button class="btn w sm" id="back">← Mi perfil</button><div><h1>🎨 Personaliza tu perfil</h1><p class="muted">Customize your profile · Haz tu plataforma más tuya</p></div></div>
+      <div class="me-tabs"><button data-t="av">🧑‍🏫 Mi Mr. Arrieta</button><button data-t="photo">📸 Mi foto</button><button data-t="plat">✨ Mi plataforma</button></div>
+      <div id="me-body"></div></div>`;
+    $('#back').onclick = () => route('home');
+    $$('.me-tabs button').forEach(b => b.onclick = () => show(b.dataset.t));
+    const done = (msg) => { sfx('win'); M.toast(msg); topbar(); };
+    function show(t) {
+      $$('.me-tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
+      const body = $('#me-body'); const L = P.look();
+      if (t === 'photo') {
+        body.innerHTML = `<div class="card me-photo"><div class="me-ph">${L.photo ? `<img src="${L.photo}" alt="">` : `<span>${esc(P.initials())}</span>`}</div>
+          <h2>My photo · Mi foto</h2><p class="muted">Tómate una selfie o sube una foto. Se recorta en círculo y se guarda solo en tu perfil.</p>
+          <div class="me-btns"><button class="btn k" id="cam">📸 Tomar foto</button><button class="btn w" id="up">🖼️ Subir foto</button>${L.photo ? '<button class="btn w" id="rm">🗑️ Quitar</button>' : ''}</div>
+          ${L.photo ? `<label class="me-chk"><input type="checkbox" id="usep" ${L.pic === 'photo' ? 'checked' : ''}><span>Usar mi foto como foto de perfil</span></label>` : ''}
+          <input type="file" id="fi" accept="image/*" hidden><input type="file" id="fc" accept="image/*" capture="user" hidden></div>`;
+        const setPhoto = (u) => { P.setLook({ photo: u, pic: 'photo' }); done('¡Foto guardada! 📸'); show('photo'); };
+        const fromFile = (f) => { if (!f) return; const r = new FileReader(); r.onload = () => { const im = new Image(); im.onload = () => setPhoto(squareJPEG(im)); im.src = r.result; }; r.readAsDataURL(f); };
+        $('#fi').onchange = e => fromFile(e.target.files[0]); $('#fc').onchange = e => fromFile(e.target.files[0]);
+        $('#up').onclick = () => $('#fi').click();
+        $('#cam').onclick = async () => {
+          if (!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) return $('#fc').click();
+          let st; try { st = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 640, height: 640 }, audio: false }); } catch (e) { return $('#fc').click(); }
+          const m = M.modal(`<h3 class="center">📸 Say cheese! · ¡Sonríe!</h3><div class="me-cam"><video autoplay playsinline muted></video><i class="me-ring"></i></div><div class="row"><button class="btn k" id="snap">📸 Tomar foto</button><button class="btn w" id="cx">Cancelar</button></div>`, { x: true });
+          const v = $('video', m); v.srcObject = st; const stop = () => st.getTracks().forEach(t => t.stop());
+          const close = () => { stop(); m.remove(); }; $('#cx', m).onclick = close; const mx = $('.mx', m); if (mx) mx.addEventListener('click', stop);
+          $('#snap', m).onclick = () => { const cv = document.createElement('canvas'); cv.width = v.videoWidth; cv.height = v.videoHeight; const c = cv.getContext('2d'); c.translate(cv.width, 0); c.scale(-1, 1); c.drawImage(v, 0, 0); close(); setPhoto(squareJPEG(cv)); };
+        };
+        if ($('#rm')) $('#rm').onclick = () => { P.setLook({ photo: '', pic: L.pic === 'photo' ? (L.head ? 'avatar' : '') : L.pic }); done('Foto eliminada'); show('photo'); };
+        if ($('#usep')) $('#usep').onchange = e => { P.setLook({ pic: e.target.checked ? 'photo' : (L.head ? 'avatar' : '') }); done(e.target.checked ? 'Tu foto es tu foto de perfil ✅' : 'Listo'); };
+      } else if (t === 'av') {
+        const sw = (k, list) => list.map(([hx, es, col]) => `<button class="me-sw${av[k] === hx ? ' on' : ''}" data-k="${k}" data-v="${hx}" title="${es}"><i style="background:${col}"></i><small>${EN[hx] || es}</small></button>`).join('');
+        body.innerHTML = `<div class="me-av">
+          <div class="me-prev card"><div class="me-stage" id="stage"><img id="pv" alt="Mi Mr. Arrieta"><b class="me-stk" id="stk"></b></div>
+            <button class="btn w block" id="rnd">🎲 Surprise me! · Sorpréndeme</button>
+            <button class="btn k block lg" id="sv">✅ Guardar mi Mr. Arrieta</button>
+            <label class="me-chk"><input type="checkbox" id="guide" ${L.guide ? 'checked' : ''}><span>Que <b>mi Mr. Arrieta</b> me acompañe en todas mis clases</span></label></div>
+          <div class="me-opts">
+            <div class="card"><h3>👤 Pose · Postura</h3><div class="me-poses" data-noguide>${MRAV.POSES.map(x => `<button class="me-pose${av.pose === x ? ' on' : ''}" data-k="pose" data-v="${x}"><img src="mra-${x}.webp" alt="" loading="lazy"><small>${POSE_EN[x]}</small></button>`).join('')}</div></div>
+            <div class="card"><h3>👕 Shirt · Camiseta</h3><div class="me-sws">${sw('shirt', MRAV.SHIRTS)}</div></div>
+            <div class="card"><h3>👖 Pants · Pantalón</h3><div class="me-sws">${sw('pants', MRAV.PANTS)}</div></div>
+            <div class="card"><h3>👟 Shoes · Zapatos</h3><div class="me-sws">${sw('shoes', MRAV.SHOES)}</div></div>
+            <div class="card"><h3>🎩 Hat · Sombrero</h3><div class="me-hats">${Object.keys(MRAV.HATS).map(x => `<button class="me-hat${av.hat === x ? ' on' : ''}" data-k="hat" data-v="${x}"><b>${HAT_EN[x][0]}</b><small>${HAT_EN[x][1]}</small></button>`).join('')}</div></div>
+            <div class="card"><h3>🖼️ Background · Fondo</h3><div class="me-sws">${Object.keys(MRAV.BGS).map(x => `<button class="me-sw${av.bg === x ? ' on' : ''}" data-k="bg" data-v="${x}"><i style="background:linear-gradient(135deg,${MRAV.BGS[x][0]},${MRAV.BGS[x][1]})"></i><small>${BG_EN[x]}</small></button>`).join('')}</div></div>
+            <div class="card"><h3>⭐ Sticker</h3><div class="me-hats">${MRAV.STICKERS.map(x => `<button class="me-hat stk${av.sticker === x ? ' on' : ''}" data-k="sticker" data-v="${x}"><b>${x || '🚫'}</b></button>`).join('')}</div></div>
+          </div></div>`;
+        let tok = 0;
+        const paint = () => { const bg = MRAV.BGS[av.bg] || MRAV.BGS.red; $('#stage').style.background = `linear-gradient(135deg,${bg[0]},${bg[1]})`; $('#stk').textContent = av.sticker || '';
+          const my = ++tok; $('#stage').classList.add('busy'); MRAV.full(av).then(u => { if (my !== tok) return; $('#pv').src = u; $('#stage').classList.remove('busy'); }); };
+        const mark = () => $$('[data-k]', body).forEach(b => b.classList.toggle('on', av[b.dataset.k] === b.dataset.v));
+        $$('[data-k]', body).forEach(b => b.onclick = () => { av[b.dataset.k] = b.dataset.v; sfx('tap'); mark(); paint(); });
+        $('#rnd').onclick = () => { const pick = (a) => a[Math.floor(Math.random() * a.length)]; av = { pose: pick(MRAV.POSES), shirt: pick(MRAV.SHIRTS)[0], pants: pick(MRAV.PANTS)[0], shoes: pick(MRAV.SHOES)[0], hat: pick(Object.keys(MRAV.HATS)), bg: pick(Object.keys(MRAV.BGS)), sticker: pick(MRAV.STICKERS) }; mark(); paint(); };
+        $('#sv').onclick = async () => { const b = $('#sv'); b.disabled = true; b.textContent = 'Guardando…'; let head = ''; try { head = await MRAV.head(av); } catch (e) { }
+          const guide = $('#guide').checked; P.setLook({ av: Object.assign({}, av), head, pic: head ? 'avatar' : (L.pic || ''), guide });
+          MRAV.applyGuide(guide ? av : null); M.confetti(1200); done('¡Tu Mr. Arrieta quedó genial! 🎉'); b.disabled = false; b.textContent = '✅ Guardar mi Mr. Arrieta';
+          const m = M.modal(`<div class="center">${P.avHTML('pt-av big')}<h3>Looking good! 😎</h3><p>Tu Mr. Arrieta ahora es tu <b>foto de perfil</b>${guide ? ' y te acompañará en tus clases' : ''}.</p><button class="btn k block" id="ok">Ver mi perfil</button><button class="btn w block" id="st" style="margin-top:8px">Seguir personalizando</button></div>`, { x: true });
+          $('#ok', m).onclick = () => { m.remove(); route('home'); }; $('#st', m).onclick = () => m.remove(); };
+        $('#guide').onchange = e => { if (L.av || P.look().av) { P.setLook({ guide: e.target.checked }); MRAV.applyGuide(e.target.checked ? (P.look().av || av) : null); M.toast(e.target.checked ? 'Tu Mr. Arrieta te acompañará en las clases 🙌' : 'Volverá el Mr. Arrieta original'); } };
+        paint();
+      } else {
+        const opt = (v, lbl, dis) => `<label class="me-radio${dis ? ' dis' : ''}"><input type="radio" name="pic" value="${v}" ${(L.pic || '') === v ? 'checked' : ''} ${dis ? 'disabled' : ''}> ${lbl}</label>`;
+        body.innerHTML = `<div class="card me-plat">
+          <h3>🖼️ Profile picture · Foto de perfil</h3>
+          <div class="me-radios">${opt('', `<span class="pt-av sm">${esc(P.initials())}</span> Mis iniciales`)}${opt('photo', `${L.photo ? `<span class="pt-av sm has"><img src="${L.photo}"></span>` : '📸'} Mi foto`, !L.photo)}${opt('avatar', `${L.head ? `<span class="pt-av sm has"><img src="${L.head}"></span>` : '🧑‍🏫'} Mi Mr. Arrieta`, !L.head)}</div>
+          <h3>👋 Nickname · ¿Cómo quieres que te salude?</h3><input class="inp" id="nick" maxlength="20" placeholder="${esc(p.first)}" value="${esc(L.nick || '')}">
+          <p class="muted pt-small">Tu nombre completo se sigue usando en certificados y reportes.</p>
+          <h3>🎨 My color · Color de mi perfil</h3><div class="me-sws">${BANNERS.map(([k, en, c]) => `<button class="me-sw${(L.banner || 'w') === k ? ' on' : ''}" data-b="${k}"><i style="background:${c}"></i><small>${en}</small></button>`).join('')}</div>
+          <label class="me-chk"><input type="checkbox" id="guide2" ${L.guide ? 'checked' : ''} ${L.av ? '' : 'disabled'}><span>Que <b>mi Mr. Arrieta personalizado</b> me acompañe en todas mis clases${L.av ? '' : ' <small class="muted">(primero crea tu Mr. Arrieta)</small>'}</span></label>
+          <button class="btn k block lg" id="svp">✅ Guardar</button></div>`;
+        let ban = L.banner || 'w';
+        $$('[data-b]', body).forEach(b => b.onclick = () => { ban = b.dataset.b; $$('[data-b]', body).forEach(x => x.classList.toggle('on', x === b)); sfx('tap'); });
+        $('#svp').onclick = () => { const r = $('input[name=pic]:checked', body); const guide = $('#guide2').checked;
+          P.setLook({ pic: r ? r.value : '', nick: $('#nick').value.trim(), banner: ban, guide: !!(guide && L.av) }); MRAV.applyGuide(guide && L.av ? L.av : null); done('¡Cambios guardados! ✅'); route('home'); };
+      }
+    }
+    show(tab || 'av');
   }
   function placement() {
     window.MRAPLACE.run(app, { route: (r) => route(r || 'home'), after: () => topbar() });

@@ -128,7 +128,7 @@
   if (window.speechSynthesis) { speechSynthesis.onvoiceschanged = () => { ttsVoice = pickVoice(); }; ttsVoice = pickVoice(); }
   async function say(item) {
     M.stop();
-    if (item.au) { if (item.p) await M.loadAudio([M.MOD.audio + item.p.topic]); return M.play(item.au); }
+    if (item.au) { if (item.p) await M.loadAudio(['t' + item.p.topic]); return M.play(item.au); }
     if (item.audio) { const a = M.trackAudio(new Audio(item.audio)); window.__ra = a; try { await a.play(); return; } catch (e) { } }
     if (window.speechSynthesis) { const u = new SpeechSynthesisUtterance(item.text || item.en); u.lang = 'en-US'; u.rate = 0.95; if (ttsVoice || (ttsVoice = pickVoice())) u.voice = ttsVoice; u.onstart = u.onend = u.onerror = () => setTimeout(M.audioUI, 50); speechSynthesis.cancel(); speechSynthesis.speak(u); setTimeout(M.audioUI, 300); }
   }

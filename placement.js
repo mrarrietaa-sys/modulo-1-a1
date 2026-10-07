@@ -1,6 +1,6 @@
 /* =====================================================================
    EXAMEN DE CLASIFICACIÓN (Placement Test) — mismo examen y funciones del original
-   45 preguntas (11 Listening · 11 Reading · 11 Writing · 12 Speaking), de fácil a difícil
+   40 preguntas (10 Listening · 10 Reading · 10 Writing · 10 Speaking), de fácil a difícil
    · Cronómetro de 45 minutos · 2 intentos (el 3.º con código del profe)
    · Progreso guardado · Correcto / incorrecto en cada pregunta
    · Módulo recomendado = el primer módulo con menos de 70 % en Listening+Reading+Writing
@@ -73,7 +73,7 @@
   }
   function welcome() {
     const PX = (u) => `https://images.pexels.com/photos/${u}?auto=compress&cs=tinysrgb&w=500`;
-    const SK = [['Listening', '🎧', PX('6399/woman-girl-technology-music.jpg'), 11], ['Reading', '📖', PX('8553920/pexels-photo-8553920.jpeg'), 11], ['Writing', '✍️', PX('210661/pexels-photo-210661.jpeg'), 11], ['Speaking', '🎤', PX('8872482/pexels-photo-8872482.jpeg'), 12]];
+    const SK = [['Listening', '🎧', PX('6399/woman-girl-technology-music.jpg'), 10], ['Reading', '📖', PX('8553920/pexels-photo-8553920.jpeg'), 10], ['Writing', '✍️', PX('210661/pexels-photo-210661.jpeg'), 10], ['Speaking', '🎤', PX('8872482/pexels-photo-8872482.jpeg'), 10]];
     shell(`${top()}<div class="card center fx-welcome">
       <div class="fx-photos">${SK.map(([l, ic, u, n]) => `<div class="fx-pbox"><div class="fx-pimg"><img src="${u}" alt="${l}" loading="lazy" onerror="this.style.opacity=0"></div><div class="fx-pcap"><b>${n}</b> ${ic} ${l}</div></div>`).join('')}</div>
       <span class="lbl" style="margin-top:6px">✦ Examen de clasificación interactivo</span>
@@ -131,13 +131,13 @@
   }
   function instructions() {
     shell(`${top()}<div class="card fx-form"><span class="lbl">Instrucciones generales</span><h2>Antes de empezar</h2><ul class="fx-ul">
-      <li>El examen tiene <b>${N} preguntas</b> en 4 partes: Listening (11), Reading (11), Writing (11) y Speaking (12).</li>
+      <li>El examen tiene <b>${N} preguntas</b> en 4 partes: Listening, Reading, Writing y Speaking (10 cada una).</li>
       <li>Tienes un máximo de <b>${CFG.TIME_MIN} minutos</b>. El cronómetro aparece arriba; si llega a cero, el examen se envía solo con lo que hayas respondido.</li>
       <li>Las preguntas empiezan fáciles y se vuelven más difíciles — así sabremos exactamente en qué módulo debes comenzar.</li>
       <li>En cada pregunta verás de inmediato si tu respuesta es <b>correcta o incorrecta</b>.</li>
       <li>En Listening toca <b>🔊 Escuchar</b> para oír el audio en inglés americano. En Speaking toca <b>🎤</b>, habla y toca otra vez para detener; puedes grabar de nuevo.</li>
       <li>Debes responder todas las preguntas antes de enviar.</li>
-      <li>Tienes <b>${CFG.ATTEMPTS} intentos</b>. Al finalizar verás tu <b>módulo recomendado</b>, un PDF descargable, y tu resultado se enviará a tu correo y a administración. <b>Tu perfil quedará ubicado automáticamente en tu módulo.</b></li>
+      <li>Tienes <b>${CFG.ATTEMPTS} intentos</b>. Al finalizar verás tu <b>módulo recomendado</b>, un PDF descargable, y tu resultado se enviará a tu correo y a administración. <b>Con tu resultado se crea automáticamente tu ruta de aprendizaje.</b></li>
       <li>Tu progreso se guarda solo: si se recarga la página, puedes continuar donde quedaste.</li></ul>
       <p class="muted" style="font-size:14px">🎤 Tu navegador te pedirá permiso para usar el micrófono en la sección de Speaking.</p>
       <div class="actionbar"><button class="btn k lg" id="go">🚀 Comenzar examen</button></div></div>`);
@@ -277,7 +277,7 @@
     const o = ms.all ? `¡Excelente trabajo! Dominaste los cuatro módulos del Placement Test. Te ubicamos en el ${m.name} (${m.es}) para perfeccionar tu inglés.`
       : ms.rec === 1 ? `¡Bienvenido(a)! Según tus resultados, vas a comenzar en el ${m.name} (${m.es}) para construir una base sólida.`
       : `¡Buen trabajo! Según tus resultados, vas a comenzar en el ${m.name} (${m.es}).`;
-    return `${o} Tu punto más fuerte es ${NAMES[best]}.${best !== worst ? ` Sigue practicando ${NAMES[worst]} cuando empieces tu módulo.` : ''}`;
+    return `${o} Tu punto más fuerte es ${NAMES[best]}.${best !== worst ? ` Sigue practicando ${NAMES[worst]} cuando empieces tu ruta de aprendizaje.` : ''}`;
   }
   let last_ = null;
   function submit() {
@@ -293,12 +293,13 @@
     const r = last_; const m = P.mod(r.ms.rec); const left = maxAttempts() - ST.attempts; const trial = P.isTrial();
     const waMsg = encodeURIComponent(`Hola, soy ${r.name}. Acabo de hacer el Placement Test en mrarrieta.com y me ubicó en el ${m.name} (${m.es}). Me interesa: ${COURSE[r.course] || 'un curso'}. Quiero más información 😊`);
     shell(`${top()}<div class="card center fx-res"><div class="row" style="justify-content:center;align-items:center;gap:16px">${M.mascot('mascot bounce', 'celebrate')}
-      <div><span class="lbl">Tu módulo recomendado</span><div class="pt-level">${esc(m.name.toUpperCase())}</div><div class="fx-band alto">${esc(m.es)} · ${esc(m.level)}</div></div></div>
+      <div><span class="lbl">🧭 Tu ruta de aprendizaje empieza en</span><div class="pt-level">${esc(m.name.toUpperCase())}</div><div class="fx-band alto">${esc(m.es)} · ${esc(m.level)}</div></div></div>
       <p class="muted">${esc(r.name)} — ${esc(r.attemptLabel)}</p>
-      <div class="pt-mods">${[1, 2, 3, 4].map(k => { const mm = P.mod(k), x = r.ms.mods[k]; return `<div class="${k === r.ms.rec ? 'rec' : x.ok ? 'ok' : ''}"><b>${esc(mm.name)}</b><small>${esc(mm.es)}</small><span>${Math.round(x.pct * 100)}%</span><em>${k === r.ms.rec ? '⭐ Tu módulo' : x.ok ? '✓ Dominado' : '—'}</em></div>`; }).join('')}</div>
+      <div class="pt-mods">${[1, 2, 3, 4].map(k => { const mm = P.mod(k), x = r.ms.mods[k]; return `<div class="${k === r.ms.rec ? 'rec' : x.ok ? 'ok' : ''}"><b>${esc(mm.name)}</b><small>${esc(mm.es)}</small><span>${Math.round(x.pct * 100)}%</span><em>${k === r.ms.rec ? '📍 Empiezas aquí' : x.ok ? '✓ Dominado' : '—'}</em></div>`; }).join('')}</div>
       <div class="fx-bars">${Object.keys(r.per).map(k => `<div><span>${EX.sections.find(s => s.key === k).icon} ${NAMES[k]}</span><div class="bar"><i style="width:${r.per[k].score * 10}%"></i></div><b>${r.per[k].score.toFixed(1)}</b></div>`).join('')}</div>
       <div class="fx-comment">${r.timedOut ? `<b>⏱ Se acabó el tiempo (${CFG.TIME_MIN} minutos).</b> Tu examen se envió automáticamente con las respuestas que tenías.<br><br>` : ''}<b>Comentario:</b> ${esc(comment(r.per, r.ms))}</div>
-      ${trial ? `<div class="pt-trial">🎁 <b>Acceso de cortesía:</b> ya puedes vivir la experiencia con los <b>2 primeros temas</b> del ${esc((P.trialMod() || m).name)}.</div>` : ''}
+      ${(() => { const asg = P.assigned(); return asg && asg.n > m.n ? `<div class="pt-trial">🎓 <b>Ojo:</b> en este dispositivo ya aprobaste el examen final del ${esc(P.mod(asg.n - 1).name)}, por eso hoy tu ruta está en el <b>${esc(asg.name)} (${esc(asg.es)})</b>.</div>` : ''; })()}
+      ${trial ? `<div class="pt-trial">🟢 <b>Acceso gratuito:</b> ya puedes explorar los <b>2 primeros temas</b> del ${esc((P.trialMod() || m).name)}.</div>` : ''}
       <div class="fx-notify"><div id="n1" class="pending">⏳ Guardando resultados…</div><div id="n2" class="pending">⏳ Enviando correo con tu resultado…</div><div id="n3" class="pending">⏳ Enviando copia a administración…</div></div>
       <div class="row" style="justify-content:center;margin-top:14px"><button class="btn k lg" id="prof">👤 Ir a mi perfil y empezar →</button>
         <button class="btn w" id="pdf">📄 Descargar reporte PDF</button><button class="btn w" id="cp">📋 Copiar resumen</button>
@@ -318,7 +319,7 @@
       attempt_label: r.attemptLabel, date: r.date.toLocaleDateString(), time: r.date.toLocaleTimeString(),
       listening_score: r.per.listening.score.toFixed(1), reading_score: r.per.reading.score.toFixed(1), writing_score: r.per.writing.score.toFixed(1), speaking_score: r.per.speaking.score.toFixed(1),
       final_score: r.fin.toFixed(1), performance: m.name + ' — ' + m.es, status: 'COMPLETADO', feedback: comment(r.per, r.ms),
-      next_steps_display: 'block', next_steps_text: P.isTrial() ? 'Ya puedes usar tu acceso de cortesía en la plataforma con los 2 primeros temas de tu módulo. Para inscribirte, escríbenos por WhatsApp al 301 781 0841.' : 'Tu perfil en la plataforma ya quedó ubicado en tu módulo. Entra a mrarrieta.com con tu código y comienza tu primera clase.' };
+      next_steps_display: 'block', next_steps_text: P.isTrial() ? 'Ya puedes usar tu acceso gratuito en la plataforma y explorar los 2 primeros temas de tu ruta de aprendizaje. Para inscribirte, escríbenos por WhatsApp al 301 781 0841.' : 'Tu ruta de aprendizaje ya está lista en la plataforma. Entra a mrarrieta.com con tu código y comienza tu primera clase.' };
     try { const q = new URLSearchParams({ action: 'submit', module: 'Placement Test', student_name: r.name, student_email: r.temail, student_whatsapp: r.wa || '', course_interest: COURSE[r.course] || '', attempt: r.attempt, attempt_state: r.attemptLabel, status: 'COMPLETADO', listening: params.listening_score, reading: params.reading_score, writing: params.writing_score, speaking: params.speaking_score, final_score: params.final_score, recommended_module: m.name, recommended_level: m.es, date: r.date.toISOString() });
       const res = await fetch(CFG.SHEETS_WEBAPP_URL + '?' + q.toString()); const d = await res.json().catch(() => null);
       const good = res.ok && !(d && d.ok === false); setN('n1', good, good ? '✓ Resultados guardados en el panel de administración.' : '✗ No se pudieron guardar en el panel de administración.'); }

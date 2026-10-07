@@ -1,9 +1,9 @@
 /* =====================================================================
    PERFIL DEL ESTUDIANTE — compartido por el portal (index.html) y los módulos
-   · Tipo de ingreso: student (código de administración) · trial (acceso de cortesía) · staff (profe)
+   · Tipo de ingreso: student (código de administración) · trial (acceso gratuito) · staff (profe)
    · Clasificación → módulo asignado. Se abren el asignado + los inferiores (repaso);
      los superiores se abren cuando aprueba el examen final de su módulo.
-   · Cortesía: solo los 2 primeros temas del módulo asignado.
+   · Acceso gratuito: solo los 2 primeros temas del módulo asignado.
    (Por ahora se guarda en este dispositivo; luego irá a la nube.)
    ===================================================================== */
 (function () {
@@ -29,7 +29,7 @@
     let n = p.module; if (!isTrial()) while (n < 4 && passed(mod(n).id)) n++;
     return mod(n);
   }
-  // cortesía: si su módulo aún no está listo, vive la experiencia en el módulo listo más cercano
+  // acceso gratuito: si su módulo aún no está listo, vive la experiencia en el módulo listo más cercano
   function trialMod() { const a = assigned(); if (!a) return null; if (a.ready) return a; for (let n = a.n - 1; n >= 1; n--) if (mod(n).ready) return mod(n); return null;
   }
   // rol de un módulo para este estudiante: current · review · locked · soon
@@ -50,5 +50,11 @@
   }
   // al aprobar la clasificación: guarda el módulo recomendado (1-4)
   function setPlacement(n, extra) { const p = get() || {}; p.module = Math.min(4, Math.max(1, n || 1)); p.placement = Object.assign({ module: p.module, date: new Date().toISOString() }, extra || {}); return save(p); }
-  window.MRAP = { KEY, MODS, get, save, clear, mod, modState, passed, assigned, role, progress, isStaff, isTrial, setPlacement, trialMod, TRIAL_TOPICS: 2 };
+  // personalización: foto / avatar / iniciales, apodo, color del encabezado, guía personalizada
+  const look = () => { const p = get(); return (p && p.look) || {}; };
+  const pic = () => { const l = look(); return l.pic === 'photo' && l.photo ? l.photo : l.pic === 'avatar' && l.head ? l.head : ''; };
+  const initials = () => { const p = get() || {}; return (((p.first || '?')[0] || '') + ((p.last || '')[0] || '')).toUpperCase(); };
+  const avHTML = (cls) => { const u = pic(), l = look(); return `<span class="${cls || 'pt-av'}${u ? ' has' : ''}">${u ? `<img src="${u}" alt="">` : initials()}${l.av && l.av.sticker && l.pic === 'avatar' ? `<i class="stk">${l.av.sticker}</i>` : ''}</span>`; };
+  const setLook = (o) => { const p = get(); if (!p) return; p.look = Object.assign({}, p.look || {}, o); save(p); return p.look; };
+  window.MRAP = { KEY, MODS, get, save, clear, mod, modState, passed, assigned, role, progress, isStaff, isTrial, setPlacement, trialMod, TRIAL_TOPICS: 2, look, pic, avHTML, setLook, initials };
 })();

@@ -20,7 +20,7 @@
     tb.innerHTML = `<div class="brand" id="go-home"><span class="logo-pill"><img class="logo" src="mra-brand.png" alt="mrarrieta.com"></span><small>${M.MOD.es.toUpperCase()} · ${M.MOD.id}</small></div><div class="sp"></div>
       <span class="pill y" title="Puntos de experiencia">⚡ ${S.xp} XP</span>
       <span class="pill hide-s" title="Días seguidos estudiando">🔥 ${S.streak.n || 0}</span>
-      <button class="iconbtn chat-ic" id="chat-tb" title="Chat con mi profe" aria-label="Chat con mi profe"><svg viewBox="0 0 32 32" width="26" height="26" aria-hidden="true"><path d="M13 4C7.5 4 3 7.8 3 12.5c0 2.6 1.4 4.9 3.6 6.5L5.8 23.5l4.6-2.6c.8.2 1.7.3 2.6.3 5.5 0 10-3.8 10-8.5S18.5 4 13 4z" fill="#111"/><circle cx="8.6" cy="12.6" r="1.6" fill="#FFD43B"/><circle cx="13" cy="12.6" r="1.6" fill="#FFD43B"/><circle cx="17.4" cy="12.6" r="1.6" fill="#FFD43B"/><path d="M25.2 12.2c2.3 1.4 3.8 3.6 3.8 6.1 0 1.9-.9 3.7-2.3 5l.9 4-4.2-2.2c-.9.2-1.8.3-2.7.3-3.1 0-5.9-1.3-7.5-3.3" fill="none" stroke="#111" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><i class="fbadge hidden" id="chat-n"></i></button>${S.dictHidden ? '<button class="iconbtn" id="dict-b" title="Diccionario">🔎</button>' : ''}${window.MRAP && MRAP.get() ? '<a class="iconbtn" id="prof-b" href="index.html" title="Mi perfil">👤</a>' : ''}<button class="iconbtn" id="menu-b" title="Menú">☰</button>`;
+      <button class="iconbtn chat-ic" id="chat-tb" title="Chat con mi profe" aria-label="Chat con mi profe"><svg viewBox="0 0 32 32" width="26" height="26" aria-hidden="true"><path d="M13 4C7.5 4 3 7.8 3 12.5c0 2.6 1.4 4.9 3.6 6.5L5.8 23.5l4.6-2.6c.8.2 1.7.3 2.6.3 5.5 0 10-3.8 10-8.5S18.5 4 13 4z" fill="#111"/><circle cx="8.6" cy="12.6" r="1.6" fill="#FFD43B"/><circle cx="13" cy="12.6" r="1.6" fill="#FFD43B"/><circle cx="17.4" cy="12.6" r="1.6" fill="#FFD43B"/><path d="M25.2 12.2c2.3 1.4 3.8 3.6 3.8 6.1 0 1.9-.9 3.7-2.3 5l.9 4-4.2-2.2c-.9.2-1.8.3-2.7.3-3.1 0-5.9-1.3-7.5-3.3" fill="none" stroke="#111" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><i class="fbadge hidden" id="chat-n"></i></button>${S.dictHidden ? '<button class="iconbtn" id="dict-b" title="Diccionario">🔎</button>' : ''}${window.MRAP && MRAP.get() ? (MRAP.pic() ? `<a class="tb-avbtn" id="prof-b" href="index.html" title="Mi perfil">${MRAP.avHTML('tb-av')}</a>` : '<a class="iconbtn" id="prof-b" href="index.html" title="Mi perfil">👤</a>') : ''}<button class="iconbtn" id="menu-b" title="Menú">☰</button>`;
     $('#go-home', tb).onclick = () => { stop(); route('home'); };
     $('#menu-b', tb).onclick = menu;
     const db = $('#dict-b', tb); if (db) db.onclick = () => window.M1DICT && M1DICT.open();
@@ -28,7 +28,7 @@
     chatFab();
   }
   function menu() {
-    const m = M.modal(`<div class="mhead"><h3>☰ Menú</h3><button class="mclose" data-a="close" title="Cerrar">✕</button></div><div style="display:grid;gap:10px;margin-top:10px">
+    const m = M.modal(`<div class="mhead"><h3>☰ Menú</h3><button class="mclose" data-a="close" title="Cerrar">✕</button></div><div class="menu-stats"><span class="pill y">⚡ ${S.xp} XP</span><span class="pill">🔥 ${S.streak.n || 0} días</span></div><div style="display:grid;gap:10px;margin-top:10px">
       ${window.MRAP && MRAP.get() ? '<a class="btn w block" style="text-decoration:none" href="index.html">👤 Mi perfil y mis módulos</a>' : ''}
       <button class="btn w block" data-a="home">🏠 Inicio</button>
       <button class="btn w block" data-a="progress">📊 Mi progreso</button>
@@ -168,18 +168,16 @@
   }
 
   /* ---------------- home ---------------- */
-  const MOTTO = ['Hoy es un gran día para aprender inglés 💛', '¡Cada clase te acerca a hablar con confianza!', 'Recuerda: se aprende inglés <b>HABLANDO</b> 🗣️', 'Un poquito cada día hace la diferencia 🔥', '¡Vamos por esas estrellas! ⭐'];
   function greeting() { const hr = new Date().getHours(); return hr < 12 ? 'Good morning' : hr < 18 ? 'Good afternoon' : 'Good evening'; }
   function nextUp() { return M.allParts().find(p => !(S.parts[p.id] && S.parts[p.id].done) && M.isUnlocked(p.topic)) || null; }
   function home() {
-    const pct = M.overallPct(); const nu = nextUp(); const first = S.name.split(' ')[0];
+    const pct = M.overallPct(); const nu = nextUp(); const first = (window.MRAP && MRAP.look().nick) || S.name.split(' ')[0];
     const doneN = M.allParts().filter(p => S.parts[p.id] && S.parts[p.id].done).length;
     app.innerHTML = `<div class="wrap">
       <section class="hero">
         <div class="card hello">
-          <span class="lbl">${greeting()}!</span>${window.MRAP && MRAP.get() ? (MRAP.isTrial() ? ' <span class="rolechip trial">🎁 Acceso de cortesía</span>' : MRAP.role(C.MODULE_ID || 'A1') === 'review' && !MRAP.isStaff() ? ' <span class="rolechip rev">🔁 Modo repaso</span>' : MRAP.isStaff() ? ' <span class="rolechip rev">👨‍🏫 Profe</span>' : ' <span class="rolechip cur">⭐ Tu módulo</span>') : ''}
+          <span class="lbl">${greeting()}!</span>${window.MRAP && MRAP.get() ? (MRAP.isTrial() ? ' <span class="rolechip trial">🟢 Acceso gratuito</span>' : MRAP.role(C.MODULE_ID || 'A1') === 'review' && !MRAP.isStaff() ? ' <span class="rolechip rev">🔁 Modo repaso</span>' : MRAP.isStaff() ? ' <span class="rolechip rev">👨‍🏫 Profe</span>' : ' <span class="rolechip cur">🧭 Tu ruta de aprendizaje</span>') : ''}
           <h1 style="margin-top:10px">¡Bienvenido(a), <span class="nm">${esc(first)}</span>! 👋</h1>
-          <p>${MOTTO[new Date().getDate() % MOTTO.length]}</p>
           <div class="ringbox"><div class="ring" style="--p:${pct}"><b>${pct}%</b></div>
             <div><div style="font-weight:800;font-size:18px">Tu progreso del ${M.MOD.es}</div><div class="muted">${doneN} de ${M.MOD.classes} clases completadas · 🔥 ${S.streak.n || 0} día(s) seguidos</div>
             ${nu ? `<button class="btn k" style="margin-top:12px" id="cont">▶ ${doneN ? 'Continuar' : 'Empezar'}: ${esc(nu._t.title)} · Part ${nu.part}</button>` : (M.finalUnlocked() ? `<button class="btn k" style="margin-top:12px" id="tofinal">🏆 Presentar examen final</button>` : (window.MRAP && MRAP.isTrial() ? `<button class="btn k" style="margin-top:12px" id="buy3">🎁 Inscribirme para seguir</button>` : `<button class="btn k" style="margin-top:12px" id="buy2">🔓 Desbloquear más temas</button>`))}</div></div>
@@ -209,6 +207,7 @@
       t.parts.forEach(p => {
         const st = M.partStars(p.id); const pd = S.parts[p.id];
         const b = h(`<button class="partbtn"><span class="t">PART ${p.part}<small>${esc(p.title)}</small></span><span class="stars">${[1, 2, 3].map(i => `<span class="${i <= st ? '' : 'off'}">⭐</span>`).join('')}</span></button>`);
+        if (pd && pd.done) { b.classList.add('pdone'); b.querySelector('small').innerHTML += ' <b class="donetag">✓ COMPLETADA</b>'; }
         if (p.id === curId) { b.classList.add('cur'); b.querySelector('small').innerHTML += ' <b class="curtag">▶ EN CURSO</b>'; }
         b.onclick = () => route('class', p.id); $('.bd', card).appendChild(b);
       });
@@ -312,9 +311,9 @@
   }
   function lockGate(n) { const r = M.lockReason(n); if (r === 'progress') progressModal(n); else if (r === 'trial') trialModal(); else if (r === 'access') unlockModal(); else if (r === 'module') location.href = 'index.html'; }
   function trialModal() {
-    const m = M.modal(`<div class="center">${M.mascot('mascot', 'present')}</div><h3 class="center">🎁 Fin de tu acceso de cortesía</h3>
-      <p class="center" style="font-size:17px">Tu acceso de cortesía incluye los <b>2 primeros temas</b> del módulo. ¿Te gustó la experiencia? <b>Inscríbete</b> y sigue aprendiendo con todos los temas, el examen final y tu certificado 🎓</p>
-      <a class="btn block" style="text-decoration:none;background:#25D366;color:#fff" target="_blank" rel="noopener" href="https://wa.me/${C.WHATSAPP}?text=${encodeURIComponent(`¡Hola! Soy ${S.name}. Probé el acceso de cortesía en la plataforma y quiero inscribirme 🚀`)}">💬 Quiero inscribirme</a>
+    const m = M.modal(`<div class="center">${M.mascot('mascot', 'present')}</div><h3 class="center">🟢 Fin de tu acceso gratuito</h3>
+      <p class="center" style="font-size:17px">Tu acceso gratuito incluye los <b>2 primeros temas</b> de tu ruta. ¿Te gustó la experiencia? <b>Inscríbete</b> y sigue aprendiendo con todos los temas, el examen final y tu certificado 🎓</p>
+      <a class="btn block" style="text-decoration:none;background:#25D366;color:#fff" target="_blank" rel="noopener" href="https://wa.me/${C.WHATSAPP}?text=${encodeURIComponent(`¡Hola! Soy ${S.name}. Empecé gratis en la plataforma y quiero inscribirme 🚀`)}">💬 Quiero inscribirme</a>
       <button class="btn w block" style="margin-top:8px" id="cl">Seguir explorando</button>`, { x: true });
     $('#cl', m).onclick = () => m.remove();
   }

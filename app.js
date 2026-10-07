@@ -180,7 +180,7 @@
           <h1 style="margin-top:10px">${greeting()}, <span class="nm">${esc(first)}</span>! 👋</h1>
           <div class="ringbox"><div class="ring" style="--p:${pct}"><b>${pct}%</b></div>
             <div><div style="font-weight:800;font-size:18px">Tu progreso del ${M.MOD.es}</div><div class="muted">${doneN} de ${M.MOD.classes} clases completadas · 🔥 ${S.streak.n || 0} día(s) seguidos</div>
-            ${nu ? `<button class="btn k" style="margin-top:12px" id="cont">▶ ${doneN ? 'Continuar' : 'Empezar'}: ${esc(nu._t.title)} · Part ${nu.part}</button>` : (M.finalUnlocked() ? `<button class="btn k" style="margin-top:12px" id="tofinal">🏆 Presentar examen final</button>` : (window.MRAP && MRAP.isTrial() ? `<button class="btn k" style="margin-top:12px" id="buy3">🎁 Inscribirme para seguir</button>` : `<button class="btn k" style="margin-top:12px" id="buy2">🔓 Desbloquear más temas</button>`))}</div></div>
+            ${!nu && window.MRAP && MRAP.isTrial() ? `<button class="btn k" style="margin-top:12px" id="buy3">🎁 Inscribirme para seguir</button>` : ''}</div></div>
           <div class="skills">${SKILLS.map(([k, ic, nm]) => `<div class="skill"><div class="ic">${ic}</div><div class="nm">${nm}</div><div class="bar"><i style="width:${M.skillPct(k)}%"></i></div><small class="muted">${S.skills[k][1] ? M.skillPct(k) + '%' : '—'}</small></div>`).join('')}</div>
         </div>
       </section>

@@ -196,7 +196,7 @@
       <div class="card final">${M.mascot('mascot', 'point')}<div><h3>Well done! Get ready for the test.</h3><p style="margin:6px 0 0;color:#ddd">40 preguntas de los 14 temas (Listening, Reading, Writing y Speaking) · 45 minutos · 2 intentos. Si apruebas con ${(C.PASS_SCORE / 10).toFixed(1)}/10 o más, obtienes tu certificado 🎓</p>
         ${S.final ? `<p style="margin:8px 0 0;color:#fff;font-weight:800">Tu mejor resultado: ${(S.final.best / 10).toFixed(1)} / 10 ${S.final.passed ? '✅ Aprobado' : ''}</p>` : ''}${S.final && S.final.passed ? `<button class="btn sm" id="cert-b" style="margin-top:8px">🎓 Ver mi certificado</button>` : ''}
         <button class="btn lg" id="final-b">${M.finalUnlocked() ? 'FINAL TEST →' : '🔒 Bloqueado'}</button></div>
-      <p class="center muted" style="margin-top:30px;font-size:13px">mrarrieta.com · ¡Aprende inglés HABLANDO! · WhatsApp ${esc(C.WHATSAPP.replace(/^57/, ''))}</p>
+      <p class="center fx-foot" style="margin-top:22px;font-size:13.5px;color:#fff;grid-column:1/-1;font-weight:600">mrarrieta.com · ¡Aprende inglés HABLANDO! · WhatsApp ${esc(C.WHATSAPP.replace(/^57/, ''))}</p>
     </div>`;
     const g = $('#tgrid');
     D.topics.forEach(t => {
@@ -437,7 +437,7 @@
           const alt = h(`<div class="${M.canSR ? 'hidden' : ''}"><input class="inp" placeholder="Escribe tu respuesta en inglés…" style="font-size:18px"></div>`); body.appendChild(alt);
           const bar = h(`<div class="actionbar">${M.canSR ? '<button class="btn w" id="ty">⌨️ Prefiero escribir</button>' : ''}<button class="btn w" id="sk">Saltar</button><button class="btn k lg" id="ok">Enviar ✓</button></div>`); body.appendChild(bar);
           setTimeout(() => play(q.au), 400);
-          const accept = async (txt) => { const n = M.words(txt).length; if (n >= 2) { sfx('ok'); M.praise(); await sheet({ ok: true, title: good(), msg: `Te escuché: “${esc(txt)}”`, tip: 'Intenta responder con oraciones completas, por ejemplo: <i>I\'m fine, thank you.</i>' }); res(true); } else { st.innerHTML = '❌ Te escuché muy poco. Responde con al menos 2 palabras y toca 🎤 otra vez.'; } };
+          const accept = async (txt) => { const n = M.words(txt).length; if (n >= 2) { sfx('ok'); M.praise(); await sheet({ ok: true, title: good(), msg: `Te escuché: “${esc(txt)}”`, tip: 'Intenta responder con oraciones completas, por ejemplo: <i>I\'m fine, thank you.</i>' }); res(true); } else { st.innerHTML = '❌ Te escuché muy poco. Responde con al menos 2 palabras y toca 🎤 otra vez.'; sfx('bad'); setTimeout(M.encourage, 250); } };
           mic.onclick = async () => { stop(); mic.classList.add('rec'); st.textContent = '🎧 Te escucho…'; const r = await M.listen(8000); mic.classList.remove('rec');
             if (!r.alts.length) { st.textContent = r.error === 'not-allowed' ? 'Permite el micrófono 🎤 o escribe tu respuesta.' : 'No te escuché 🙉 Intenta otra vez.'; if (r.error === 'not-allowed') alt.classList.remove('hidden'); return; } accept(r.alts[0]); };
           if ($('#ty', bar)) $('#ty', bar).onclick = () => { alt.classList.remove('hidden'); $('input', alt).focus(); };
@@ -509,7 +509,7 @@
           if (!r.alts.length) { M.toast('No te escuché 🙉 intenta otra vez'); return; }
           const tgt = k.a.split(' / ')[0].replace(/___/g, ''); const sc = M.speechScore(tgt, r.alts); const okk = k.a.includes('___') ? M.words(r.alts[0]).length >= 2 && sc.score >= 50 : sc.score >= 60;
           $('.out', e).innerHTML = `<div class="heardbox" style="font-size:15px">Escuché: “${esc(sc.heard)}” — ${okk ? '✅ ¡Muy bien! Lo dijiste correctamente.' : '❌ Todavía no. Escucha la respuesta 🔊 y toca 🎤 para intentarlo otra vez.'}</div>`;
-          if (okk) { sfx('ok'); e.classList.add('done'); if (!done.has(i)) { done.add(i); c++; } } else sfx('bad');
+          if (okk) { sfx('ok'); M.praise(); e.classList.add('done'); if (!done.has(i)) { done.add(i); c++; } } else { sfx('bad'); setTimeout(M.encourage, 250); }
         };
         body.appendChild(e);
       });

@@ -874,3 +874,4 @@ html,body{max-width:100%;overflow-x:hidden}
 .sp-ball.pop{animation:pop2 .45s forwards}.sp-ball.shake{animation:shake .4s}
 @media (max-width:600px){.cw-sky{height:330px}.rc-lane{grid-template-columns:70px minmax(0,1fr)}.cw-word{width:30%}}
 .sw-n{position:absolute;font-style:normal;font-family:var(--fh);font-weight:800;font-size:22px;line-height:1}
+.dict-q{font-weight:700;color:var(--mut);margin-top:8px}

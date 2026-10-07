@@ -77,13 +77,25 @@
   }
 
   /* ---------- online sources (gratuitos, sin clave) ---------- */
+  const clean = (x) => String(x || '').replace(/<[^>]*>/g, ' ').replace(/&[a-z#0-9]+;/gi, ' ').replace(/\s+/g, ' ').replace(/^[\s\-–·:;.,]+|[\s\-–·:;.,]+$/g, '').trim();
+  // traductor (Google, con detección de idioma y significados alternativos); respaldo: MyMemory
+  async function gtr(text, sl, tl) {
+    try {
+      const r = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sl}&tl=${tl}&dt=t&dt=bd&q=${encodeURIComponent(text)}`);
+      const j = await r.json(); let t = clean((j[0] || []).map(x => x[0]).join('')); if (!t) return null;
+      const one = text.trim().split(/\s+/).length <= 2;
+      if (one && /^[A-Z]/.test(t) && text[0] === text[0].toLowerCase() && !/^I\b/.test(t)) t = t[0].toLowerCase() + t.slice(1);
+      const alts = []; (j[1] || []).forEach(g => (g[1] || []).forEach(w => { w = clean(w); if (w && strip(w) !== strip(t) && strip(w) !== strip(text) && alts.length < 2 && !alts.includes(w)) alts.push(w); }));
+      return { t, alts, det: j[2] || sl };
+    } catch (e) { return null; }
+  }
   async function translate(text, from, to) {
+    const g = await gtr(text, from, to); if (g) return g;
     try {
       const r = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${from}|${to}`);
-      const j = await r.json(); let t = j && j.responseData && j.responseData.translatedText;
-      if (!t || /MYMEMORY|QUERY LENGTH|INVALID/i.test(t)) return null; t = t.replace(/[:;]+$/, '').trim();
-      const alts = (j.matches || []).map(m => String(m.translation || '').replace(/[:;.]+$/, '').trim()).filter((x, i, a) => x && strip(x) !== strip(t) && x.length < 40 && a.findIndex(y => strip(y) === strip(x)) === i).slice(0, 3);
-      return { t, alts };
+      const j = await r.json(); const t = clean(j && j.responseData && j.responseData.translatedText);
+      if (!t || /MYMEMORY|QUERY LENGTH|INVALID|<|>/i.test(t)) return null;
+      return { t, alts: [], det: from };
     } catch (e) { return null; }
   }
   const txt = (html) => { const d = new DOMParser().parseFromString('<div>' + (html || '') + '</div>', 'text/html'); d.querySelectorAll('style,sup').forEach(x => x.remove()); return d.body.textContent.replace(/\s+/g, ' ').trim(); };
@@ -190,21 +202,33 @@
       ${i === 0 && exs.length ? `<div class="dict-ex">${exs.map((s, k) => `<div><button class="aud sm" data-s="${k}">🔊</button> <b>${esc(s.en)}</b><br><span class="muted">${esc(s.es)}</span></div>`).join('')}</div>` : ''}
       <button class="btn w sm" data-say="${i}" style="margin-top:8px">🎤 Practicar pronunciación</button></div></div>`));
 
-    // 3) en línea (si no está en el curso)
+    // 3) en línea (si no está en el curso): SIEMPRE responde "cómo se dice en inglés" / "qué significa en español"
     let online = null;
     if (!hits.length && t && !(g && looksGrammar && t.split(' ').length > 2)) {
-      let en = null, es = null, def = null;
-      const isEs = L === 'es' || /[ñáéíóú]/i.test(term) || (!L && /\b(el|la|los|las|de|que|mi|tu|un|una|y|es)\b/.test(t));
-      if (!isEs) { def = await define(term); if (def) { en = def.word; const tr = await translate(en, 'en', 'es'); es = tr; } }
-      if (!def) { const tr = await translate(term, isEs ? 'es' : 'en', isEs ? 'en' : 'es');
-        if (tr) { if (isEs) { en = tr.t; es = { t: term, alts: [] }; if (en.split(' ').length <= 2) def = await define(en.toLowerCase()); } else { en = term; es = tr; } } }
+      if (!lang && t.split(' ').length > 5 && !g) {
+        out.innerHTML = `<div class="dict-res center"><img src="mra-think.webp" alt="" style="height:140px"><p><b>Este diccionario es para aprender inglés.</b></p><p class="muted">Escribe una palabra o frase corta, o pregunta así: <i>¿cómo se dice ___?</i> · <i>¿qué significa ___?</i></p></div>`; return;
+      }
+      let en = null, es = null, def = null, dir = null;
+      if (L === 'en') dir = 'en';
+      else if (L === 'es' || /[ñáéíóú¿¡]/i.test(term)) dir = 'es';
+      else {
+        // sin pista de idioma: lo detecta el traductor (si no es inglés, se toma como español)
+        const tr = await gtr(term, 'auto', 'en');
+        dir = tr && tr.det === 'en' ? 'en' : 'es';
+        if (dir === 'es' && tr && tr.det === 'es' && strip(tr.t) !== strip(term)) { en = tr.t; es = { t: term, alts: [] }; online = { alts: tr.alts }; }
+      }
+      if (dir === 'es' && !en) { const tr = await translate(term, 'es', 'en'); if (tr) { en = tr.t; es = { t: term, alts: [] }; online = { alts: tr.alts }; } }
+      if (dir === 'es' && en && en.split(' ').length <= 2) def = await define(en.toLowerCase());
+      if (dir === 'en') { def = await define(term.toLowerCase()); const tr = await translate(term, 'en', 'es'); if (tr) { en = def ? def.word : term; es = tr; } else if (def) { en = def.word; } }
       if (en) {
+        const alts = dir === 'es' ? ((online && online.alts) || []) : (es && es.alts) || [];
         online = { text: en, audio: def && def.audio };
         const ex0 = def && def.meanings.find(m => m.ex); if (ex0 && ex0.ex.length < 160) { const tr = await translate(ex0.ex, 'en', 'es'); if (tr) ex0.exEs = tr.t; }
-        blocks.push(`<div class="dict-res"><div class="dict-tag">🌎 Diccionario</div>
-          <div class="dict-en">${esc(cap(en))} <button class="aud" data-o="1">🔊</button>${def && def.phon ? ` <span class="muted" style="font-size:16px">${esc(def.phon)}</span>` : ''}</div>
-          <div class="dict-es">${esc(es ? es.t : '')}${es && es.alts && es.alts.length ? ` <span class="muted">· también: ${es.alts.map(esc).join(', ')}</span>` : ''}</div>
-          ${def && def.meanings.length ? `<div class="dict-ex">${def.meanings.map(m => `<div><span class="pill" style="background:var(--y3);color:var(--k);border-color:var(--k)">${esc(m.pos || '')}</span> ${esc(m.def || '')}${m.ex ? `<br>🗨️ <b>${esc(m.ex)}</b>${m.exEs ? `<br><span class="muted">${esc(m.exEs)}</span>` : ''}` : ''}</div>`).join('')}</div>` : ''}
+        const head = dir === 'es'
+          ? `<div class="dict-q">“${esc(term)}” en inglés se dice:</div><div class="dict-en">${esc(en)} <button class="aud" data-o="1">🔊</button>${def && def.phon ? ` <span class="muted" style="font-size:16px">${esc(def.phon)}</span>` : ''}</div>${alts.length ? `<div class="dict-es"><span class="muted">También: ${alts.map(esc).join(', ')}</span></div>` : ''}`
+          : `<div class="dict-q">“${esc(en)}” significa:</div><div class="dict-en">${esc(es ? es.t : '')}</div><div class="dict-es">🔊 ${esc(en)} <button class="aud" data-o="1">🔊</button>${def && def.phon ? ` <span class="muted">${esc(def.phon)}</span>` : ''}${alts.length ? ` <span class="muted">· también: ${alts.map(esc).join(', ')}</span>` : ''}</div>`;
+        blocks.push(`<div class="dict-res"><div class="dict-tag">📖 Diccionario de inglés</div>${head}
+          ${def && def.meanings.length ? `<div class="dict-ex">${def.meanings.slice(0, 1).map(m => `<div><span class="pill" style="background:var(--y3);color:var(--k);border-color:var(--k)">${esc(m.pos || '')}</span> ${m.ex ? `🗨️ <b>${esc(m.ex)}</b>${m.exEs ? `<br><span class="muted">${esc(m.exEs)}</span>` : ''}` : esc(m.def || '')}</div>`).join('')}</div>` : ''}
           <button class="btn w sm" data-say="o" style="margin-top:8px">🎤 Practicar pronunciación</button></div>`);
       }
     }

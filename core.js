@@ -152,6 +152,8 @@
     } catch (e) { }
   }
   function praise() { const k = Object.keys(D.praise); play(D.praise[k[Math.floor(Math.random() * k.length)]]); }
+  // voz de ánimo cuando la respuesta no es correcta ("Try again.", "Almost! Listen again."…)
+  function encourage() { const R = D.retry || {}; const k = Object.keys(R); if (k.length) play(R[k[Math.floor(Math.random() * k.length)]]); }
 
   /* ---------- speech recognition ---------- */
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -256,7 +258,7 @@
     if (q('mo')) q('mo').onclick = () => model();
     q('r').onclick = () => onRetry && onRetry();
     if (q('y')) q('y').onclick = () => { card.className = 'vres ok'; card.querySelector('b').textContent = '✅ ¡Muy bien! Sigue practicando así.'; q('y').remove(); sfx('ok'); box.dispatchEvent(new CustomEvent('selfok')); };
-    sfx(score == null ? 'tap' : ok || mid ? 'ok' : 'bad'); if (ok) praise();
+    sfx(score == null ? 'tap' : ok || mid ? 'ok' : 'bad'); if (ok) praise(); else if (score != null) setTimeout(encourage, 250);
     return ok;
   }
 
@@ -346,6 +348,6 @@
   function audioSrc(au) { return window.AUD && window.AUD[au] ? 'data:audio/mpeg;base64,' + window.AUD[au] : 'audio/' + au + '.mp3'; }
 
   window.M1 = { D, C, S, $, $$, h, esc, shuffle, sample, sleep, save, touchStreak, addSkill, addWeak, okWeak, skillPct, isUnlocked, finalUnlocked, redeem, codeHash,
-    allParts, partById, trackAudio, audioUI, floatStop, recordScore, letterScorer, voiceResult, floatBubble, setBubbleHidden, prevPart, nextPart, partStars, overallPct, imgURL, photo, play, playSeq, loadAudio, stop, sfx, praise, canSR, listen, recordVoice,
+    allParts, partById, trackAudio, audioUI, floatStop, recordScore, letterScorer, voiceResult, floatBubble, setBubbleHidden, prevPart, nextPart, partStars, overallPct, imgURL, photo, play, playSeq, loadAudio, stop, sfx, praise, encourage, canSR, listen, recordVoice,
     norm, words, lev, speechScore, sheet, good, bad, toast, modal, xpFly, confetti, mascot, audioSrc };
 })();

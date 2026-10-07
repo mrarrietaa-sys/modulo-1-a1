@@ -15,15 +15,15 @@
   // sombreros: caja de 100 × 70 unidades; (50, 62) se apoya sobre la cabeza
   const HATS = {
     none: { es: 'Sin sombrero', p: [] },
-    cap: { es: 'Gorra', p: [['#E3242B', 'M12 62 C10 14 90 14 88 62 Z'], ['#0B2A5B', 'M58 56 C78 52 104 54 112 63 C96 69 70 67 58 63 Z'], ['#0B2A5B', 'M12 58 H88 V63 H12 Z'], ['#ffffff', 'M47 20 a3 3 0 1 0 6 0 a3 3 0 1 0 -6 0']] },
-    grad: { es: 'Birrete de graduado', p: [['#0B2A5B', 'M20 34 L20 58 C20 66 80 66 80 58 L80 34 L50 44 Z'], ['#13396f', 'M50 8 L104 28 L50 48 L-4 28 Z'], ['#FFC21A', 'M50 27 L88 34 L88 58 L84 58 L84 37 L50 30 Z'], ['#FFC21A', 'M80 56 h12 v12 h-12 z']] },
-    beanie: { es: 'Gorro de lana', p: [['#E3242B', 'M12 62 C8 10 92 10 88 62 Z'], ['#0B2A5B', 'M8 50 H92 V64 H8 Z'], ['#ffffff', 'M38 8 a12 12 0 1 0 24 0 a12 12 0 1 0 -24 0'], ['#ffffff', 'M8 55 H92 V58 H8 Z']] },
-    cowboy: { es: 'Sombrero vaquero', p: [['#8B5A2B', 'M24 54 C20 20 34 8 50 16 C66 8 80 20 76 54 Z'], ['#5a3a1a', 'M24 46 H76 V54 H24 Z'], ['#9c6633', 'M-14 50 C0 70 100 70 114 50 C104 56 90 58 76 54 L24 54 C10 58 -4 56 -14 50 Z']] },
-    crown: { es: 'Corona', p: [['#FFC21A', 'M10 62 L8 18 L29 38 L50 6 L71 38 L92 18 L90 62 Z'], ['#e0a400', 'M10 52 H90 V62 H10 Z'], ['#E3242B', 'M44 46 a6 6 0 1 0 12 0 a6 6 0 1 0 -12 0'], ['#3AA0E8', 'M22 48 a4 4 0 1 0 8 0 a4 4 0 1 0 -8 0'], ['#2E9E5B', 'M70 48 a4 4 0 1 0 8 0 a4 4 0 1 0 -8 0']] },
-    party: { es: 'Gorro de fiesta', p: [['#3AA0E8', 'M50 -18 L80 62 L20 62 Z'], ['#FFC21A', 'M41 6 L59 6 L63 18 L37 18 Z'], ['#FFC21A', 'M30 36 L70 36 L74 48 L26 48 Z'], ['#E3242B', 'M42 -20 a8 8 0 1 0 16 0 a8 8 0 1 0 -16 0']] },
-    tophat: { es: 'Sombrero de copa', p: [['#1b1b1b', 'M24 -16 H76 V56 H24 Z'], ['#E3242B', 'M24 38 H76 V48 H24 Z'], ['#1b1b1b', 'M2 54 C2 66 98 66 98 54 C98 50 2 50 2 54 Z']] },
-    chef: { es: 'Gorro de chef', p: [['#ffffff', 'M22 62 V36 C0 38 0 6 24 10 C30 -10 70 -10 76 10 C100 6 100 38 78 36 V62 Z'], ['#dddddd', 'M22 50 H78 V62 H22 Z'], ['#cfcfcf', 'M36 36 V50 M50 34 V50 M64 36 V50']] },
-    helmet: { es: 'Casco de obra', p: [['#FFC21A', 'M10 60 C8 6 92 6 90 60 Z'], ['#e0a400', 'M44 8 H56 V60 H44 Z'], ['#FFC21A', 'M-2 56 H102 V64 H-2 Z']] },
+    cap: { cw: 76, f: 1.06, y: 64, es: 'Gorra', p: [['#E3242B', 'M12 62 C10 14 90 14 88 62 Z'], ['#0B2A5B', 'M58 56 C78 52 104 54 112 63 C96 69 70 67 58 63 Z'], ['#0B2A5B', 'M12 58 H88 V63 H12 Z'], ['#ffffff', 'M47 20 a3 3 0 1 0 6 0 a3 3 0 1 0 -6 0']] },
+    grad: { cw: 60, f: 1.02, y: 62, es: 'Birrete de graduado', p: [['#0B2A5B', 'M20 34 L20 58 C20 66 80 66 80 58 L80 34 L50 44 Z'], ['#13396f', 'M50 8 L104 28 L50 48 L-4 28 Z'], ['#FFC21A', 'M50 27 L88 34 L88 58 L84 58 L84 37 L50 30 Z'], ['#FFC21A', 'M80 56 h12 v12 h-12 z']] },
+    beanie: { cw: 76, f: 1.08, y: 70, es: 'Gorro de lana', p: [['#E3242B', 'M12 62 C8 10 92 10 88 62 Z'], ['#0B2A5B', 'M8 50 H92 V64 H8 Z'], ['#ffffff', 'M38 8 a12 12 0 1 0 24 0 a12 12 0 1 0 -24 0'], ['#ffffff', 'M8 55 H92 V58 H8 Z']] },
+    cowboy: { cw: 52, f: 0.98, y: 66, es: 'Sombrero vaquero', p: [['#8B5A2B', 'M24 54 C20 20 34 8 50 16 C66 8 80 20 76 54 Z'], ['#5a3a1a', 'M24 46 H76 V54 H24 Z'], ['#9c6633', 'M-14 50 C0 70 100 70 114 50 C104 56 90 58 76 54 L24 54 C10 58 -4 56 -14 50 Z']] },
+    crown: { cw: 80, f: 0.82, y: 56, es: 'Corona', p: [['#FFC21A', 'M10 62 L8 18 L29 38 L50 6 L71 38 L92 18 L90 62 Z'], ['#e0a400', 'M10 52 H90 V62 H10 Z'], ['#E3242B', 'M44 46 a6 6 0 1 0 12 0 a6 6 0 1 0 -12 0'], ['#3AA0E8', 'M22 48 a4 4 0 1 0 8 0 a4 4 0 1 0 -8 0'], ['#2E9E5B', 'M70 48 a4 4 0 1 0 8 0 a4 4 0 1 0 -8 0']] },
+    party: { cw: 60, f: 0.56, y: 50, es: 'Gorro de fiesta', p: [['#3AA0E8', 'M50 -18 L80 62 L20 62 Z'], ['#FFC21A', 'M41 6 L59 6 L63 18 L37 18 Z'], ['#FFC21A', 'M30 36 L70 36 L74 48 L26 48 Z'], ['#E3242B', 'M42 -20 a8 8 0 1 0 16 0 a8 8 0 1 0 -16 0']] },
+    tophat: { cw: 52, f: 0.86, y: 62, es: 'Sombrero de copa', p: [['#1b1b1b', 'M24 -16 H76 V56 H24 Z'], ['#E3242B', 'M24 38 H76 V48 H24 Z'], ['#1b1b1b', 'M2 54 C2 66 98 66 98 54 C98 50 2 50 2 54 Z']] },
+    chef: { cw: 56, f: 0.98, y: 62, es: 'Gorro de chef', p: [['#ffffff', 'M22 62 V36 C0 38 0 6 24 10 C30 -10 70 -10 76 10 C100 6 100 38 78 36 V62 Z'], ['#dddddd', 'M22 50 H78 V62 H22 Z'], ['#cfcfcf', 'M36 36 V50 M50 34 V50 M64 36 V50']] },
+    helmet: { cw: 80, f: 1.12, y: 66, es: 'Casco de obra', p: [['#FFC21A', 'M10 60 C8 6 92 6 90 60 Z'], ['#e0a400', 'M44 8 H56 V60 H44 Z'], ['#FFC21A', 'M-2 56 H102 V64 H-2 Z']] },
   };
   const BGS = { red: ['#E3242B', '#ff6b6b'], navy: ['#0B2A5B', '#2f5fa8'], yellow: ['#FFC21A', '#ffe38a'], sky: ['#3AA0E8', '#bfe4ff'], green: ['#2E9E5B', '#a6e3bd'], purple: ['#7B4BC4', '#d3bdf5'], pink: ['#F07AB0', '#ffd3e6'], white: ['#ffffff', '#e9eef6'], usa: ['#0B2A5B', '#E3242B'] };
   const STICKERS = ['', '⭐', '🏆', '📚', '🎸', '⚽', '☕', '❤️', '🇺🇸', '🚀', '🎧', '🔥'];
@@ -36,10 +36,12 @@
   const key = (c, pose) => [pose || c.pose, c.shirt, c.pants, c.shoes, c.hat].join('|');
   const cache = {};
 
-  const PADY = 70;
+  const PADY = 110, PADX = 70;
   function drawHat(ctx, hat, pose, scale) {
-    const H = HATS[hat]; if (!H || !H.p.length) return; const [x, y, r] = HEAD[pose] || [180, 46, 0];
-    ctx.save(); ctx.translate(x * scale, (y + 14 + PADY) * scale); ctx.rotate(r * Math.PI / 180); const s = 1.8 * scale; ctx.scale(s, s); ctx.translate(-50, -62);
+    const H = HATS[hat]; if (!H || !H.p.length) return; const [x, , r] = HEAD[pose] || [180, 46, 0];
+    // el sombrero se ajusta al ancho de la cabeza (~140 px) y baja hasta la línea del cabello
+    const ay = H.y + Math.abs(r) * 0.25;
+    ctx.save(); ctx.translate((x + PADX) * scale, (ay + PADY) * scale); ctx.rotate(r * Math.PI / 180); const s = (140 * H.f / H.cw) * scale; ctx.scale(s, s); ctx.translate(-50, -62);
     ctx.shadowColor = 'rgba(0,0,0,.25)'; ctx.shadowBlur = 4;
     H.p.forEach(([f, d]) => { const p = new Path2D(d); if (/^M\d+ \d+ V\d+ M/.test(d)) { ctx.strokeStyle = f; ctx.lineWidth = 2; ctx.stroke(p); } else { ctx.fillStyle = f; ctx.fill(p); } });
     ctx.restore();
@@ -47,23 +49,23 @@
   // canvas con el personaje vestido (sin fondo)
   async function canvas(c, pose) {
     pose = pose || c.pose || 'welcome'; const im = await load(pose);
-    const W = im.naturalWidth, H0 = im.naturalHeight, sc = H0 / 800; const pad = (c.hat && c.hat !== 'none') ? Math.round(PADY * sc) : 0; const Hh = H0 + pad;
-    const cv = document.createElement('canvas'); cv.width = W; cv.height = Hh; const ctx = cv.getContext('2d'); ctx.drawImage(im, 0, pad); cv._pad = pad;
+    const W = im.naturalWidth, H0 = im.naturalHeight, sc = H0 / 800; const pad = (c.hat && c.hat !== 'none') ? Math.round(PADY * sc) : 0; const px = pad ? Math.round(PADX * sc) : 0; const Hh = H0 + pad;
+    const cv = document.createElement('canvas'); cv.width = W + 2 * px; cv.height = Hh; const ctx = cv.getContext('2d'); ctx.drawImage(im, px, pad); cv._pad = pad; cv._px = px;
     if (c.shirt || c.pants || c.shoes) {
       try {
-        const d = ctx.getImageData(0, 0, W, Hh), a = d.data; const S = c.shirt && rgb(c.shirt), P = c.pants && rgb(c.pants), Z = c.shoes && rgb(c.shoes);
+        const CW = cv.width; const d = ctx.getImageData(0, 0, CW, Hh), a = d.data; const S = c.shirt && rgb(c.shirt), P = c.pants && rgb(c.pants), Z = c.shoes && rgb(c.shoes);
         const light = S && (S[0] + S[1] + S[2]) > 600;
         for (let y = Math.round(145 * sc) + pad; y < Hh; y++) {
           const yy = (y - pad) / sc;
-          for (let x = 0; x < W; x++) {
-            const i = (y * W + x) * 4; if (a[i + 3] < 20) continue;
+          for (let x = 0; x < CW; x++) {
+            const i = (y * CW + x) * 4; if (a[i + 3] < 20) continue;
             const r = a[i], g = a[i + 1], b = a[i + 2], mx = Math.max(r, g, b), mn = Math.min(r, g, b);
-            if (S && yy < 470 && mx < 95 && mx - mn < 30) {
+            if (S && yy < 470 && mx < 118 && mx - mn < 36 && !(b > r + 14)) {
               const t = Math.min(1, mx / 62); const k = light ? .72 + .32 * t : .42 + .78 * t; const hi = t * t * 28;
               a[i] = clamp(S[0] * k + hi); a[i + 1] = clamp(S[1] * k + hi); a[i + 2] = clamp(S[2] * k + hi);
             } else if (P && yy > 360 && yy < 760 && b > r + 18 && b >= g) {
               const t = mx / 150; a[i] = clamp(P[0] * t); a[i + 1] = clamp(P[1] * t); a[i + 2] = clamp(P[2] * t);
-            } else if (Z && yy > 690 && mn > 140 && mx - mn < 34) {
+            } else if (Z && yy > 540 && mx - mn < 34 && !(b > r + 14) && (yy > 680 ? mn > 70 : mn > 105)) {
               const t = mx / 255; const k = (Z[0] + Z[1] + Z[2]) < 150 ? .35 + .65 * t * t : .55 + .45 * t;
               a[i] = clamp(Z[0] * k + (1 - k) * 30 * t); a[i + 1] = clamp(Z[1] * k + (1 - k) * 30 * t); a[i + 2] = clamp(Z[2] * k + (1 - k) * 30 * t);
             }
@@ -85,8 +87,8 @@
     c = Object.assign(def(), c || {}); const cv = await canvas(c, c.pose); const sc = cv.height / 800; const [x] = HEAD[c.pose] || [180];
     const o = document.createElement('canvas'); o.width = o.height = size; const ctx = o.getContext('2d');
     const bg = BGS[c.bg] || BGS.red; const g = ctx.createLinearGradient(0, 0, size, size); g.addColorStop(0, bg[0]); g.addColorStop(1, bg[1]); ctx.fillStyle = g; ctx.fillRect(0, 0, size, size);
-    const box = 250 * sc, top = cv._pad ? (cv._pad - 62 * sc) : 0; // incluye el sombrero
-    ctx.drawImage(cv, x * sc - box / 2, top, box, box, 0, 0, size, size);
+    const box = 330 * sc, top = cv._pad ? (cv._pad - 122 * sc) : 0; // incluye el sombrero
+    ctx.drawImage(cv, x * sc + (cv._px || 0) - box / 2, top, box, box, 0, 0, size, size);
     return o.toDataURL('image/jpeg', .86);
   }
   // reemplaza las imágenes de Mr. Arrieta por la versión personalizada del estudiante

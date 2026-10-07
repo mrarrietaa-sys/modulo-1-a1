@@ -16,7 +16,12 @@
   ];
   const read = (k) => { try { return JSON.parse(localStorage.getItem(k)) || null; } catch (e) { return null; } };
   const get = () => read(KEY);
-  const save = (p) => { try { localStorage.setItem(KEY, JSON.stringify(p)); } catch (e) { } return p; };
+  const save = (p) => { try { localStorage.setItem(KEY, JSON.stringify(p)); if (p && p.first) localStorage.setItem('mra_last_user', JSON.stringify({ first: p.look && p.look.nick || p.first, pic: p.look && (p.look.pic === 'photo' ? p.look.photo : p.look.pic === 'avatar' ? p.look.head : '') || '' })); } catch (e) { } return p; };
+  // ¿el estudiante vuelve? (ya había entrado antes) — se calcula una vez por sesión del navegador
+  function isBack() {
+    try { let v = sessionStorage.getItem('mra_back'); if (v === null) { const p = read(KEY); v = p && p.first && p.lastSeen ? '1' : '0'; sessionStorage.setItem('mra_back', v); if (p && p.first) { p.lastSeen = Date.now(); localStorage.setItem(KEY, JSON.stringify(p)); } } return v === '1'; } catch (e) { return false; }
+  }
+  const lastUser = () => read('mra_last_user');
   const clear = () => { try { localStorage.removeItem(KEY); } catch (e) { } };
   const mod = (id) => MODS.find(m => m.id === id || m.n === id);
   const modState = (id) => read(mod(id).key) || {};
@@ -56,5 +61,5 @@
   const initials = () => { const p = get() || {}; return (((p.first || '?')[0] || '') + ((p.last || '')[0] || '')).toUpperCase(); };
   const avHTML = (cls) => { const u = pic(), l = look(); return `<span class="${cls || 'pt-av'}${u ? ' has' : ''}">${u ? `<img src="${u}" alt="">` : initials()}${l.av && l.av.sticker && l.pic === 'avatar' ? `<i class="stk">${l.av.sticker}</i>` : ''}</span>`; };
   const setLook = (o) => { const p = get(); if (!p) return; p.look = Object.assign({}, p.look || {}, o); save(p); return p.look; };
-  window.MRAP = { KEY, MODS, get, save, clear, mod, modState, passed, assigned, role, progress, isStaff, isTrial, setPlacement, trialMod, TRIAL_TOPICS: 2, look, pic, avHTML, setLook, initials };
+  window.MRAP = { KEY, MODS, get, save, clear, mod, modState, passed, assigned, role, progress, isStaff, isTrial, setPlacement, trialMod, TRIAL_TOPICS: 2, look, pic, avHTML, setLook, initials, isBack, lastUser };
 })();

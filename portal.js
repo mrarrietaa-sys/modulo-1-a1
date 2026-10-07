@@ -11,7 +11,7 @@
 
   function topbar() {
     const p = P.get();
-    $('#topbar').innerHTML = `<div class="brand" id="go-home"><span class="logo-pill"><img class="logo" src="mra-brand.png" alt="mrarrieta.com"></span><small>MI PERFIL</small></div><div class="sp"></div>
+    $('#topbar').innerHTML = `<div class="brand" id="go-home"><span class="logo-pill"><img class="logo" src="mra-brand.png" alt="mrarrieta.com"></span></div><div class="sp"></div><span class="tb-tag">MI PERFIL</span>
       ${p ? `<span class="pill hide-s">${p.type === 'staff' ? '👨‍🏫 Profe' : p.type === 'trial' ? '🟢 Acceso gratis' : '🎓 Estudiante'}</span>${p.first ? `<button class="tb-avbtn" id="me-b" title="Personaliza tu perfil">${P.avHTML('tb-av')}</button>` : ''}<button class="iconbtn" id="out" title="Salir">⏻</button>` : ''}`;
     $('#go-home').onclick = () => route('home');
     if ($('#me-b')) $('#me-b').onclick = () => route('me');
@@ -37,7 +37,8 @@
   function login() {
     app.innerHTML = `<div class="wrap pt-wrap"><div class="card pt-login">
       
-      <div class="pt-hello">${M.mascot('pt-mra', 'welcome')}<div class="bubble">Welcome, my friend! 👋<small>Bienvenido(a) a tu plataforma de inglés</small></div></div>
+      ${(() => { const lu = P.lastUser(); return lu && lu.first ? `<div class="pt-hello">${lu.pic ? `<span class="pt-av big pt-lu has"><img src="${lu.pic}" alt=""></span>` : M.mascot('pt-mra', 'wink')}<div class="bubble">Welcome back, ${esc(lu.first)}! 👋<small>¡Qué bueno verte de nuevo! Escribe tu código para continuar tu ruta.</small></div></div>`
+        : `<div class="pt-hello">${M.mascot('pt-mra', 'welcome')}<div class="bubble">Welcome, my friend! 👋<small>Bienvenido(a) a tu plataforma de inglés</small></div></div>`; })()}
       <h1>Ingresa a tu perfil</h1><p class="muted">Escribe el código que te entregó administración.</p>
       <input class="inp" id="cd" placeholder="Ej: ABC-123" autocapitalize="characters" autocomplete="off">
       <button class="btn k block lg" id="ok">Entrar →</button>
@@ -68,7 +69,7 @@
   }
   function logout() {
     const m = M.modal(`<h3>¿Salir de tu perfil?</h3><p class="muted">Tu progreso queda guardado en este dispositivo. Para volver a entrar necesitarás tu código.</p><div class="row"><button class="btn k" id="y">Sí, salir</button><button class="btn w" id="n">Cancelar</button></div>`, { x: true });
-    $('#n', m).onclick = () => m.remove(); $('#y', m).onclick = () => { m.remove(); P.clear(); route('home'); };
+    $('#n', m).onclick = () => m.remove(); $('#y', m).onclick = () => { m.remove(); const cur = P.get(); if (cur && cur.first) P.save(cur); P.clear(); route('home'); };
   }
 
   /* ---------- perfil ---------- */
@@ -77,7 +78,7 @@
     const ini = ((p.first || '?')[0] + (p.last || '')[0]).toUpperCase();
     const pst = window.MRAPLACE ? MRAPLACE.status() : { attempts: 0, max: 2 };
     const pl = p.placement;
-    const hr = new Date().getHours(); const greet = hr < 12 ? 'Good morning' : hr < 18 ? 'Good afternoon' : 'Good evening';
+    const hr = new Date().getHours(); const back = P.isBack(); const greet = back ? 'Welcome back' : hr < 12 ? 'Good morning' : hr < 18 ? 'Good afternoon' : 'Good evening';
     let main = '';
     if (!p.module && !staff) {
       main = `<div class="card pt-step"><div class="pt-stepn">1</div><div><span class="lbl">Primer paso</span><h2>Toma tu examen de clasificación</h2>
@@ -94,7 +95,7 @@
         ${a && !ready && !trial ? `<p class="pt-soon">🚧 Tu ${esc(a.name)} se está terminando de construir. ¡Muy pronto estará listo! Mientras tanto puedes repasar los módulos anteriores.</p>` : ''}</div></div>`;
     }
     app.innerHTML = `<div class="wrap">
-      <section class="card pt-head ban-${esc(P.look().banner || 'w')}"><button class="pt-avwrap" id="me-av" title="Personaliza tu foto">${P.avHTML('pt-av')}<i class="pt-pen">✏️</i></button><div class="pt-hi"><span class="lbl">${greet}!</span><h1>¡Hola, <span class="nm">${esc(P.look().nick || p.first)}</span>! 👋</h1>
+      <section class="card pt-head ban-${esc(P.look().banner || 'w')}"><button class="pt-avwrap" id="me-av" title="Personaliza tu foto">${P.avHTML('pt-av')}<i class="pt-pen">✏️</i></button><div class="pt-hi"><span class="lbl">${greet}!</span><h1>${back ? '¡Hola de nuevo' : '¡Hola'}, <span class="nm">${esc(P.look().nick || p.first)}</span>! 👋</h1>
         <p class="muted">${staff ? '👨‍🏫 Perfil de profesor — puedes revisar todo.' : trial ? '🟢 Acceso gratuito — descubre tu ruta de aprendizaje.' : '🎓 Estudiante de mrarrieta.com'}</p></div>${M.mascot('pt-headmra', 'welcome')}</section>
       ${trial ? `<div class="pt-trialbar">🟢 <div><b>Estás en tu acceso gratuito.</b> Tienes acceso al examen de clasificación y a los <b>2 primeros temas</b> de tu módulo. ¿Te gustó? <a target="_blank" rel="noopener" href="${WA(`¡Hola! Soy ${p.name}. Empecé gratis en la plataforma y quiero inscribirme 🚀`)}">Inscríbete aquí 💬</a></div></div>` : ''}
       ${main}
@@ -107,6 +108,11 @@
       ${certs()}
       <p class="center fx-foot" style="margin-top:22px;font-size:13.5px;font-weight:600">mrarrieta.com · ¡Aprende inglés HABLANDO! · WhatsApp ${esc(C.WHATSAPP.replace(/^57/, ''))}</p></div>`;
     if ($('#pt')) $('#pt').onclick = () => route('placement');
+    // bienvenida de regreso (una vez por sesión)
+    try { if (back && !sessionStorage.getItem('mra_wb')) { sessionStorage.setItem('mra_wb', '1'); const pr = a && a.ready ? P.progress(a.id) : null;
+      const wm = M.modal(`<div class="center wb">${P.pic() ? P.avHTML('pt-av big') : M.mascot('mascot bounce', 'wink')}<h2>Welcome back, ${esc(P.look().nick || p.first)}! 👋</h2><p style="font-size:17px">¡Qué bueno verte de nuevo! ${pr && pr.done ? `Llevas <b>${pr.done} clase(s)</b> en tu ruta. ¡Sigamos!` : 'Hoy es un gran día para avanzar en tu ruta de aprendizaje.'}</p>
+        ${a && a.ready && !staff ? `<a class="btn k block lg" style="text-decoration:none" href="${a.url}">▶ Continuar mi ruta</a>` : ''}<button class="btn w block" id="wbx" style="margin-top:8px">Ir a mi perfil</button></div>`, { x: true });
+      $('#wbx', wm).onclick = () => wm.remove(); M.confetti && M.confetti(900); } } catch (e) { }
     $('#me-av').onclick = () => route('me'); if ($('#me-go')) $('#me-go').onclick = () => route('me');
     if ($('#pt2')) $('#pt2').onclick = () => { if (staff) return route('placement'); const m = M.modal(`<h3>¿Repetir el examen de clasificación?</h3><p class="muted">Tu nuevo resultado reemplazará la ubicación actual de tu perfil. Usaste ${pst.attempts} de ${pst.max} intentos.</p><div class="row"><button class="btn k" id="y">Sí, repetir</button><button class="btn w" id="n">Cancelar</button></div>`, { x: true }); $('#n', m).onclick = () => m.remove(); $('#y', m).onclick = () => { m.remove(); route('placement'); }; };
     $$('.pt-mod').forEach(el => el.onclick = () => openMod(el.dataset.id));
@@ -183,6 +189,8 @@
         if ($('#rm')) $('#rm').onclick = () => { P.setLook({ photo: '', pic: L.pic === 'photo' ? (L.head ? 'avatar' : '') : L.pic }); done('Foto eliminada'); show('photo'); };
         if ($('#usep')) $('#usep').onchange = e => { P.setLook({ pic: e.target.checked ? 'photo' : (L.head ? 'avatar' : '') }); done(e.target.checked ? 'Tu foto es tu foto de perfil ✅' : 'Listo'); };
       } else if (t === 'av') {
+        const cur = (k) => { const v = av[k]; if (k === 'pose') return POSE_EN[v]; if (k === 'hat') return HAT_EN[v].join(' '); if (k === 'bg') return BG_EN[v]; if (k === 'sticker') return v || '—'; const L2 = { shirt: MRAV.SHIRTS, pants: MRAV.PANTS, shoes: MRAV.SHOES }[k]; const it = L2.find(x => x[0] === v) || L2[0]; return `<i class="me-dot" style="background:${it[2]}"></i>${EN[v] || it[1]}`; };
+        const acc = (k, t, inner, open) => `<details class="card me-acc" data-sec="${k}" ${open ? 'open' : ''}><summary><span>${t}</span><em class="me-cur" data-cur="${k}">${cur(k)}</em><b class="me-chev">▾</b></summary><div class="me-accb">${inner}</div></details>`;
         const sw = (k, list) => list.map(([hx, es, col]) => `<button class="me-sw${av[k] === hx ? ' on' : ''}" data-k="${k}" data-v="${hx}" title="${es}"><i style="background:${col}"></i><small>${EN[hx] || es}</small></button>`).join('');
         body.innerHTML = `<div class="me-av">
           <div class="me-prev card"><div class="me-stage" id="stage"><img id="pv" alt="Mi Mr. Arrieta"><b class="me-stk" id="stk"></b></div>
@@ -190,18 +198,19 @@
             <button class="btn k block lg" id="sv">✅ Guardar mi Mr. Arrieta</button>
             <label class="me-chk"><input type="checkbox" id="guide" ${L.guide ? 'checked' : ''}><span>Que <b>mi Mr. Arrieta</b> me acompañe en todas mis clases</span></label></div>
           <div class="me-opts">
-            <div class="card"><h3>👤 Pose · Postura</h3><div class="me-poses" data-noguide>${MRAV.POSES.map(x => `<button class="me-pose${av.pose === x ? ' on' : ''}" data-k="pose" data-v="${x}"><img src="mra-${x}.webp" alt="" loading="lazy"><small>${POSE_EN[x]}</small></button>`).join('')}</div></div>
-            <div class="card"><h3>👕 Shirt · Camiseta</h3><div class="me-sws">${sw('shirt', MRAV.SHIRTS)}</div></div>
-            <div class="card"><h3>👖 Pants · Pantalón</h3><div class="me-sws">${sw('pants', MRAV.PANTS)}</div></div>
-            <div class="card"><h3>👟 Shoes · Zapatos</h3><div class="me-sws">${sw('shoes', MRAV.SHOES)}</div></div>
-            <div class="card"><h3>🎩 Hat · Sombrero</h3><div class="me-hats">${Object.keys(MRAV.HATS).map(x => `<button class="me-hat${av.hat === x ? ' on' : ''}" data-k="hat" data-v="${x}"><b>${HAT_EN[x][0]}</b><small>${HAT_EN[x][1]}</small></button>`).join('')}</div></div>
-            <div class="card"><h3>🖼️ Background · Fondo</h3><div class="me-sws">${Object.keys(MRAV.BGS).map(x => `<button class="me-sw${av.bg === x ? ' on' : ''}" data-k="bg" data-v="${x}"><i style="background:linear-gradient(135deg,${MRAV.BGS[x][0]},${MRAV.BGS[x][1]})"></i><small>${BG_EN[x]}</small></button>`).join('')}</div></div>
-            <div class="card"><h3>⭐ Sticker</h3><div class="me-hats">${MRAV.STICKERS.map(x => `<button class="me-hat stk${av.sticker === x ? ' on' : ''}" data-k="sticker" data-v="${x}"><b>${x || '🚫'}</b></button>`).join('')}</div></div>
+            ${acc('pose', '👤 Pose · Postura', `<div class="me-poses" data-noguide>${MRAV.POSES.map(x => `<button class="me-pose${av.pose === x ? ' on' : ''}" data-k="pose" data-v="${x}"><img src="mra-${x}.webp" alt="" loading="lazy"><small>${POSE_EN[x]}</small></button>`).join('')}</div>`, true)}
+            ${acc('shirt', '👕 Shirt · Camiseta', `<div class="me-sws">${sw('shirt', MRAV.SHIRTS)}</div>`)}
+            ${acc('pants', '👖 Pants · Pantalón', `<div class="me-sws">${sw('pants', MRAV.PANTS)}</div>`)}
+            ${acc('shoes', '👟 Shoes · Zapatos', `<div class="me-sws">${sw('shoes', MRAV.SHOES)}</div>`)}
+            ${acc('hat', '🎩 Hat · Sombrero', `<div class="me-hats">${Object.keys(MRAV.HATS).map(x => `<button class="me-hat${av.hat === x ? ' on' : ''}" data-k="hat" data-v="${x}"><b>${HAT_EN[x][0]}</b><small>${HAT_EN[x][1]}</small></button>`).join('')}</div>`)}
+            ${acc('bg', '🖼️ Background · Fondo', `<div class="me-sws">${Object.keys(MRAV.BGS).map(x => `<button class="me-sw${av.bg === x ? ' on' : ''}" data-k="bg" data-v="${x}"><i style="background:linear-gradient(135deg,${MRAV.BGS[x][0]},${MRAV.BGS[x][1]})"></i><small>${BG_EN[x]}</small></button>`).join('')}</div>`)}
+            ${acc('sticker', '⭐ Sticker', `<div class="me-hats">${MRAV.STICKERS.map(x => `<button class="me-hat stk${av.sticker === x ? ' on' : ''}" data-k="sticker" data-v="${x}"><b>${x || '🚫'}</b></button>`).join('')}</div>`)}
           </div></div>`;
         let tok = 0;
         const paint = () => { const bg = MRAV.BGS[av.bg] || MRAV.BGS.red; $('#stage').style.background = `linear-gradient(135deg,${bg[0]},${bg[1]})`; $('#stk').textContent = av.sticker || '';
           const my = ++tok; $('#stage').classList.add('busy'); MRAV.full(av).then(u => { if (my !== tok) return; $('#pv').src = u; $('#stage').classList.remove('busy'); }); };
-        const mark = () => $$('[data-k]', body).forEach(b => b.classList.toggle('on', av[b.dataset.k] === b.dataset.v));
+        const mark = () => { $$('[data-k]', body).forEach(b => b.classList.toggle('on', av[b.dataset.k] === b.dataset.v)); $$('[data-cur]', body).forEach(e => e.innerHTML = cur(e.dataset.cur)); };
+        $$('.me-acc', body).forEach(d => d.addEventListener('toggle', () => { if (d.open) { $$('.me-acc', body).forEach(o => { if (o !== d) o.open = false; }); if (window.innerWidth < 720) setTimeout(() => d.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 60); } }));
         $$('[data-k]', body).forEach(b => b.onclick = () => { av[b.dataset.k] = b.dataset.v; sfx('tap'); mark(); paint(); });
         $('#rnd').onclick = () => { const pick = (a) => a[Math.floor(Math.random() * a.length)]; av = { pose: pick(MRAV.POSES), shirt: pick(MRAV.SHIRTS)[0], pants: pick(MRAV.PANTS)[0], shoes: pick(MRAV.SHOES)[0], hat: pick(Object.keys(MRAV.HATS)), bg: pick(Object.keys(MRAV.BGS)), sticker: pick(MRAV.STICKERS) }; mark(); paint(); };
         $('#sv').onclick = async () => { const b = $('#sv'); b.disabled = true; b.textContent = 'Guardando…'; let head = ''; try { head = await MRAV.head(av); } catch (e) { }

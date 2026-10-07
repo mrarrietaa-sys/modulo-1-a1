@@ -1325,3 +1325,21 @@ a.iconbtn{display:inline-grid;place-items:center;text-decoration:none}
 .pt-routebar .ln{flex:1;height:6px;border-radius:6px;margin:0 6px 20px;background:repeating-linear-gradient(90deg,#c9d1de 0 10px,transparent 10px 16px)}
 .pt-routebar .ln.on{background:var(--k)}
 @keyframes ptpulse{0%,100%{box-shadow:0 0 0 4px rgba(46,158,91,.3)}50%{box-shadow:0 0 0 9px rgba(46,158,91,.08)}}
+/* v32 — opciones del avatar recogibles */
+.me-opts{gap:10px}
+.me-acc{padding:0!important;overflow:hidden}
+.me-acc summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:14px 16px;font-weight:800;font-size:17px;font-family:var(--fh)}
+.me-acc summary::-webkit-details-marker{display:none}
+.me-acc summary span{flex:1;min-width:0}
+.me-cur{font-style:normal;font-size:13px;font-weight:700;color:#4a5568;display:inline-flex;align-items:center;gap:6px;max-width:45%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--fb,inherit)}
+.me-dot{width:16px;height:16px;border-radius:50%;border:2px solid rgba(0,0,0,.25);display:inline-block;flex:none}
+.me-chev{transition:transform .2s;font-size:18px}
+.me-acc[open] .me-chev{transform:rotate(180deg)}
+.me-acc[open] summary{border-bottom:2px solid #e3e8f0}
+.me-accb{padding:12px 14px 14px}
+.me-prev{top:78px}
+@media (max-width:720px){.me-prev{position:static}.me-prev .me-stage{height:300px}}
+/* v32 — etiqueta a la derecha, nada junto al logo */
+.tb-tag{flex:none;background:#E3242B;color:#fff;font-family:var(--fh);font-weight:800;font-size:12px;letter-spacing:.6px;padding:6px 10px;border-radius:8px;border:2px solid var(--k);white-space:nowrap}
+@media (max-width:600px){.tb-tag{display:none}}
+.pt-lu{width:96px;height:96px;margin:0}.wb h2{margin:8px 0 4px}

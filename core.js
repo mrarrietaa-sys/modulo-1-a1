@@ -3,6 +3,10 @@
    ===================================================================== */
 (function () {
   const D = window.M1DATA, C = window.M1CONFIG;
+  // información del módulo (cada módulo la define en mod-a1.js / mod-a2.js)
+  const MOD = Object.assign({ id: 'A1', n: 1, es: 'Módulo 1', en: 'Module 1', level: 'Elementary A1', levelEs: 'Elemental (A1)', classes: 28, topics: 14,
+    stateKey: 'mra_m1_progress_v1', examKey: 'mra_m1_exam_v1', audio: 't', games: 'g3', next: 'Module 2' }, C.MOD || {});
+  C.MODULE_ID = MOD.id;
   const $ = (s, el = document) => el.querySelector(s);
   const $$ = (s, el = document) => [...el.querySelectorAll(s)];
   const h = (html) => { const t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstElementChild; };
@@ -23,7 +27,7 @@
   }
 
   /* ---------- state (local, cloud-ready: one JSON object) ---------- */
-  const KEY = 'mra_m1_progress_v1';
+  const KEY = MOD.stateKey;
   const fresh = () => ({ v: 1, name: '', created: Date.now(), xp: 0, streak: { last: '', n: 0 }, parts: {}, skills: { listening: [0, 0], reading: [0, 0], speaking: [0, 0], writing: [0, 0] }, weak: {}, unlocked: [], all: false, final: null, hw: {}, last: null, sound: true });
   let S;
   try { S = Object.assign(fresh(), JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) { S = fresh(); }
@@ -359,7 +363,7 @@
   }
   function audioSrc(au) { return window.AUD && window.AUD[au] ? 'data:audio/mpeg;base64,' + window.AUD[au] : 'audio/' + au + '.mp3'; }
 
-  window.M1 = { D, C, S, $, $$, h, esc, shuffle, sample, sleep, save, touchStreak, addSkill, addWeak, okWeak, skillPct, isUnlocked, finalUnlocked, hasAccess, progressOpen, lockReason, review, hasProfile, doneCount, totalParts, redeem, codeHash,
+  window.M1 = { D, C, MOD, S, $, $$, h, esc, shuffle, sample, sleep, save, touchStreak, addSkill, addWeak, okWeak, skillPct, isUnlocked, finalUnlocked, hasAccess, progressOpen, lockReason, review, hasProfile, doneCount, totalParts, redeem, codeHash,
     allParts, partById, trackAudio, audioUI, floatStop, recordScore, letterScorer, voiceResult, floatBubble, setBubbleHidden, prevPart, nextPart, partStars, overallPct, imgURL, photo, play, playSeq, loadAudio, stop, sfx, praise, encourage, canSR, listen, recordVoice,
     norm, words, lev, speechScore, sheet, good, bad, toast, modal, xpFly, confetti, mascot, audioSrc };
 })();

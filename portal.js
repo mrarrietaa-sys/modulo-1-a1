@@ -105,6 +105,7 @@
       <div class="sect-title"><h2>🧭 Mi ruta de aprendizaje</h2></div>
       ${routeBar()}
       <div class="pt-mods-grid pt-route">${P.MODS.map(m => modCard(m)).join('')}</div>
+      ${courseCard()}
       ${pl ? `<div class="sect-title"><h2>📝 Mi examen de clasificación</h2></div><div class="card pt-plres"><div><b>Resultado:</b> ${esc(P.mod(pl.module).name)} · ${esc(P.mod(pl.module).es)}<br><span class="muted">${new Date(pl.date).toLocaleDateString('es-CO')}${pl.mods ? ' · ' + [1, 2, 3, 4].map(k => `${P.mod(k).id}: ${pl.mods[k]}%`).join(' · ') : ''}</span></div>${(pst.attempts < pst.max || (pst.round || 1) < (pst.rounds || 1)) ? '<button class="btn w sm" id="pt2">🔁 Repetir examen</button>' : ''}</div>` : ''}
       ${staff ? `<div class="sect-title"><h2>📝 Examen de clasificación</h2></div><div class="card pt-plres"><div>Puedes presentar o revisar el examen de clasificación como lo verá el estudiante.</div><button class="btn w sm" id="pt2">📝 Abrir examen</button></div>` : ''}
       ${certs()}
@@ -121,7 +122,8 @@
     $$('.pt-mod').forEach(el => el.onclick = () => openMod(el.dataset.id));
   }
   function routeBar() {
-    return `<div class="pt-routebar">${P.MODS.map((m, i) => { const r = P.role(m.id); return `${i ? `<i class="ln ${r === 'locked' || r === 'soon' ? '' : 'on'}"></i>` : ''}<div class="st ${r}${P.passed(m.id) ? ' ok' : ''}"><b>${P.passed(m.id) ? '✓' : r === 'current' ? '📍' : m.n}</b><small>${esc(m.id)}</small></div>`; }).join('')}</div>`;
+    const fin = courseOpen(), fdone = !!(courseState().final && courseState().final.passed);
+    return `<div class="pt-routebar">${P.MODS.map((m, i) => { const r = P.role(m.id); return `${i ? `<i class="ln ${r === 'locked' || r === 'soon' ? '' : 'on'}"></i>` : ''}<div class="st ${r}${P.passed(m.id) ? ' ok' : ''}"><b>${P.passed(m.id) ? '✓' : r === 'current' ? '📍' : m.n}</b><small>${esc(m.id)}</small></div>`; }).join('')}<i class="ln ${fin ? 'on' : ''}"></i><div class="st fin ${fdone ? 'ok' : fin ? 'current' : 'locked'}"><b>${fdone ? '🎓' : '🏆'}</b><small>Final</small></div></div>`;
   }
   function modCard(m) {
     const r = P.role(m.id); const pr = P.progress(m.id); const trial = P.isTrial();
@@ -143,9 +145,19 @@
       ${P.isTrial() ? `<a class="btn block pt-wa" target="_blank" rel="noopener" href="${WA('¡Hola! Quiero inscribirme en mrarrieta.com 🚀')}">💬 Quiero inscribirme</a>` : '<button class="btn k block" id="cl">Entendido</button>'}`, { x: true });
     if ($('#cl', mm)) $('#cl', mm).onclick = () => mm.remove();
   }
+  const courseState = () => { try { return JSON.parse(localStorage.getItem('mra_final_progress_v1') || '{}'); } catch (e) { return {}; } };
+  const courseOpen = () => { const p = P.get(); return !!p && (p.type === 'staff' || ['A1', 'A2', 'B2', 'B2+'].every(id => P.passed(id))); };
+  function courseCard() {
+    const p = P.get(); if (!p || p.type === 'trial') return '';
+    const open = courseOpen(), st = courseState(), passed = !!(st.final && st.final.passed);
+    const n = ['A1', 'A2', 'B2', 'B2+'].filter(id => P.passed(id)).length;
+    return `<a class="card pt-course ${open ? 'open' : ''} ${passed ? 'done' : ''}" href="examen-final.html${passed ? '#cert' : ''}"><div class="pt-course-ic">🏆</div><div><span class="lbl">Meta final de tu ruta</span><h3>Examen final del curso</h3>
+      <p class="muted">${passed ? '🎓 ¡Aprobado! Ver mi certificado de ruta completa' : open ? '50 preguntas · 4 habilidades · 2 intentos · certificado de toda tu ruta' : `🔒 Se habilita al aprobar los 4 módulos (${n} de 4 aprobados)`}</p></div><b class="pt-course-go">${passed ? '🎓' : open ? '▶' : '🔒'}</b></a>`;
+  }
   function certs() {
-    const done = P.MODS.filter(m => m.ready && P.passed(m.id)); if (!done.length) return '';
-    return `<div class="sect-title"><h2>🎓 Mis certificados</h2></div><div class="pt-certs">${done.map(m => `<a class="card pt-cert" href="${m.url}#cert">🎓 <div><b>${esc(m.name)} · ${esc(m.level)}</b><small>Nota: ${(P.modState(m.id).final.score || 0).toFixed ? Number(P.modState(m.id).final.score).toFixed(1) : ''}/10 · Ver y descargar</small></div></a>`).join('')}</div>`;
+    const cs = courseState(); const course = cs.final && cs.final.passed ? `<a class="card pt-cert gold" href="examen-final.html#cert">🏆 <div><b>Ruta completa A1 → B2+</b><small>Examen final del curso · ${Number(cs.final.score || 0).toFixed(1)}/10 · Ver y descargar</small></div></a>` : '';
+    const done = P.MODS.filter(m => m.ready && P.passed(m.id)); if (!done.length && !course) return '';
+    return `<div class="sect-title"><h2>🎓 Mis certificados</h2></div><div class="pt-certs">${course}${done.map(m => `<a class="card pt-cert" href="${m.url}#cert">🎓 <div><b>${esc(m.name)} · ${esc(m.level)}</b><small>Nota: ${(P.modState(m.id).final.score || 0).toFixed ? Number(P.modState(m.id).final.score).toFixed(1) : ''}/10 · Ver y descargar</small></div></a>`).join('')}</div>`;
   }
   /* ---------- tour guiado del perfil (primera vez de cualquier estudiante) ---------- */
   function portalTour() {

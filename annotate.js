@@ -145,7 +145,7 @@ body.ann-draw{user-select:none;-webkit-user-select:none}
     fab.classList.toggle('act', tool !== 'cursor');
   }
   function layout() {
-    const fx = st.x == null ? 12 : Math.min(Math.max(4, st.x * innerWidth), innerWidth - 56), fy = st.y == null ? 110 : Math.min(Math.max(4, st.y * innerHeight), innerHeight - 56);
+    const fx = st.x == null ? innerWidth - 62 : Math.min(Math.max(4, st.x * innerWidth), innerWidth - 56), fy = st.y == null ? Math.round(innerHeight * .55) : Math.min(Math.max(4, st.y * innerHeight), innerHeight - 56);
     fab.style.left = fx + 'px'; fab.style.top = fy + 'px';
     bar.classList.toggle('hidden', !st.open || st.hidden); fab.classList.toggle('hidden', st.hidden);
     if (st.open && !st.hidden) {

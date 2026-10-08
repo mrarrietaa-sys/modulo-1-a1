@@ -3,6 +3,7 @@
    resultados, progreso, examen final, desbloqueo
    ===================================================================== */
 (function () {
+  const PL = (q) => (q && q._t && q._t.parts && q._t.parts.length === 1) ? 'Class' : 'Part ' + (q ? q.part : '');
   const M = window.M1, A = window.M1A;
   const { D, C, S, $, $$, h, esc, shuffle, sample, sleep, photo, play, stop, sfx, sheet, good, bad, save } = M;
   const app = $('#app');
@@ -202,7 +203,7 @@
         <div class="bd"><h3>${esc(t.title)}</h3><div class="es">${esc(t.es)}</div></div></div>`);
       t.parts.forEach(p => {
         const st = M.partStars(p.id); const pd = S.parts[p.id];
-        const b = h(`<button class="partbtn"><span class="t">PART ${p.part}<small>${esc(p.title)}</small></span><span class="stars">${[1, 2, 3].map(i => `<span class="${i <= st ? '' : 'off'}">⭐</span>`).join('')}</span></button>`);
+        const b = h(`<button class="partbtn"><span class="t">${PL(p).toUpperCase()}<small>${esc(p.title)}</small></span><span class="stars">${[1, 2, 3].map(i => `<span class="${i <= st ? '' : 'off'}">⭐</span>`).join('')}</span></button>`);
         if (pd && pd.done) { b.classList.add('pdone'); b.querySelector('small').innerHTML += ' <b class="donetag">✓ COMPLETADA</b>'; }
         if (p.id === curId) { b.classList.add('cur'); b.querySelector('small').innerHTML += ' <b class="curtag">▶ EN CURSO</b>'; }
         b.onclick = () => route('class', p.id); $('.bd', card).appendChild(b);
@@ -234,7 +235,7 @@
       <h3 style="font-size:22px;margin:8px 0 4px">${esc(S.name.split(' ')[0])}, tienes ${pend.length} ${pend.length === 1 ? 'tarea pendiente' : 'tareas pendientes'} ✍️</h3>
       <p class="muted" style="margin:0 0 10px">Hacer tu tarea es lo que más te ayuda a recordar lo que aprendiste. ¡Solo te toma 5 minutos!</p>
       <button class="btn k" id="pend-t">📋 Ver mis tareas pendientes (${pend.length}) ▾</button>
-      <div class="pend-list hidden" id="pend-l" style="margin-top:10px">${pend.map(p => `<button class="partbtn" data-hw="${p.id}"><span class="t">${esc(p._t.title)} · Part ${p.part}<small>${esc(p.hw.es)}</small></span><span class="btn sm k" style="pointer-events:none">Hacer tarea →</span></button>`).join('')}</div>
+      <div class="pend-list hidden" id="pend-l" style="margin-top:10px">${pend.map(p => `<button class="partbtn" data-hw="${p.id}"><span class="t">${esc(p._t.title)} · ${PL(p)}<small>${esc(p.hw.es)}</small></span><span class="btn sm k" style="pointer-events:none">Hacer tarea →</span></button>`).join('')}</div>
       <div style="margin-top:10px"><button class="btn sm w" id="rem-b">🔔 Recordarme todos los días</button></div></div></div>`;
   }
   function dailyReminder() {
@@ -376,7 +377,7 @@
     }
     const run = (startAt && rec.run && !Array.isArray(rec.run.res)) ? rec.run : { res: {}, xp: 0 };
     app.innerHTML = `<div class="player"><div class="phead"><button class="x" title="Salir">✕</button><button class="back" title="Volver al paso anterior">← Atrás</button><div class="prog"><i style="width:0%"></i></div></div>
-      <div class="ptopic">📍 Estás en: <b>Topic ${p.topic} · ${esc(p._t.title)}</b> — Part ${p.part}: ${esc(p.title)} <span class="psec"></span></div>
+      <div class="ptopic">📍 Estás en: <b>Topic ${p.topic} · ${esc(p._t.title)}</b> — ${PL(p)}: ${esc(p.title)} <span class="psec"></span></div>
       <button class="resume hidden">⏩ Continuar donde quedé</button>
       <div class="secbar">${secs.map(s => `<span data-s="${esc(s)}">${esc(s)}</span>`).join('')}</div><div class="stage"></div></div>`;
     $('.x', app).onclick = () => { stop(); route('home'); };
@@ -388,7 +389,7 @@
     let lastAct = Date.now(), hiddenAt = 0, curSec = '', curI = 0;
     const where = () => { if (!app.contains(player) || $('.modal') || $('#tour')) return;
       const m = M.modal(`<div class="center">${M.mascot('mascot', 'watch')}</div><h3 class="center">¡Hola de nuevo, ${esc(S.name.split(' ')[0])}! 👋</h3>
-        <p class="center" style="font-size:17px">Estás en <b>Topic ${p.topic} · ${esc(p._t.title)}</b><br>Part ${p.part}: ${esc(p.title)}<br>Sección: <b>${esc(curSec)}</b> (paso ${curI + 1} de ${steps.length})</p>
+        <p class="center" style="font-size:17px">Estás en <b>Topic ${p.topic} · ${esc(p._t.title)}</b><br>${PL(p)}: ${esc(p.title)}<br>Sección: <b>${esc(curSec)}</b> (paso ${curI + 1} de ${steps.length})</p>
         <button class="btn k block lg" id="wb">¡Seguir donde iba! →</button>`);
       $('#wb', m).onclick = () => m.remove(); };
     const act = () => { if (Date.now() - lastAct > 4 * 60 * 1000) where(); lastAct = Date.now(); };
@@ -438,12 +439,12 @@
     goal: async (stage, p) => {
       const prev = M.prevPart(p);
       stage.innerHTML = `<div class="center">
-        <span class="lbl">Topic ${p.topic} · Part ${p.part}</span>
+        <span class="lbl">Topic ${p.topic} · ${PL(p)}</span>
         <h2 style="font-size:28px;margin-top:12px">${esc(p._t.title)}</h2>
         <p class="muted" style="font-size:17px;margin:4px 0 14px">${esc(p.title)} — ${esc(p.es)}</p>
         <div class="mainph" style="max-width:460px">${photo(p._t.cover)}</div>
         <div class="lesson" style="text-align:left;margin-top:6px"><h3>🎯 Goal</h3><p style="font-size:18px;margin:4px 0"><b>${esc(p.goal ? p.goal.en : p.title)}</b></p><p class="muted" style="margin:0">${esc(p.goal ? p.goal.es : p.es)}</p></div>
-        ${prev && !(S.parts[prev.id] && S.parts[prev.id].done) ? `<p class="hint" style="margin-top:6px">💡 Te recomendamos completar primero: ${esc(prev._t.title)} · Part ${prev.part}</p>` : ''}
+        ${prev && !(S.parts[prev.id] && S.parts[prev.id].done) ? `<p class="hint" style="margin-top:6px">💡 Te recomendamos completar primero: ${esc(prev._t.title)} · ${PL(prev)}</p>` : ''}
       </div>`;
       await A.waitNext(stage, '¡Empezar clase! 🚀'); M.confetti(2200); sfx('win'); return null;
     },
@@ -506,7 +507,7 @@
       const pv = M.prevPart(p); const pool = pv.vocab.filter((v, i, a) => a.findIndex(x => x.en === v.en) === i);
       const usePh = pool.filter(x => x.img && !x.img.startsWith('#')).length >= pool.length * .6;
       const items = sample(pool, Math.min(4, pool.length));
-      const r = await A.qloop(stage, { lbl: 'Review', title: 'Let\'s remember last class', ins: `Repaso de <b>${esc(pv._t.title)} · Part ${pv.part}</b>. Escucha y elige.` }, items, async (body, it) => {
+      const r = await A.qloop(stage, { lbl: 'Review', title: 'Let\'s remember last class', ins: `Repaso de <b>${esc(pv._t.title)} · ${PL(pv)}</b>. Escucha y elige.` }, items, async (body, it) => {
         body.appendChild(A.playBtn(it.au));
         const opts = shuffle([it, ...sample(pool.filter(x => x.en !== it.en), 3)]); const wrap = h(`<div class="opts" style="margin-top:12px"></div>`); body.appendChild(wrap);
         const btns = opts.map(o => { const b = h(usePh ? `<button class="opt imgopt">${photo(o.img)}<span class="imglbl">${esc(o.en)}</span></button>` : `<button class="opt">${esc(o.en)}</button>`); wrap.appendChild(b); return b; });
@@ -728,7 +729,7 @@
         const fb = checkWriting(txt, hw); out.innerHTML = '';
         fb.items.forEach(f => out.appendChild(h(`<li class="${f.cls}"><span>${f.cls === 'ok' ? '✅' : f.cls === 'no' ? '❌' : '💡'}</span><span>${f.msg}</span></li>`)));
         S.hw[p.id] = { text: txt, at: Date.now(), score: fb.score }; save();
-        const wa = `https://wa.me/${C.WHATSAPP}?text=${encodeURIComponent(`📚 Tarea ${M.MOD.es} — ${p._t.title} Part ${p.part}\n👤 ${S.name}\n\n${txt}`)}`;
+        const wa = `https://wa.me/${C.WHATSAPP}?text=${encodeURIComponent(`📚 Tarea ${M.MOD.es} — ${p._t.title} ${PL(p)}\n👤 ${S.name}\n\n${txt}`)}`;
         bar.innerHTML = '';
         const again = h(`<button class="btn w">✏️ Corregir</button>`);
         const send = h(`<a class="btn" target="_blank" rel="noopener" style="text-decoration:none;background:#25D366;color:#fff" href="${wa}">💬 Enviar a mi profe</a>`);
@@ -791,7 +792,7 @@
     const head = pct >= 90 ? '¡Clase perfecta! 🏆' : pct >= 70 ? '¡Muy buen trabajo! 💪' : '¡Clase completada! 👏';
     const advice = pct >= 90 ? `¡Lo hiciste increíble, ${esc(S.name.split(' ')[0])}! Ya dominas este tema. Sigue con la próxima clase.` : pct >= 70 ? 'Vas muy bien. Repasa las palabras que te costaron y pasa a la siguiente clase.' : 'Te recomendamos repetir esta clase mañana: la repetición es la clave para aprender. ¡Tú puedes!';
     app.innerHTML = `<div class="player"><div class="card">
-      <div class="center">${M.mascot('mascot bounce', pct >= 90 ? 'celebrate' : pct >= 70 ? 'thumbs' : 'smile')}<h2 style="font-size:30px">${head}</h2><p class="muted">${esc(p._t.title)} · Part ${p.part}: ${esc(p.title)}</p></div>
+      <div class="center">${M.mascot('mascot bounce', pct >= 90 ? 'celebrate' : pct >= 70 ? 'thumbs' : 'smile')}<h2 style="font-size:30px">${head}</h2><p class="muted">${esc(p._t.title)} · ${PL(p)}: ${esc(p.title)}</p></div>
       <div class="res-stars">${[1, 2, 3].map(i => `<span style="${i <= stars ? '' : 'opacity:.2;filter:grayscale(1)'}">⭐</span>`).join('')}</div>
       <div class="stats"><div class="stat"><b>${pct}%</b><small>Precisión</small></div><div class="stat"><b>+${run.xp + bonus}</b><small>XP ganados</small></div><div class="stat"><b>${c}/${t}</b><small>Respuestas</small></div></div>
       <h3 style="margin:18px 0 8px">📊 Tus 4 habilidades en esta clase</h3>
@@ -803,7 +804,7 @@
       ${missed.length ? `<h3 style="margin:18px 0 8px">🔁 Palabras para repasar</h3><div class="weak">${missed.slice(0, 12).map((m, i) => `<span>${esc(m.en)} ${m.au ? `<button class="aud sm" data-i="${i}">🔊</button>` : ''}</span>`).join('')}</div>` : ''}
       <div class="row" style="margin-top:22px;justify-content:center">
         <button class="btn w" id="again">🔁 Repetir clase</button><button class="btn w" id="home">🏠 Inicio</button>
-        ${nx ? `<button class="btn k lg" id="next">Siguiente: ${esc(nx._t.title)} · Part ${nx.part} →</button>` : `<button class="btn k lg" id="fin">🏆 Examen final →</button>`}
+        ${nx ? `<button class="btn k lg" id="next">Siguiente: ${esc(nx._t.title)} · ${PL(nx)} →</button>` : `<button class="btn k lg" id="fin">🏆 Examen final →</button>`}
       </div></div></div>`;
     $$('.weak button', app).forEach(b => b.onclick = () => play(missed[+b.dataset.i].au, { btn: b }));
     $('#again').onclick = () => route('class', p.id); $('#home').onclick = () => route('home');
@@ -846,7 +847,7 @@
       <div class="sect-title"><h2>🔁 Palabras para repasar</h2>${weak.length ? '<button class="btn sm k" id="pw">🎯 Practicar ahora</button>' : ''}</div>
       <div class="card">${weak.length ? `<div class="weak">${weak.map(([w, v], i) => `<span>${esc(w)} ${v.au ? `<button class="aud sm" data-i="${i}">🔊</button>` : ''}</span>`).join('')}</div>` : '<p class="muted" style="margin:0">¡Aún no hay palabras difíciles! Aquí aparecerán las palabras en las que te equivoques, para que las repases.</p>'}</div>
       <div class="sect-title"><h2>📚 Temas</h2></div>
-      <div class="tlist">${D.topics.map(t => `<div class="trow"><span class="n">${t.n}</span><b>${esc(t.title)}${M.isUnlocked(t.n) ? '' : ' 🔒'}</b>${t.parts.map(p => `<span class="stars ${p.part === 2 ? 'hs' : ''}" title="Part ${p.part}">P${p.part} ${[1, 2, 3].map(i => `<span class="${i <= M.partStars(p.id) ? '' : 'off'}">⭐</span>`).join('')}</span>`).join('')}</div>`).join('')}</div>
+      <div class="tlist">${D.topics.map(t => `<div class="trow"><span class="n">${t.n}</span><b>${esc(t.title)}${M.isUnlocked(t.n) ? '' : ' 🔒'}</b>${t.parts.map(p => `<span class="stars ${p.part === 2 ? 'hs' : ''}" title="${PL(p)}">P${p.part} ${[1, 2, 3].map(i => `<span class="${i <= M.partStars(p.id) ? '' : 'off'}">⭐</span>`).join('')}</span>`).join('')}</div>`).join('')}</div>
       <div class="sect-title"><h2>⚙️ Datos</h2></div>
       <div class="card"><p class="muted" style="margin-top:0">Tu progreso se guarda en este dispositivo y navegador. Puedes descargar una copia de respaldo o restaurarla en otro dispositivo.</p>
         <div class="row"><button class="btn sm w" id="exp">⬇️ Descargar respaldo</button><label class="btn sm w" style="cursor:pointer">⬆️ Restaurar respaldo<input type="file" accept=".json" id="imp" hidden></label><button class="btn sm w" id="rst" style="color:var(--bad)">🗑️ Reiniciar progreso</button></div></div>

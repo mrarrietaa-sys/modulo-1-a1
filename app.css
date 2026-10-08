@@ -2436,3 +2436,17 @@ button.g5a-lot.wrong{background:#FECACA;border-color:#DC2626;animation:shake .35
 .g6a-fu-cb{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:420px;margin:0 auto}
 .g6a-ng-pct{display:block;font-family:var(--fh);font-size:22px;color:var(--k);line-height:1}
 /* END g6a */
+/* examen final del curso */
+.cx-list{display:grid;gap:8px;margin:12px auto;max-width:420px;text-align:left}
+.cx-row{display:flex;align-items:center;gap:10px;border:2px solid #dde3ee;border-radius:12px;padding:10px 12px;font-weight:700}
+.cx-row span{flex:1}.cx-row small{color:#4a5568}.cx-row.ok{border-color:#2E9E5B;background:#effcf3}
+.pt-course{display:flex;align-items:center;gap:14px;margin-top:14px;text-decoration:none;color:inherit;border:3px solid #FFC21A;background:linear-gradient(135deg,#fff8e1,#fff)}
+.pt-course h3{margin:2px 0}.pt-course p{margin:2px 0}
+.pt-course-ic{font-size:44px;flex:none}
+.pt-course-go{margin-left:auto;font-size:26px;flex:none}
+.pt-course:not(.open):not(.done){filter:grayscale(.6);opacity:.85}
+.pt-course.done{border-color:#2E9E5B}
+.pt-cert.gold{border-color:#FFC21A;background:#fff8e1}
+.pt-routebar .st.fin b{background:#FFC21A;border-color:#0B2A5B}
+.pt-routebar .st.fin.locked b{opacity:.5}
+@media (max-width:560px){.pt-routebar{padding:12px 8px}.pt-routebar .st b{width:36px;height:36px;font-size:15px}.pt-routebar .ln{margin:0 3px 20px}}

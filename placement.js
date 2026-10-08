@@ -29,7 +29,8 @@
   const store = (o) => { try { localStorage.setItem(KEY, JSON.stringify(o)); } catch (e) { } };
   let ST = Object.assign({ attempts: 0, extra: 0, used: [], prog: null }, load());
   const persist = () => store(ST);
-  const maxAttempts = () => CFG.ATTEMPTS + (ST.extra || 0);
+  const ROUNDS = 2; // 2 oportunidades de 2 intentos cada una
+  const maxAttempts = () => CFG.ATTEMPTS * Math.min(ROUNDS, ST.round || 1) + (ST.extra || 0);
 
   let app, ctx, answers, cur, first, last, temail, wa, course, startedAt, timerIv = null, timedOut = false, fixMode = false, rec = null;
   const name = () => (first + ' ' + last).trim() || 'Student';
@@ -80,9 +81,9 @@
       <h1 style="font-size:clamp(26px,5.5vw,34px);margin:10px 0 4px">Placement Test</h1>
       <p style="font-weight:800;margin:0">Listening + Reading + Writing + Speaking</p>
       <p class="muted" style="margin:4px 0 12px">${N} preguntas — Descubre en qué módulo debes empezar en mrarrieta.com</p>
-      <div class="fx-info">${M.mascot('fx-wmra', 'point')}<div>Vas a completar el examen de clasificación. Primero confirmaremos tus datos, luego verás las instrucciones y comenzarás con <b>Listening</b>. Las preguntas van de <b>más fáciles a más difíciles</b>, para saber exactamente en qué módulo debes comenzar.<br><span class="muted">⏱ ${CFG.TIME_MIN} minutos · ${CFG.ATTEMPTS} intentos ${ST.attempts ? `· Ya usaste <b>${ST.attempts}</b> de ${maxAttempts()}` : ''}</span></div></div>
+      <div class="fx-info">${M.mascot('fx-wmra', 'point')}<div>Vas a completar el examen de clasificación. Primero verás las instrucciones y comenzarás con <b>Listening</b>. Las preguntas van de <b>más fáciles a más difíciles</b>, para saber exactamente en qué módulo debes comenzar.<br><span class="muted">⏱ ${CFG.TIME_MIN} minutos · ${ROUNDS} oportunidades de ${CFG.ATTEMPTS} intentos ${ST.attempts ? `· Ya usaste <b>${ST.attempts}</b> de ${maxAttempts()}` : ''}</span></div></div>
       <button class="btn k lg" id="go">Continuar →</button></div>`);
-    wireExit(); $('#go').onclick = studentInfo;
+    wireExit(); $('#go').onclick = () => (temail ? instructions() : studentEmail());
   }
   function resume(p, done) {
     shell(`${top()}<div class="card center">${M.mascot('mascot', 'watch')}<h2>💾 Tienes un examen en progreso</h2>
@@ -109,14 +110,14 @@
       <input class="inp" id="e" type="email" inputmode="email" placeholder="tucorreo@gmail.com" value="${esc(temail)}">
       <p class="muted" style="font-size:13px">Además, una copia automática se envía a administración.</p>
       <div class="actionbar"><button class="btn w" id="b">← Atrás</button><button class="btn k lg" id="go">Continuar →</button></div></div>`);
-    wireExit(); $('#b').onclick = studentInfo;
+    wireExit(); $('#b').onclick = welcome;
     $('#go').onclick = () => { const v = $('#e').value.trim(); if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) { $('#e').classList.add('wrong'); M.toast('Escribe un correo válido 📧'); return; }
       temail = v; confirmEmail(); };
   }
   function confirmEmail() {
     shell(`${top()}<div class="card center"><span class="lbl">Confirm your email</span><h2>¿Este correo es correcto?</h2><div class="fx-mail">${esc(temail)}</div>
       <div class="row" style="justify-content:center"><button class="btn w" id="ed">✏️ Corregir</button><button class="btn k lg" id="ok">Sí, continuar</button></div></div>`);
-    wireExit(); $('#ed').onclick = studentEmail; $('#ok').onclick = () => { saveProfile(); contact(); };
+    wireExit(); $('#ed').onclick = studentEmail; $('#ok').onclick = () => { saveProfile(); instructions(); };
   }
   function contact() {
     shell(`${top()}<div class="card fx-form"><span class="lbl">Contact</span><h2>Tu WhatsApp y tu interés</h2>
@@ -137,7 +138,7 @@
       <li>En cada pregunta verás de inmediato si tu respuesta es <b>correcta o incorrecta</b>.</li>
       <li>En Listening toca <b>🔊 Escuchar</b> para oír el audio en inglés americano. En Speaking toca <b>🎤</b>, habla y toca otra vez para detener; puedes grabar de nuevo.</li>
       <li>Debes responder todas las preguntas antes de enviar.</li>
-      <li>Tienes <b>${CFG.ATTEMPTS} intentos</b>. Al finalizar verás tu <b>módulo recomendado</b>, un PDF descargable, y tu resultado se enviará a tu correo y a administración. <b>Con tu resultado se crea automáticamente tu ruta de aprendizaje.</b></li>
+      <li>Tienes <b>${ROUNDS} oportunidades de ${CFG.ATTEMPTS} intentos</b> cada una. Si no te sientes a gusto con tu resultado, puedes repetir el examen y <b>tu ruta se actualiza con el nuevo resultado</b>. Al finalizar verás tu <b>módulo recomendado</b>, un PDF descargable, y tu resultado se enviará a tu correo y a administración. <b>Con tu resultado se crea automáticamente tu ruta de aprendizaje.</b></li>
       <li>Tu progreso se guarda solo: si se recarga la página, puedes continuar donde quedaste.</li></ul>
       <p class="muted" style="font-size:14px">🎤 Tu navegador te pedirá permiso para usar el micrófono en la sección de Speaking.</p>
       <div class="actionbar"><button class="btn k lg" id="go">🚀 Comenzar examen</button></div></div>`);
@@ -304,10 +305,12 @@
       <div class="row" style="justify-content:center;margin-top:14px"><button class="btn k lg" id="prof">👤 Ir a mi perfil y empezar →</button>
         <button class="btn w" id="pdf">📄 Descargar reporte PDF</button><button class="btn w" id="cp">📋 Copiar resumen</button>
         <a class="btn" style="text-decoration:none;background:#25D366;color:#fff" target="_blank" rel="noopener" href="https://wa.me/${C.WHATSAPP}?text=${waMsg}">💬 ${trial ? 'Quiero inscribirme' : 'Escribir a mrarrieta.com'}</a>
-        ${left > 0 ? `<button class="btn w" id="again">🔁 Intentar de nuevo (te queda${left > 1 ? 'n' : ''} ${left})</button>` : ''}</div></div>`);
+        ${left > 0 ? `<button class="btn w" id="again">🔁 Intentar de nuevo (te queda${left > 1 ? 'n' : ''} ${left})</button>` : (ST.round || 1) < ROUNDS ? `<button class="btn w" id="again2">🔁 Usar mi segunda oportunidad (${CFG.ATTEMPTS} intentos)</button>` : ''}</div>
+      <p class="muted center" style="font-size:14px;margin-top:10px">¿No te sientes a gusto con tu resultado? Puedes repetir el examen: <b>tu ruta de aprendizaje se actualiza con el nuevo resultado</b>.</p></div>`);
     wireExit(); sfx('win'); M.confetti(3500);
     $('#prof').onclick = () => ctx.route('home'); $('#pdf').onclick = reportPDF; $('#cp').onclick = copySummary;
     if ($('#again')) $('#again').onclick = () => run(app, ctx);
+    if ($('#again2')) $('#again2').onclick = secondChance;
   }
   function setN(id, ok, txt) { const e = $('#' + id); if (e) { e.className = ok === true ? 'ok' : ok === false ? 'err' : 'pending'; e.textContent = txt; } }
   const waLink = (raw) => { let d = String(raw || '').replace(/\D/g, ''); if (!d) return ''; if (d.length === 10) d = '57' + d; return 'https://wa.me/' + d; };
@@ -354,11 +357,19 @@
     d.setDrawColor(150); d.line(40, y, 555, y); y += 18; d.setFontSize(9); d.setTextColor(120); d.text('mrarrieta.com — ¡Aprende inglés HABLANDO!', 40, y);
     d.save('Reporte_Examen_Clasificacion_' + r.name.replace(/\s+/g, '_') + '.pdf');
   }
+  function secondChance() { ST.round = 2; ST.prog = null; persist(); sfx('win'); M.toast('✓ Segunda oportunidad activada: tienes ' + CFG.ATTEMPTS + ' intentos más'); run(app, ctx); }
   function locked() {
     stopTimer();
+    if ((ST.round || 1) < ROUNDS) {
+      shell(`${top()}<div class="card center fx-form">${M.mascot('mascot', 'thumbs')}<h2>🔁 Tu segunda oportunidad</h2>
+        <p>Ya usaste los <b>${CFG.ATTEMPTS} intentos</b> de tu primera oportunidad. Si no te sientes a gusto con tu resultado, activa tu <b>segunda oportunidad</b> y tendrás <b>${CFG.ATTEMPTS} intentos más</b>.</p>
+        <p class="muted">Tu ruta de aprendizaje se actualizará con el nuevo resultado.</p>
+        <div class="actionbar" style="justify-content:center"><button class="btn w" id="hm">👤 Mi perfil</button><button class="btn k lg" id="sc">Activar mi segunda oportunidad</button></div></div>`);
+      wireExit(); $('#hm').onclick = () => ctx.route('home'); $('#sc').onclick = secondChance; return;
+    }
     const msg = encodeURIComponent(`Hola 👋 Soy ${name()}. Usé mis ${CFG.ATTEMPTS} intentos del examen de clasificación y quiero solicitar una oportunidad adicional.`);
     shell(`${top()}<div class="card center fx-form">${M.mascot('mascot', 'watch')}<h2>🔒 Sin intentos disponibles</h2>
-      <p class="muted">Ya usaste tus ${maxAttempts()} intentos del examen de clasificación. Para un intento adicional, <b>pide un código a administración</b>.</p>
+      <p class="muted">Ya usaste tus ${ROUNDS} oportunidades (${maxAttempts()} intentos) del examen de clasificación. Para un intento adicional, <b>pide un código a administración</b>.</p>
       <a class="btn" style="text-decoration:none;background:#25D366;color:#fff" target="_blank" rel="noopener" href="https://wa.me/${C.WHATSAPP}?text=${msg}">💬 Solicitar otra oportunidad</a>
       <label style="margin-top:16px">Código</label><input class="inp" id="code" placeholder="Ej: EXAMEN-LAURA" style="text-transform:uppercase">
       <div class="actionbar" style="justify-content:center"><button class="btn w" id="hm">👤 Mi perfil</button><button class="btn k lg" id="ok">Desbloquear intento</button></div></div>`);
@@ -368,6 +379,6 @@
       if (ST.used.includes(hsh)) { M.toast('Ese código ya se usó en este dispositivo.'); return; }
       ST.used.push(hsh); ST.extra = (ST.extra || 0) + 1; ST.prog = null; persist(); sfx('win'); M.toast('✓ Intento adicional desbloqueado'); run(app, ctx); };
   }
-  const status = () => { const s = load(); return { attempts: s.attempts || 0, max: CFG.ATTEMPTS + (s.extra || 0), inProgress: !!(s.prog && s.prog.startedAt) }; };
+  const status = () => { const s = load(); const round = Math.min(ROUNDS, s.round || 1); return { attempts: s.attempts || 0, max: CFG.ATTEMPTS * round + (s.extra || 0), round, rounds: ROUNDS, inProgress: !!(s.prog && s.prog.startedAt) }; };
   window.MRAPLACE = { run, status };
 })();

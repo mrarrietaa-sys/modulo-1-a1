@@ -18,6 +18,7 @@
     SHEETS_WEBAPP_URL: "https://script.google.com/macros/s/AKfycbzFUJ_xanGR-L1A14l7VUU-QeZoLBCpT1xIBjXWQXrqtLxEbpIp8ppgBoyMV1YwBX_-VQ/exec",
     ADMIN_EMAIL: "mrarrietaa@gmail.com", TIME_MIN: 45, ATTEMPTS: 2,
   }, C.EXAM || {});
+  if (M.MOD.timeMin) CFG.TIME_MIN = M.MOD.timeMin;
   const LIMIT = CFG.TIME_MIN * 60 * 1000;
   const MOD = M.MOD; const KEY = MOD.examKey;
   const ITEMS = []; EX.sections.forEach(sec => sec.items.forEach((it, idx) => ITEMS.push(Object.assign({}, it, { section: sec.key, label: sec.label, icon: sec.icon, idx }))));
@@ -74,12 +75,12 @@
     const PX = (id) => `https://images.pexels.com/photos/${id}/pexels-photo-${id}.jpeg?auto=compress&cs=tinysrgb&w=500`;
     const SK = [['Listening', '🎧', PX(1490844)], ['Reading', '📖', PX(115001)], ['Writing', '✍️', PX(5717066)], ['Speaking', '🎤', PX(7972505)]];
     shell(`${top()}<div class="card center fx-welcome">
-      <div class="fx-photos">${SK.map(([l, ic, u]) => `<div class="fx-pbox"><div class="fx-pimg"><img src="${u}" alt="${l}" loading="lazy" onerror="this.style.opacity=0"></div><div class="fx-pcap"><b>10</b> ${ic} ${l}</div></div>`).join('')}</div>
+      <div class="fx-photos">${SK.map(([l, ic, u]) => `<div class="fx-pbox"><div class="fx-pimg"><img src="${u}" alt="${l}" loading="lazy" onerror="this.style.opacity=0"></div><div class="fx-pcap"><b>${(EX.sections.find(s => s.label === l) || { items: [] }).items.length}</b> ${ic} ${l}</div></div>`).join('')}</div>
       <span class="lbl" style="margin-top:6px">✦ Examen final interactivo</span>
-      <h1 style="font-size:clamp(26px,5.5vw,34px);margin:10px 0 4px">Examen final · ${MOD.es}</h1>
+      <h1 style="font-size:clamp(26px,5.5vw,34px);margin:10px 0 4px">${MOD.course ? '🏆 Examen final del curso' : 'Examen final · ' + MOD.es}</h1>
       <p style="font-weight:800;margin:0">Listening + Reading + Writing + Speaking</p>
-      <p class="muted" style="margin:4px 0 12px">Nivel ${MOD.levelEs} — Evaluación de los ${MOD.topics} temas del ${MOD.es}</p>
-      <div class="fx-info">${M.mascot('fx-wmra', 'point')}<div>Vas a completar el examen final del ${MOD.es}. Primero te pediremos algunos datos, luego verás las instrucciones y comenzarás con la sección de <b>Listening</b>.<br><span class="muted">⏱ ${CFG.TIME_MIN} minutos · ${CFG.ATTEMPTS} intentos ${ST.attempts ? `· Ya usaste <b>${ST.attempts}</b> de ${maxAttempts()}` : ''}</span></div></div>
+      <p class="muted" style="margin:4px 0 12px">${MOD.course ? `${N} preguntas — Evaluación de toda tu ruta de aprendizaje: A1 → A2 → B2 → B2+` : `Nivel ${MOD.levelEs} — Evaluación de los ${MOD.topics} temas del ${MOD.es}`}</p>
+      <div class="fx-info">${M.mascot('fx-wmra', 'point')}<div>Vas a completar ${MOD.course ? 'el <b>examen final del curso</b>: al aprobarlo recibes el certificado de tu ruta completa' : 'el examen final del ' + MOD.es}. Primero te pediremos algunos datos, luego verás las instrucciones y comenzarás con la sección de <b>Listening</b>.<br><span class="muted">⏱ ${CFG.TIME_MIN} minutos · ${CFG.ATTEMPTS} intentos ${ST.attempts ? `· Ya usaste <b>${ST.attempts}</b> de ${maxAttempts()}` : ''}</span></div></div>
       <button class="btn k lg" id="go">Continuar →</button></div>`);
     wireExit(); $('#go').onclick = studentInfo;
   }
@@ -291,14 +292,14 @@
   // ---------- correo + panel del profesor ----------
   function setN(id, ok, txt) { const e = $('#' + id); if (e) { e.className = ok === true ? 'ok' : ok === false ? 'err' : 'pending'; e.textContent = txt; } }
   async function notify(r) {
-    const params = { subject: `${MOD.en} Final Exam${r.attempt > 1 ? (r.attempt > CFG.ATTEMPTS ? ' – Additional Attempt' : ' – Attempt ' + r.attempt) : ''} – ${r.name} – A1 – ${r.fin.toFixed(1)}/10`,
+    const params = { subject: `${MOD.en} Final Exam${r.attempt > 1 ? (r.attempt > CFG.ATTEMPTS ? ' – Additional Attempt' : ' – Attempt ' + r.attempt) : ''} – ${r.name} – ${MOD.id} – ${r.fin.toFixed(1)}/10`,
       student_name: r.name, student_whatsapp: 'No aplica', student_whatsapp_link: '#', course_interest: 'No aplica', module: MOD.en, level: MOD.level,
       result_label: 'Resultado final', result_headline: r.passed ? 'Aprobado' : 'No aprobado', result_detail: MOD.es + ' — ' + MOD.level + ' · Puntaje: ' + r.fin.toFixed(1) + '/10.0', result_color: r.passed ? '#1E8E5A' : '#E8453C',
       attempt_label: r.attemptLabel, date: r.date.toLocaleDateString(), time: r.date.toLocaleTimeString(),
       listening_score: r.per.listening.score.toFixed(1), reading_score: r.per.reading.score.toFixed(1), writing_score: r.per.writing.score.toFixed(1), speaking_score: r.per.speaking.score.toFixed(1),
       final_score: r.fin.toFixed(1), performance: r.b.l.replace(/^\S+\s/, ''), status: r.passed ? 'PASSED' : 'NOT PASSED', feedback: comment(r.per, r.b),
       next_steps_display: r.passed ? 'block' : 'none',
-      next_steps_text: r.passed ? '¡Felicitaciones! Al aprobar, continuarás al siguiente módulo: ' + MOD.next + '. Este nuevo módulo inicia en tu próxima clase, en el mismo horario habitual.\n\nSi deseas cambiar de profesor(a) para el próximo módulo, puedes solicitarlo en las próximas 24 horas. Si no recibimos tu solicitud, continuarás con el mismo profesor(a).\n\nSi estás en un curso grupal, el cambio de profesor(a) requiere que todo el grupo esté de acuerdo.' : '' };
+      next_steps_text: r.passed && MOD.course ? '¡Felicitaciones! Completaste toda tu ruta de aprendizaje en mrarrieta.com (A1 → A2 → B2 → B2+). Tu certificado de finalización ya está disponible en tu perfil. ¡Gracias por aprender inglés HABLANDO con nosotros!' : r.passed ? '¡Felicitaciones! Al aprobar, continuarás al siguiente módulo: ' + MOD.next + '. Este nuevo módulo inicia en tu próxima clase, en el mismo horario habitual.\n\nSi deseas cambiar de profesor(a) para el próximo módulo, puedes solicitarlo en las próximas 24 horas. Si no recibimos tu solicitud, continuarás con el mismo profesor(a).\n\nSi estás en un curso grupal, el cambio de profesor(a) requiere que todo el grupo esté de acuerdo.' : '' };
     // 1) panel del profesor (Google Sheets)
     try { const q = new URLSearchParams({ action: 'submit', student_name: r.name, teacher_email: r.temail, attempt: r.attempt, attempt_state: r.attemptLabel, status: params.status, listening: params.listening_score, reading: params.reading_score, writing: params.writing_score, speaking: params.speaking_score, final_score: params.final_score, performance: params.performance, date: r.date.toISOString() });
       const res = await fetch(CFG.SHEETS_WEBAPP_URL + '?' + q.toString()); const d = await res.json().catch(() => null);
@@ -345,13 +346,13 @@
     stopTimer();
     app.innerHTML = `<div class="wrap fx"><div class="fx-congrats noprint">${M.mascot('mascot bounce', 'celebrate')}<div class="bubble">Congratulations, ${esc(r.name.split(' ')[0])}! 🎉 You did it!</div></div>
       <div class="cert2" id="cert"><div class="cert2-in"><img class="cert2-logo" src="mra-logo-cert.png" alt="mrarrieta.com">
-        <div class="cert2-t">Certificate of Completion</div><div class="cert2-s">This is to certify that</div><div class="cert2-n">${esc(nm)}</div>
-        <div class="cert2-s">has satisfactorily completed</div><div class="cert2-m">${MOD.en} · ${MOD.level}</div>
-        <div class="cert2-s">of the English program at <b>MRARRIETA.COM</b>${r.fin ? `, with a final score of <b>${Number(r.fin).toFixed(1)}/10</b>` : ''}.</div>
+        <div class="cert2-t">${MOD.course ? 'Certificate of Achievement' : 'Certificate of Completion'}</div><div class="cert2-s">This is to certify that</div><div class="cert2-n">${esc(nm)}</div>
+        <div class="cert2-s">${MOD.course ? 'has successfully completed the entire' : 'has satisfactorily completed'}</div><div class="cert2-m">${MOD.course ? 'English Learning Path · A1 → A2 → B2 → B2+' : MOD.en + ' · ' + MOD.level}</div>
+        <div class="cert2-s">${MOD.course ? 'and passed the Final Course Exam' : 'of the English program'} at <b>MRARRIETA.COM</b>${r.fin ? `, with a final score of <b>${Number(r.fin).toFixed(1)}/10</b>` : ''}.</div>
         <div class="cert2-s cert2-held">Held on <b>${esc(date)}</b></div>
         <div class="cert2-f c"><div class="sigbox"><img class="cert2-sig" src="mra-signature.png" alt="Firma"><b>John Jairo Arrieta Jaramillo</b><span>Director · mrarrieta.com</span></div></div></div></div>
       <div class="row noprint" style="justify-content:center;margin-top:16px"><button class="btn k lg" id="dl">⬇️ Descargar certificado (PDF)</button><button class="btn w" id="pr">🖨️ Imprimir</button>
-        <a class="btn" style="text-decoration:none;background:#25D366;color:#fff" target="_blank" rel="noopener" href="https://wa.me/${C.WHATSAPP}?text=${encodeURIComponent(`🎓 ¡Aprobé el ${MOD.es} (${MOD.id}) de mrarrieta.com!\n👤 ${r.name}\n⭐ Nota final: ${Number(r.fin || 0).toFixed(1)}/10`)}">💬 Compartir con mi profe</a><button class="btn w" id="hm">🏠 Inicio</button></div></div>`;
+        <a class="btn" style="text-decoration:none;background:#25D366;color:#fff" target="_blank" rel="noopener" href="https://wa.me/${C.WHATSAPP}?text=${encodeURIComponent(MOD.course ? `🏆 ¡Terminé toda mi ruta de aprendizaje de inglés en mrarrieta.com (A1 → B2+)!\n👤 ${r.name}\n⭐ Nota del examen final del curso: ${Number(r.fin || 0).toFixed(1)}/10` : `🎓 ¡Aprobé el ${MOD.es} (${MOD.id}) de mrarrieta.com!\n👤 ${r.name}\n⭐ Nota final: ${Number(r.fin || 0).toFixed(1)}/10`)}">💬 Compartir con mi profe</a><button class="btn w" id="hm">🏠 Inicio</button></div></div>`;
     window.scrollTo(0, 0);
     $('#pr').onclick = () => print(); $('#hm').onclick = () => ctx.route('home');
     $('#dl').onclick = async () => {
@@ -360,26 +361,26 @@
       d.setFillColor(227, 36, 43); d.rect(0, 0, W, H, 'F'); d.setFillColor(11, 42, 91); d.triangle(W, 0, W, H, 0, H, 'F'); d.setFillColor(255, 255, 255); d.rect(22, 22, W - 44, H - 44, 'F');
       d.setDrawColor(11, 42, 91); d.setLineWidth(4); d.rect(34, 34, W - 68, H - 68); d.setLineWidth(1); d.rect(44, 44, W - 88, H - 88);
       const logo = await logoData(); if (logo) d.addImage(logo, 'PNG', W / 2 - 85, 62, 170, 99);
-      d.setTextColor(11, 42, 91); d.setFont('helvetica', 'bold'); d.setFontSize(34); d.text('CERTIFICATE OF COMPLETION', W / 2, 205, { align: 'center' });
+      d.setTextColor(11, 42, 91); d.setFont('helvetica', 'bold'); d.setFontSize(34); d.text(MOD.course ? 'CERTIFICATE OF ACHIEVEMENT' : 'CERTIFICATE OF COMPLETION', W / 2, 205, { align: 'center' });
       d.setFont('helvetica', 'normal'); d.setFontSize(15); d.setTextColor(80); d.text('This is to certify that', W / 2, 240, { align: 'center' });
       d.setFont('times', 'bolditalic'); d.setFontSize(40); d.setTextColor(17, 17, 17); d.text(nm, W / 2, 292, { align: 'center' });
       d.setDrawColor(17, 17, 17); d.setLineWidth(1.5); d.line(W / 2 - 220, 304, W / 2 + 220, 304);
-      d.setFont('helvetica', 'normal'); d.setFontSize(15); d.setTextColor(80); d.text('has satisfactorily completed', W / 2, 336, { align: 'center' });
-      d.setFont('helvetica', 'bold'); d.setFontSize(24); d.setTextColor(17, 17, 17); d.text((MOD.en + ' · ' + MOD.level).toUpperCase(), W / 2, 372, { align: 'center' });
+      d.setFont('helvetica', 'normal'); d.setFontSize(15); d.setTextColor(80); d.text(MOD.course ? 'has successfully completed the entire' : 'has satisfactorily completed', W / 2, 336, { align: 'center' });
+      d.setFont('helvetica', 'bold'); d.setFontSize(24); d.setTextColor(17, 17, 17); d.text(MOD.course ? 'ENGLISH LEARNING PATH  ·  A1 > A2 > B2 > B2+' : (MOD.en + ' · ' + MOD.level).toUpperCase(), W / 2, 372, { align: 'center' });
       d.setFont('helvetica', 'normal'); d.setFontSize(14); d.setTextColor(80);
-      d.text('of the English program at MRARRIETA.COM' + (r.fin ? `, with a final score of ${Number(r.fin).toFixed(1)}/10.` : '.'), W / 2, 402, { align: 'center' });
+      d.text((MOD.course ? 'and passed the Final Course Exam at MRARRIETA.COM' : 'of the English program at MRARRIETA.COM') + (r.fin ? `, with a final score of ${Number(r.fin).toFixed(1)}/10.` : '.'), W / 2, 402, { align: 'center' });
       d.setFont('helvetica', 'italic'); d.setFontSize(13); d.setTextColor(80); d.text('Held on ' + date, W / 2, 426, { align: 'center' });
       const sig = await logoData('mra-signature.png'); if (sig) d.addImage(sig, 'PNG', W / 2 - 90, 444, 180, 38);
       d.setDrawColor(17, 17, 17); d.setLineWidth(1); d.line(W / 2 - 120, 486, W / 2 + 120, 486);
       d.setFont('helvetica', 'bold'); d.setFontSize(12); d.setTextColor(17, 17, 17); d.text('John Jairo Arrieta Jaramillo', W / 2, 502, { align: 'center' }); d.setFont('helvetica', 'normal'); d.setFontSize(10); d.setTextColor(100); d.text('Director - mrarrieta.com', W / 2, 516, { align: 'center' });
-      d.save('Certificate_Module' + MOD.n + '_' + MOD.id + '_' + nm.replace(/\s+/g, '_') + '.pdf');
+      d.save((MOD.course ? 'Certificate_Learning_Path_' : 'Certificate_Module' + MOD.n + '_') + (MOD.course ? '' : MOD.id) + '_' + nm.replace(/\s+/g, '_') + '.pdf');
     };
   }
 
   // ---------- sin intentos: el profesor entrega un código ----------
   function locked() {
     stopTimer();
-    const msg = encodeURIComponent(`Hola profe 👋 Soy ${name()}. Usé mis ${CFG.ATTEMPTS} intentos del examen final del ${MOD.es} y quiero solicitar una oportunidad adicional. ¿Me puede dar el código?`);
+    const msg = encodeURIComponent(`Hola profe 👋 Soy ${name()}. Usé mis ${CFG.ATTEMPTS} intentos del ${MOD.course ? 'examen final del curso' : 'examen final del ' + MOD.es} y quiero solicitar una oportunidad adicional. ¿Me puede dar el código?`);
     shell(`${top()}<div class="card center fx-form">${M.mascot('mascot', 'watch')}<h2>🔒 Sin intentos disponibles</h2>
       <p class="muted">Ya usaste tus ${maxAttempts()} intentos del examen final. Para un intento adicional, <b>pídele el código a tu profesor</b>.</p>
       <a class="btn" style="text-decoration:none;background:#25D366;color:#fff" target="_blank" rel="noopener" href="https://wa.me/${C.WHATSAPP}?text=${msg}">💬 Solicitar oportunidad a mi profesor</a>

@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&family=Poppins:wght@700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="app.css">
 </head>
-<body>
+<body data-idle="always">
 <header class="topbar"><div class="brand"><img class="logo" src="mra-brand.png" alt="mrarrieta.com"></div><div class="sp"></div><span class="tb-tag">ADMIN · CÓDIGOS</span></header>
 <div class="wrap" style="max-width:720px">
   <div class="card">
@@ -25,7 +25,7 @@
     </div>
     <div id="modbox"><label style="font-weight:800">Módulo (solo estudiantes, opcional)</label>
     <select class="inp" id="mod" style="margin:6px 0 14px;text-align:left;font-size:16px">
-      <option value="">Que tome el examen de clasificación</option><option value="1">Asignar directamente: Módulo 1 · A1</option><option value="2">Asignar directamente: Módulo 2 · A2</option><option value="3">Asignar directamente: Módulo 3 · B1</option><option value="4">Asignar directamente: Módulo 4 · B2-C1</option>
+      <option value="">Que tome el examen de clasificación</option><option value="1">Asignar directamente: Módulo 1 · A1</option><option value="2">Asignar directamente: Módulo 2 · A2</option><option value="3">Asignar directamente: Módulo 3 · B2</option><option value="4">Asignar directamente: Módulo 4 · B2+</option>
     </select></div>
     <label style="font-weight:800">Nota (opcional, solo para ti)</label>
     <input class="inp" id="note" placeholder="Ej: Laura Gómez - pagó 1 oct" style="margin:6px 0 14px;text-align:left;font-size:16px">
@@ -62,5 +62,6 @@ document.getElementById('gen').onclick=()=>{
 };
 document.getElementById('copy').onclick=()=>{const t=document.getElementById('line');t.select();navigator.clipboard?navigator.clipboard.writeText(t.value):document.execCommand('copy');document.getElementById('copy').textContent='✅ Copiado';};
 </script>
+<script src="idle.js?v=39"></script>
 </body>
 </html>

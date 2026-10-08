@@ -12,9 +12,11 @@
   function topbar() {
     const p = P.get();
     $('#topbar').innerHTML = `<div class="brand" id="go-home"><span class="logo-pill"><img class="logo" src="mra-brand.png" alt="mrarrieta.com"></span></div><div class="sp"></div><span class="tb-tag">MI PERFIL</span>
-      ${p ? `<span class="pill hide-s">${p.type === 'staff' ? '👨‍🏫 Profe' : p.type === 'trial' ? '🟢 Acceso gratis' : '🎓 Estudiante'}</span>${p.first ? `<button class="tb-avbtn" id="me-b" title="Personaliza tu perfil">${P.avHTML('tb-av')}</button>` : ''}<button class="iconbtn" id="out" title="Salir">⏻</button>` : ''}`;
+      ${p ? `<span class="pill hide-s">${p.type === 'staff' ? '👨‍🏫 Profe' : p.type === 'trial' ? '🟢 Acceso gratis' : '🎓 Estudiante'}</span>${p.type === 'staff' && window.MRANN && MRANN.isHidden() ? '<button class="iconbtn" id="ann-b" title="Mostrar la barra del profesor">✏️</button>' : ''}${p.first ? `<button class="tb-avbtn" id="me-b" title="Personaliza tu perfil">${P.avHTML('tb-av')}</button>` : ''}<button class="iconbtn" id="out" title="Salir">⏻</button>` : ''}`;
     $('#go-home').onclick = () => route('home');
     if ($('#me-b')) $('#me-b').onclick = () => route('me');
+    if ($('#ann-b')) $('#ann-b').onclick = () => { MRANN.show(); topbar(); };
+    if (window.MRANN) MRANN.sync();
     if ($('#out')) $('#out').onclick = logout;
   }
   function route(r) { M.stop && M.stop(); window.scrollTo(0, 0); topbar(); const p = P.get();
@@ -82,8 +84,8 @@
     let main = '';
     if (!p.module && !staff) {
       main = `<div class="card pt-step"><div class="pt-stepn">1</div><div><span class="lbl">Primer paso</span><h2>Toma tu examen de clasificación</h2>
-        <p>Son <b>40 preguntas</b> (Listening, Reading, Writing y Speaking) que van de fáciles a difíciles. Al terminar, la plataforma te <b>ubica automáticamente</b> en el módulo que te corresponde: A1, A2, B1 o B2-C1.</p>
-        <p class="muted">⏱ 45 minutos · ${pst.max} intentos${pst.attempts ? ` · Ya usaste ${pst.attempts}` : ''}${pst.inProgress ? ' · <b>Tienes un examen en progreso</b>' : ''}</p>
+        <p>Son <b>40 preguntas</b> (Listening, Reading, Writing y Speaking) que van de fáciles a difíciles. Al terminar, la plataforma te <b>ubica automáticamente</b> en el módulo que te corresponde: A1, A2, B2 o B2+.</p>
+        <p class="muted">⏱ 45 minutos · ${pst.rounds || 1} oportunidades de 2 intentos${pst.attempts ? ` · Ya usaste ${pst.attempts}` : ''}${pst.inProgress ? ' · <b>Tienes un examen en progreso</b>' : ''}</p>
         <button class="btn k lg" id="pt">📝 ${pst.inProgress ? 'Continuar' : 'Tomar'} mi examen de clasificación</button></div></div>`;
     } else if (a || staff) {
       const ready = a && a.ready;
@@ -103,7 +105,7 @@
       <div class="sect-title"><h2>🧭 Mi ruta de aprendizaje</h2></div>
       ${routeBar()}
       <div class="pt-mods-grid pt-route">${P.MODS.map(m => modCard(m)).join('')}</div>
-      ${pl ? `<div class="sect-title"><h2>📝 Mi examen de clasificación</h2></div><div class="card pt-plres"><div><b>Resultado:</b> ${esc(P.mod(pl.module).name)} · ${esc(P.mod(pl.module).es)}<br><span class="muted">${new Date(pl.date).toLocaleDateString('es-CO')}${pl.mods ? ' · ' + [1, 2, 3, 4].map(k => `${P.mod(k).id}: ${pl.mods[k]}%`).join(' · ') : ''}</span></div>${pst.attempts < pst.max ? '<button class="btn w sm" id="pt2">🔁 Repetir examen</button>' : ''}</div>` : ''}
+      ${pl ? `<div class="sect-title"><h2>📝 Mi examen de clasificación</h2></div><div class="card pt-plres"><div><b>Resultado:</b> ${esc(P.mod(pl.module).name)} · ${esc(P.mod(pl.module).es)}<br><span class="muted">${new Date(pl.date).toLocaleDateString('es-CO')}${pl.mods ? ' · ' + [1, 2, 3, 4].map(k => `${P.mod(k).id}: ${pl.mods[k]}%`).join(' · ') : ''}</span></div>${(pst.attempts < pst.max || (pst.round || 1) < (pst.rounds || 1)) ? '<button class="btn w sm" id="pt2">🔁 Repetir examen</button>' : ''}</div>` : ''}
       ${staff ? `<div class="sect-title"><h2>📝 Examen de clasificación</h2></div><div class="card pt-plres"><div>Puedes presentar o revisar el examen de clasificación como lo verá el estudiante.</div><button class="btn w sm" id="pt2">📝 Abrir examen</button></div>` : ''}
       ${certs()}
       <p class="center fx-foot" style="margin-top:22px;font-size:13.5px;font-weight:600">mrarrieta.com · ¡Aprende inglés HABLANDO! · WhatsApp ${esc(C.WHATSAPP.replace(/^57/, ''))}</p></div>`;
@@ -113,19 +115,20 @@
       const wm = M.modal(`<div class="center wb">${P.pic() ? P.avHTML('pt-av big') : M.mascot('mascot bounce', 'wink')}<h2>Welcome back, ${esc(P.look().nick || p.first)}! 👋</h2><p style="font-size:17px">¡Qué bueno verte de nuevo! ${pr && pr.done ? `Llevas <b>${pr.done} clase(s)</b> en tu ruta. ¡Sigamos!` : 'Hoy es un gran día para avanzar en tu ruta de aprendizaje.'}</p>
         ${a && a.ready && !staff ? `<a class="btn k block lg" style="text-decoration:none" href="${a.url}">▶ Continuar mi ruta</a>` : ''}<button class="btn w block" id="wbx" style="margin-top:8px">Ir a mi perfil</button></div>`, { x: true });
       $('#wbx', wm).onclick = () => wm.remove(); M.confetti && M.confetti(900); } } catch (e) { }
+    if (!p.tourDone && !$('.modal')) setTimeout(portalTour, 700);
     $('#me-av').onclick = () => route('me'); if ($('#me-go')) $('#me-go').onclick = () => route('me');
-    if ($('#pt2')) $('#pt2').onclick = () => { if (staff) return route('placement'); const m = M.modal(`<h3>¿Repetir el examen de clasificación?</h3><p class="muted">Tu nuevo resultado reemplazará la ubicación actual de tu perfil. Usaste ${pst.attempts} de ${pst.max} intentos.</p><div class="row"><button class="btn k" id="y">Sí, repetir</button><button class="btn w" id="n">Cancelar</button></div>`, { x: true }); $('#n', m).onclick = () => m.remove(); $('#y', m).onclick = () => { m.remove(); route('placement'); }; };
+    if ($('#pt2')) $('#pt2').onclick = () => { if (staff) return route('placement'); const m = M.modal(`<h3>¿Repetir el examen de clasificación?</h3><p>¿No te sentiste a gusto con tu resultado? Puedes repetirlo: <b>tu ruta de aprendizaje se actualizará con el nuevo resultado</b>.</p><p class="muted">Tienes ${pst.rounds || 1} oportunidades de 2 intentos cada una. Llevas ${pst.attempts} intento(s)${pst.attempts >= pst.max && (pst.round || 1) < (pst.rounds || 1) ? ' — se activará tu <b>segunda oportunidad</b>' : ''}.</p><div class="row"><button class="btn k" id="y">Sí, repetir</button><button class="btn w" id="n">Cancelar</button></div>`, { x: true }); $('#n', m).onclick = () => m.remove(); $('#y', m).onclick = () => { m.remove(); route('placement'); }; };
     $$('.pt-mod').forEach(el => el.onclick = () => openMod(el.dataset.id));
   }
   function routeBar() {
-    return `<div class="pt-routebar">${P.MODS.map((m, i) => { const r = P.role(m.id); return `${i ? `<i class="ln ${r === 'locked' || r === 'soon' ? '' : 'on'}"></i>` : ''}<div class="st ${r}${P.passed(m.id) ? ' ok' : ''}"><b>${P.passed(m.id) ? '✓' : r === 'current' ? '📍' : m.n}</b><small>${esc(m.id === 'B2' ? 'B2-C1' : m.id)}</small></div>`; }).join('')}</div>`;
+    return `<div class="pt-routebar">${P.MODS.map((m, i) => { const r = P.role(m.id); return `${i ? `<i class="ln ${r === 'locked' || r === 'soon' ? '' : 'on'}"></i>` : ''}<div class="st ${r}${P.passed(m.id) ? ' ok' : ''}"><b>${P.passed(m.id) ? '✓' : r === 'current' ? '📍' : m.n}</b><small>${esc(m.id)}</small></div>`; }).join('')}</div>`;
   }
   function modCard(m) {
     const r = P.role(m.id); const pr = P.progress(m.id); const trial = P.isTrial();
     const chip = { current: '📍 ESTÁS AQUÍ', review: P.passed(m.id) ? '✅ SUPERADO' : '🔁 REPASO', locked: '🔒 PRÓXIMA ETAPA', soon: '🚧 PRÓXIMAMENTE' }[r];
     const showBar = (r === 'current' || r === 'review') && m.ready;
     return `<button class="pt-mod ${r}" data-id="${m.id}"><div class="pt-mod-img" style="background-image:url('${U(m.img, 640, 360)}')"><span class="pt-mod-n">${m.n}</span><span class="pt-chip ${r}">${chip}</span></div>
-      <div class="pt-mod-bd"><h3>${esc(m.name)} · ${esc(m.id === 'B2' ? 'B2-C1' : m.id)}</h3><div class="es">${esc(m.es)}</div><p>${esc(m.desc)}</p>
+      <div class="pt-mod-bd"><h3>${esc(m.name)} · ${esc(m.id)}</h3><div class="es">${esc(m.es)}</div><p>${esc(m.desc)}</p>
       ${showBar ? `<div class="pt-bar"><i style="width:${pr.pct}%"></i></div><small class="muted">${pr.done} de ${r === 'current' && trial ? 4 : m.classes} clases${P.passed(m.id) ? ' · 🎓 Aprobado' : ''}</small>` : ''}
       ${r === 'locked' ? `<small class="muted">${trial ? 'Disponible al inscribirte' : 'Se abre cuando avances en tu ruta'}</small>` : ''}</div></button>`;
   }
@@ -143,6 +146,49 @@
   function certs() {
     const done = P.MODS.filter(m => m.ready && P.passed(m.id)); if (!done.length) return '';
     return `<div class="sect-title"><h2>🎓 Mis certificados</h2></div><div class="pt-certs">${done.map(m => `<a class="card pt-cert" href="${m.url}#cert">🎓 <div><b>${esc(m.name)} · ${esc(m.level)}</b><small>Nota: ${(P.modState(m.id).final.score || 0).toFixed ? Number(P.modState(m.id).final.score).toFixed(1) : ''}/10 · Ver y descargar</small></div></a>`).join('')}</div>`;
+  }
+  /* ---------- tour guiado del perfil (primera vez de cualquier estudiante) ---------- */
+  function portalTour() {
+    if ($('#tour')) return; const p = P.get(); if (!p) return;
+    const fn = esc(P.look().nick || p.first || ''); const a = P.assigned();
+    const all = [
+      { mood: 'welcome', t: `¡Hola, ${fn}! 👋`, d: 'Soy Mr. Arrieta, tu profe. Te muestro en 1 minuto cómo funciona tu plataforma.' },
+      { sel: '.pt-avwrap', mood: 'point', t: 'Tu perfil', d: 'Toca tu foto para <b>personalizar tu perfil</b>: tómate una foto o crea <b>tu propio Mr. Arrieta</b>.' },
+      { sel: '.pt-step', mood: 'idea', t: 'Primer paso: tu examen de clasificación', d: 'Son 40 preguntas de Listening, Reading, Writing y Speaking. Con tu resultado se crea <b>tu ruta de aprendizaje</b>.' },
+      { sel: '.pt-mymod', mood: 'pointside', t: 'Tu ruta de aprendizaje', d: 'Aquí ves <b>en qué punto de tu ruta estás</b> y entras a tus clases.' },
+      { sel: '.pt-trialbar', mood: 'present', t: 'Tu acceso gratuito', d: 'Puedes tomar el examen de clasificación y explorar los <b>2 primeros temas</b> de tu ruta. ¡Disfrútalo!' },
+      { sel: '.pt-routebar', mood: 'present', t: 'Tu camino', d: 'Tu ruta va de A1 a B2+. Cada etapa se abre cuando <b>apruebas el examen final</b> de la anterior.' },
+      { sel: '.pt-perso', mood: 'wink', t: 'Hazla tuya', d: 'Viste a tu Mr. Arrieta, ponle sombrero, elige colores y fondo. ¡Tu plataforma, a tu estilo!' },
+      { sel: '#out', mood: 'watch', t: 'Salir', d: 'Con este botón cierras tu sesión. Tu progreso queda guardado.' },
+      { mood: 'thumbs', t: '¡Listo! 🚀', d: p.module ? '¡Vamos a tu ruta de aprendizaje!' : 'Empieza con tu examen de clasificación para crear tu ruta.', last: true },
+    ];
+    const steps = all.filter(x => !x.sel || $(x.sel));
+    const ov = h(`<div id="tour"><div class="tour-hole"></div><div class="tour-card"></div></div>`); document.body.appendChild(ov);
+    const hole = $('.tour-hole', ov), card = $('.tour-card', ov); let i = 0;
+    const end = (go) => { ov.remove(); window.removeEventListener('resize', place); window.removeEventListener('scroll', place); const q = P.get(); if (q) { q.tourDone = true; P.save(q); }
+      if (go) { M.confetti && M.confetti(1500); if (!q.module && q.type !== 'staff') route('placement'); else if (a && a.ready) location.href = a.url; } };
+    function place() {
+      const st = steps[i]; const el = st.sel && $(st.sel);
+      if (!el) { hole.style.cssText = 'left:50%;top:40%;width:0;height:0'; card.classList.add('center'); card.style.cssText = ''; return; }
+      card.classList.remove('center'); const r = el.getBoundingClientRect(), pad = 8;
+      hole.style.cssText = `left:${r.left - pad}px;top:${r.top - pad}px;width:${r.width + pad * 2}px;height:${r.height + pad * 2}px`;
+      const cw = Math.min(380, innerWidth - 24); const ch = card.offsetHeight || 220;
+      let top = r.bottom + 16; if (top + ch > innerHeight - 10) top = Math.max(10, r.top - ch - 16);
+      const left = Math.min(Math.max(12, r.left + r.width / 2 - cw / 2), innerWidth - cw - 12);
+      card.style.cssText = `left:${left}px;top:${top}px;width:${cw}px`;
+    }
+    function show() {
+      const st = steps[i]; const el = st.sel && $(st.sel);
+      card.innerHTML = `<div class="tour-in">${M.mascot('tour-mra', st.mood)}<div><div class="tour-n">${i + 1} / ${steps.length}</div><h3>${st.t}</h3><p>${st.d}</p></div></div>
+        <div class="tour-bar"><button class="btn w sm" id="tskip">${st.last ? 'Cerrar' : 'Saltar tour'}</button><div class="grow"></div>${i ? '<button class="btn w sm" id="tprev">←</button>' : ''}<button class="btn k" id="tnext">${st.last ? (p.module || p.type === 'staff' ? '¡Vamos! →' : '📝 Tomar mi examen →') : 'Siguiente →'}</button></div>`;
+      $('#tskip', card).onclick = () => end(false);
+      if (i) $('#tprev', card).onclick = () => { i--; show(); };
+      $('#tnext', card).onclick = () => { if (st.last) end(true); else { i++; show(); } };
+      if (el) { el.scrollIntoView({ block: 'center' }); setTimeout(place, 80); } else place();
+      sfx('tap');
+    }
+    window.addEventListener('resize', place); window.addEventListener('scroll', place, { passive: true });
+    show();
   }
   /* ---------- personalización del perfil ---------- */
   const EN = { '': 'Original', '#E3242B': 'Red', '#0B2A5B': 'Navy blue', '#f2f2f2': 'White', '#FFC21A': 'Yellow', '#2E9E5B': 'Green', '#3AA0E8': 'Light blue', '#7B4BC4': 'Purple', '#F07AB0': 'Pink', '#8A8F98': 'Gray', '#8a8f98': 'Gray', '#F27A1A': 'Orange',

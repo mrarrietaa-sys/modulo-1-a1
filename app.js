@@ -37,12 +37,13 @@
       <button class="btn w block" data-a="remind">🔔 Recordatorio diario</button>
       <button class="btn w block" data-a="dict">${S.dictHidden ? '📌 Mostrar botón flotante del diccionario' : '🙈 Quitar botón flotante del diccionario'}</button>
       <button class="btn w block" data-a="tour">🧭 Ver el tour guiado</button>
+      ${window.MRANN && MRANN.isStaff() ? `<button class="btn w block" data-a="ann">${MRANN.isHidden() ? '✏️ Mostrar la barra del profesor' : '✏️ Abrir la barra del profesor'}</button>` : ''}
       <button class="btn w block" data-a="name">✏️ Cambiar mi nombre</button>
       ${S.review ? '<button class="btn w block" data-a="unreview">🚪 Salir del modo revisión (profe)</button>' : ''}
       <button class="btn w block" data-a="sound">${S.sound ? '🔔 Sonidos: activados' : '🔕 Sonidos: desactivados'}</button>
       <button class="btn k block" data-a="close">Cerrar</button></div>`);
     $$('button', m).forEach(b => b.onclick = () => { const a = b.dataset.a; m.remove();
-      if (a === 'chat') openChat(); else if (a === 'home' || a === 'progress') route(a); else if (a === 'unlock') unlockModal(); else if (a === 'remind') reminderModal(); else if (a === 'name') onboarding(true); else if (a === 'chath') { M.setBubbleHidden('chatHidden', !S.chatHidden); } else if (a === 'dict') { window.M1DICT && M1DICT.setHidden(!S.dictHidden); } else if (a === 'tour') { route('home'); setTimeout(tour, 400); } else if (a === 'unreview') { S.review = false; save(); M.toast('Modo revisión desactivado'); route('home'); } else if (a === 'sound') { S.sound = !S.sound; save(); M.toast(S.sound ? 'Sonidos activados 🔔' : 'Sonidos desactivados 🔕'); } });
+      if (a === 'ann') MRANN.show(); else if (a === 'chat') openChat(); else if (a === 'home' || a === 'progress') route(a); else if (a === 'unlock') unlockModal(); else if (a === 'remind') reminderModal(); else if (a === 'name') onboarding(true); else if (a === 'chath') { M.setBubbleHidden('chatHidden', !S.chatHidden); } else if (a === 'dict') { window.M1DICT && M1DICT.setHidden(!S.dictHidden); } else if (a === 'tour') { route('home'); setTimeout(tour, 400); } else if (a === 'unreview') { S.review = false; save(); M.toast('Modo revisión desactivado'); route('home'); } else if (a === 'sound') { S.sound = !S.sound; save(); M.toast(S.sound ? 'Sonidos activados 🔔' : 'Sonidos desactivados 🔕'); } });
   }
 
   /* ---------------- router ---------------- */
@@ -82,10 +83,10 @@
     const first = esc(S.name.split(' ')[0]);
     const steps = [
       { mood: 'welcome', t: `¡Hola, ${first}! 👋`, d: 'Soy Mr. Arrieta, tu profe. Te muestro en 1 minuto cómo funciona tu plataforma.' },
-      { sel: '.ringbox', mood: 'point', t: 'Tu progreso', d: `Aquí ves cuánto llevas del ${M.MOD.es} y el botón para <b>empezar o continuar</b> tu clase.` },
+      { sel: '.ringbox', mood: 'point', t: 'Tu progreso', d: `Aquí ves cuánto llevas del ${M.MOD.es}: el porcentaje sube con cada clase que completas.` },
       { sel: '.hello .skills', mood: 'idea', t: 'Tus 4 habilidades', d: 'Escuchar 🎧, leer 📖, hablar 🗣️ y escribir ✍️. Las barras suben con cada clase que haces.' },
       { sel: '#tgrid > :first-child', mood: 'pointside', t: `Los ${M.MOD.topics} temas`, d: 'Cada tema tiene <b>2 clases</b>. Los temas se abren <b>en orden</b>: termina un tema para abrir el siguiente.' },
-      { mood: 'book', t: '¿Cómo es una clase?', d: 'Cada clase sigue el mismo orden: <b>Goal → Speaking → Reading → Explanation → Practice → Oral task → Music → Homework</b>.<br><br>🔊 escucha · 🎤 habla (permite el micrófono) · <b>← Atrás</b> para corregir · tu avance se guarda solo.' },
+      { mood: 'idea', t: '¿Cómo es una clase?', d: 'Cada clase sigue el mismo orden: <b>Goal → Speaking → Reading → Explanation → Practice → Oral task → Music → Homework</b>.<br><br>🔊 escucha · 🎤 habla (permite el micrófono) · <b>← Atrás</b> para corregir · tu avance se guarda solo.' },
       { sel: '#dict-fab', mood: 'present', t: 'Tu diccionario', d: '¿No entiendes una palabra? Toca aquí, <b>escríbela o dila en voz alta</b> (en español o inglés) y te doy la respuesta con su pronunciación.' },
       { sel: '#chat-tb', mood: 'present', t: 'Chat con tu profe', d: 'Con este botón le escribes a tu docente cuando tengas dudas. El botón del diccionario lo puedes <b>arrastrar</b> a donde quieras o <b>quitarlo</b> soltándolo en la ✕ del centro.' },
       { sel: '#final-b', mood: 'celebrate', t: 'Examen final', d: `Al terminar los ${M.MOD.topics} temas presentas el examen final. Si apruebas, ¡obtienes tu <b>certificado</b> del ${M.MOD.es}! 🎓` },
@@ -365,7 +366,7 @@
     const p = M.partById(id);
     if (!M.isUnlocked(p.topic)) { route('home'); return lockGate(p.topic); }
     app.innerHTML = `<div class="wrap center" style="padding-top:80px">${M.mascot('mascot bounce', 'book')}<h2>Cargando tu clase…</h2></div>`;
-    const pv = M.prevPart(p); await M.loadAudio(['common', M.MOD.games, M.MOD.audio + p.topic].concat(pv ? [M.MOD.audio + pv.topic] : []));
+    const pv = M.prevPart(p); await M.loadAudio(['common', ...[].concat(M.MOD.games || []), M.MOD.audio + p.topic].concat(pv ? [M.MOD.audio + pv.topic] : []));
     const steps = buildSteps(p); const secs = [...new Set(steps.map(s => s.sec))];
     const rec = S.parts[id] = S.parts[id] || { done: false, stars: 0, best: 0 };
     let startAt = 0;

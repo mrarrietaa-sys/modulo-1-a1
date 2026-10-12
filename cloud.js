@@ -60,7 +60,9 @@
     if (migrate) setTimeout(() => sync(true), 1500);
     return r;
   }
-  function cacheMe(r) { try { sessionStorage.setItem(ME, JSON.stringify({ t: Date.now(), r })); } catch (e) { } applyExtras(r && r.extras); }
+  function cacheMe(r) { try { sessionStorage.setItem(ME, JSON.stringify({ t: Date.now(), r })); } catch (e) { } applyExtras(r && r.extras); saveClubs(r && r.clubs); }
+  // horarios de los clubs (los cambia administración) → los usa clubes.html
+  function saveClubs(c) { if (!c || !c.list) return; const o = { start: c.start, band: c.band }; c.list.forEach(k => { o[k.key + '_' + c.band] = { day: k.day, time: k.time, link: k.link, teacher: k.teacher }; }); ls.set('mra_clubs', JSON.stringify(o)); }
   // intentos extra aprobados por administración → se suman al examen en este dispositivo (una sola vez por aprobación)
   function applyExtras(ex) { if (!ex) return; Object.keys(ex).forEach(k => { if (!/^mra_[a-z0-9_]+$/.test(k)) return; const st = J(ls.get(k), {}) || {}; const g = +ex[k] || 0, done = +st.cloudExtra || 0; if (g > done) { st.extra = (+st.extra || 0) + (g - done); st.cloudExtra = g; ls.set(k, JSON.stringify(st)); try { window.dispatchEvent(new CustomEvent('mra-extra', { detail: k })); } catch (e) { } } }); }
   function cachedMe() { try { return J(sessionStorage.getItem(ME), null); } catch (e) { return null; } }

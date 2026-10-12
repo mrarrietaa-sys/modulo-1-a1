@@ -39,7 +39,7 @@
   }
   const studentName = (code) => { const s = D && D.students[String(code).toUpperCase()]; return s ? s.name || s.code : code; };
   const groupOf = (id) => (D.groups || []).find((g) => g.id === id);
-  const meetOf = (c) => c.meet || (c.groupId && groupOf(c.groupId) ? groupOf(c.groupId).meet : '') || (D.teacher && D.teacher.meet) || '';
+  const meetOf = (c) => c.meet || (c.groupId && groupOf(c.groupId) ? groupOf(c.groupId).meet : '') || (D.teacher && String(D.teacher.meet || '').split(/[\s,;]+/).filter(Boolean)[0]) || '';
   const typeBadge = (c) => c.type === 'vip' ? '<span class="tp-badge vip">VIP</span>' : '<span class="tp-badge grp">Grupal</span>';
   const statusBadge = (c) => ({ done: '<span class="tp-st done">Dictada ✓</span>', noshow: '<span class="tp-st noshow">No asistió</span>', cancelled: '<span class="tp-st canc">Cancelada</span>' }[c.status] || (c.date <= today() ? '<span class="tp-st pend">Por marcar</span>' : '<span class="tp-st sch">Programada</span>'));
   const whoOf = (c) => c.type === 'vip' ? esc(studentName(c.students[0] || '')) : esc((groupOf(c.groupId) || {}).name || 'Grupo') + ` · ${c.students.length} estudiante${c.students.length === 1 ? '' : 's'}`;
@@ -100,6 +100,7 @@
       <div class="tp-cls-when"><b>${r || dLabel(c.date)}</b><span>${r ? dLabel(c.date) + ' · ' : ''}${h12(c.time)} – ${h12(endHM(c.time, c.duration))}</span></div>
       <div class="tp-cls-what">${typeBadge(c)} ${statusBadge(c)}<div class="tp-cls-who">${whoOf(c)}</div>${c.topic ? `<small class="muted">Tema: ${esc(c.topic)}</small>` : ''}
         ${c.status === 'done' ? `<small class="muted">Asistencia: ${c.students.filter((x) => (c.attendance || {})[String(x).toUpperCase()] === true || (c.attendance || {})[x] === true).length}/${c.students.length}</small>` : ''}
+        ${c.type === 'group' && c.status === 'scheduled' ? `<small class="muted">✅ ${+c.confirmed || 0} confirmado(s)${c.flags === 'cutoff' ? '' : ' · se cierra 3 h antes'}</small>` : ''}${c.status === 'sin-asistentes' ? '<small class="tp-note">🙌 Nadie confirmó: no necesitas conectarte.</small>' : ''}
         ${c.notes && opt && opt.notes ? `<small class="tp-note">📝 ${esc(c.notes)}</small>` : ''}</div>
       <div class="tp-cls-act">
         ${c.status === 'scheduled' && c.date >= today() ? (link ? `<a class="btn k sm" href="${esc(link)}" target="_blank" rel="noopener">🎥 Entrar a la clase</a>` : '<small class="muted">Sin enlace de clase</small>') : ''}
@@ -111,11 +112,13 @@
     $$('[data-noshow]', root).forEach((b) => b.onclick = () => markDialog(b.dataset.noshow, 'noshow'));
   }
   function home(el) {
+    setTimeout(() => { const nb = document.getElementById('tp-nread'); if (nb) nb.onclick = async () => { nb.disabled = true; await api('notifRead', { all: true }); (D.notifications || []).forEach(n => n.read = true); shell(); }; }, 0);
     const t0 = today();
     const up = D.classes.filter((c) => c.status === 'scheduled' && c.date >= t0);
     const pend = D.classes.filter((c) => c.status === 'scheduled' && c.date <= t0 && !(c.date === t0 && endHM(c.time, c.duration) > nowHM()));
     const free = D.slots.filter((s) => s.status === 'free' && s.date >= t0).length;
-    el.innerHTML = `<div class="tp-stats">
+    const nt = (D.notifications || []).slice(0, 12); const unread = nt.filter(n => !n.read);
+    el.innerHTML = `${nt.length ? `<div class="card tp-notif"><h3>🔔 Notificaciones ${unread.length ? `<span class="tp-nbadge">${unread.length} nueva${unread.length > 1 ? 's' : ''}</span>` : ''}</h3><div class="tp-nlist">${nt.map(n => `<div class="tp-n${n.read ? '' : ' new'}"><b>${esc(n.title)}</b>${n.body ? `<p>${esc(n.body)}</p>` : ''}<small>${esc(String(n.date || '').replace('T', ' ').slice(0, 16))}</small></div>`).join('')}</div>${unread.length ? '<button class="btn w sm" id="tp-nread">✓ Marcar todas como leídas</button>' : ''}</div>` : ''}<div class="tp-stats">
         <div class="tp-stat red"><b>${+D.stats.taughtMonth || 0}</b><span>clases dictadas este mes</span></div>
         <div class="tp-stat"><b>${+D.stats.taughtTotal || 0}</b><span>clases dictadas en total</span></div>
         <div class="tp-stat"><b>${up.length}</b><span>próximas clases</span></div>

@@ -406,7 +406,7 @@
         <div class="lv-st grp"><b>${cr.groupDone}<small>/${cr.groupTotal}</small></b><span>Clases grupales</span><em>Este mes</em></div>
         <div class="lv-st all"><b>${r.attendedTotal || 0}</b><span>Clases asistidas</span><em>En total</em></div></div>
       <div class="card lv-card lv-vip"><div class="lv-h"><span class="lv-ic">⭐</span><div><span class="lbl">Clases VIP · 1 a 1</span><h3>Reserva tu clase VIP</h3></div></div>
-        <p class="muted">Elige <b>profesor, fecha y hora</b> entre los espacios disponibles. Cada reserva usa 1 crédito. Puedes cancelar hasta ${pr.cancelHours} horas antes y recuperarlo.</p>
+        <p class="muted">Elige <b>profesor, fecha y hora</b> entre los espacios disponibles. Cada reserva usa 1 crédito. Reserva con mínimo <b>4 horas</b> de anticipación. Puedes cancelar hasta ${pr.cancelHours} horas antes y recuperarlo.</p>
         <button class="btn k lg" id="lv-book" ${cr.vipLeft ? '' : 'disabled'}>${cr.vipLeft ? '📅 Reservar clase VIP' : '✅ Usaste tus créditos de este mes'}</button></div>
       <div class="card lv-card lv-grp"><div class="lv-h"><span class="lv-ic">👥</span><div><span class="lbl">Clases grupales · asignadas por la escuela</span><h3>${g ? esc(g.name) : 'Tu grupo se está asignando'}</h3></div></div>
         ${g ? `<div class="lv-kv"><span>📚 Nivel</span><b>${esc(g.level || '—')}</b><span>👩‍🏫 Profe</span><b>${esc(g.teacher || '—')}</b><span>🗓️ Horario</span><b>${esc(g.days || '')} · ${g.time ? fmtT(g.time) : ''} <small>(hora Colombia)</small></b></div>
@@ -416,14 +416,27 @@
       <div class="card lv-card lv-next"><div class="lv-h"><span class="lv-ic">📅</span><div><span class="lbl">Agenda</span><h3>Mis próximas clases</h3></div></div>
         ${up.length ? `<div class="lv-list">${up.map(c => `<div class="lv-cl ${c.type}${c.date === today ? ' hoy' : ''}"><div class="lv-dt"><b>${fmtD(c.date, { day: 'numeric' })}</b><small>${fmtD(c.date, { month: 'short' })}</small></div>
           <div class="grow"><b>${c.type === 'vip' ? '⭐ Clase VIP' : '👥 Clase grupal'}${c.date === today ? ' <i class="lv-today">HOY</i>' : ''}</b><small>${fmtD(c.date, { weekday: 'long' })} · ${fmtT(c.time)} · ${esc(c.teacher || '')}${c.topic ? ' · ' + esc(c.topic) : ''}</small></div>
-          <div class="lv-act">${c.meet ? `<a class="btn k sm" target="_blank" rel="noopener" href="${esc(c.meet)}">🎥 Entrar</a>` : ''}${c.canCancel ? `<button class="btn w sm" data-cancel="${esc(c.id)}">Cancelar</button>` : ''}</div></div>`).join('')}</div>` : '<p class="muted">No tienes clases programadas todavía.</p>'}</div>
-      <div class="card lv-card lv-club"><div class="lv-h"><span class="lv-ic">🗣️</span><div><span class="lbl">Incluido en Premium</span><h3>${esc(pr.club.title)}</h3></div></div>
-        <p>${esc(pr.club.text)}</p>${pr.club.link ? `<a class="btn k" target="_blank" rel="noopener" href="${esc(pr.club.link)}">🎙️ Entrar al club</a>` : '<p class="muted">El enlace se publica aquí antes de cada sesión.</p>'}</div>
+          <div class="lv-act">${c.type === 'group' ? (c.confirmed ? '<span class="lv-ok">✅ Confirmada</span>' : c.canConfirm ? `<button class="btn k sm" data-conf="${esc(c.id)}">✅ Confirmar asistencia</button>` : '<span class="lv-pend">⏰ Cerrada (3 h antes)</span>') : ''}${c.meet && (c.type !== 'group' || c.confirmed) ? `<a class="btn k sm" target="_blank" rel="noopener" href="${esc(c.meet)}">🎥 Entrar</a>` : ''}${c.canCancel ? `<button class="btn w sm" data-cancel="${esc(c.id)}">Cancelar</button>` : ''}</div></div>`).join('')}</div>` : '<p class="muted">No tienes clases programadas todavía.</p>'}${up.some(c => c.type === 'group') ? '<p class="muted lv-note">👥 Confirma tus clases grupales mínimo <b>3 horas antes</b> para que tu profe te espere.</p>' : ''}</div>
+      <div class="card lv-card lv-club"><div class="lv-h"><span class="lv-ic">🎙️</span><div><span class="lbl">Incluido en Premium</span><h3>Clubs de conversación y fonética</h3></div></div>
+        ${r.clubs && r.clubs.list ? `<div class="lv-kv">${r.clubs.list.map(k => `<span>${k.key === 'conv' ? '🗣️ Conversación' : '🔤 Fonética'}</span><b>${esc(k.day)} · ${k.time ? fmtT(k.time) : ''} <small>(hora Colombia)</small></b>`).join('')}</div>` : ''}
+        <a class="btn k" href="clubes.html">🎙️ Ir a mis clubs</a></div>
+      <div class="card lv-card lv-msg"><div class="lv-h"><span class="lv-ic">✉️</span><div><span class="lbl">Tu profe</span><h3>Escríbele a tu profe</h3></div></div>
+        <p class="muted">Envíale un mensaje a tu profe desde aquí. Le llega a su perfil y a su correo.</p><button class="btn w" id="lv-msg">✉️ Escribir a mi profe</button></div>
       ${(pr.history || []).length ? `<details class="card lv-card lv-hist"><summary>📜 Historial de clases (${pr.history.length})</summary><div class="lv-list">${pr.history.map(c => `<div class="lv-cl ${c.type}"><div class="grow"><b>${c.type === 'vip' ? '⭐ VIP' : '👥 Grupal'} · ${fmtD(c.date)} ${fmtT(c.time)}</b><small>${esc(c.teacher || '')} · ${c.status === 'done' ? (c.attended ? '✅ Asististe' : '❌ No asististe') : c.status === 'cancelled' ? 'Cancelada' : c.status === 'noshow' ? '❌ No asististe' : esc(c.status)}</small></div></div>`).join('')}</div></details>` : ''}
     </div>`;
     if ($('#lv-book')) $('#lv-book').onclick = vipBooking;
     if ($('#lv-chg')) $('#lv-chg').onclick = () => changeModal(g);
     $$('[data-cancel]', box).forEach(b => b.onclick = () => cancelVip(b.dataset.cancel));
+    $$('[data-conf]', box).forEach(b => b.onclick = async () => { b.disabled = true; b.textContent = '⏳…';
+      const res = await MRAC.call('groupConfirm', { code: MRAC.code(), classId: b.dataset.conf });
+      if (res.ok) { M.toast('✅ ¡Listo! Tu profe ya sabe que vas.'); live(); }
+      else { b.disabled = false; b.textContent = '✅ Confirmar asistencia'; M.toast(res.err === 'too_late' ? '⏰ Ya pasó el límite: se confirma mínimo 3 horas antes.' : 'No se pudo confirmar. Intenta de nuevo.'); } });
+    if ($('#lv-msg')) $('#lv-msg').onclick = teacherMsg;
+  }
+  function teacherMsg() {
+    const m = M.modal(`<div class="vb"><h3>✉️ Escribir a mi profe</h3><textarea class="inp" id="tm-t" rows="5" maxlength="1500" placeholder="Hola profe, …" style="width:100%"></textarea><button class="btn k block lg" id="tm-ok" style="margin-top:10px">📨 Enviar</button></div>`, { x: true });
+    $('#tm-ok', m).onclick = async () => { const text = $('#tm-t', m).value.trim(); if (!text) return M.toast('Escribe tu mensaje'); $('#tm-ok', m).disabled = true;
+      const res = await MRAC.call('stuMsg', { code: MRAC.code(), text }); if (res.ok) { m.remove(); M.toast('✅ Mensaje enviado a tu profe'); } else { $('#tm-ok', m).disabled = false; M.toast(res.err === 'noteacher' ? 'Aún no tienes un profe asignado.' : 'No se pudo enviar. Intenta de nuevo.'); } };
   }
   function addDay(iso, n) { const d = new Date(String(iso) + 'T12:00:00'); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); }
   async function vipBooking() {
@@ -433,7 +446,7 @@
     if (!r.teachers.length) { b.innerHTML = `<p class="muted">Por ahora no hay espacios disponibles en los próximos días. Los profes publican nuevos horarios cada semana: vuelve pronto o escríbenos.</p><a class="btn w block" target="_blank" rel="noopener" href="${WA('¡Hola! Soy ' + P.get().name + ' (Premium) y no encuentro espacios para mi clase VIP 🙏')}">💬 Escribir a la escuela</a>`; return; }
     let T = null, D = null, S = null;
     const step = () => {
-      if (!T) { b.innerHTML = `<p class="vb-st">1️⃣ Elige tu profesor</p><div class="vb-teachers">${r.teachers.map(t => `<button class="vb-t" data-t="${esc(t.id)}"><span class="vb-av">${esc((t.name || '?').split(' ').map(x => x[0]).slice(0, 2).join(''))}</span><div><b>${esc(t.name)}</b><small>${esc(t.levels || '')}${t.bio ? ' · ' + esc(t.bio) : ''}</small><em>${t.slots.length} espacio${t.slots.length === 1 ? '' : 's'} disponible${t.slots.length === 1 ? '' : 's'}</em></div></button>`).join('')}</div><p class="muted vb-cr">Te quedan <b>${r.credits.vipLeft}</b> crédito(s) VIP este mes.</p>`;
+      if (!T) { b.innerHTML = `<p class="vb-st">1️⃣ Elige tu profesor</p><div class="vb-teachers">${r.teachers.map(t => `<button class="vb-t" data-t="${esc(t.id)}"><span class="vb-av">${esc((t.name || '?').split(' ').map(x => x[0]).slice(0, 2).join(''))}</span><div><b>${esc(t.name)}</b><small>${esc(t.bio || '')}</small><em>${t.slots.length} espacio${t.slots.length === 1 ? '' : 's'} disponible${t.slots.length === 1 ? '' : 's'}</em></div></button>`).join('')}</div><p class="muted vb-cr">Te quedan <b>${r.credits.vipLeft}</b> crédito(s) VIP este mes.</p>`;
         $$('.vb-t', b).forEach(x => x.onclick = () => { T = r.teachers.find(t => t.id === x.dataset.t); sfx('tap'); step(); }); return; }
       const dates = [...new Set(T.slots.map(s => s.date))];
       if (!D) D = dates[0];

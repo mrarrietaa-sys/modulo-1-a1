@@ -3608,3 +3608,7 @@ p.ce-revchip{margin:8px auto 0}
 .pw-ic{width:20px;height:20px;display:block}
 
 .topic .cov{position:relative}.cov-done{position:absolute;top:12px;right:12px;background:#16A34A;color:#fff;font:800 13px Poppins,sans-serif;letter-spacing:.5px;padding:5px 12px;border-radius:999px;border:2px solid #fff;box-shadow:0 3px 8px rgba(0,0,0,.25)}
+.ad-club{border:2px solid #d6dde8;border-radius:12px;padding:10px 12px;margin:10px 0}.ad-club h4{margin:0 0 6px;color:#0B2A5B;font:800 15px Poppins,sans-serif}
+.lv-ok{font-weight:800;color:#1a7f37;font-size:13px;align-self:center}.lv-note{margin-top:8px;font-size:13px}
+.tp-notif h3{display:flex;align-items:center;gap:8px;margin:0 0 8px}.tp-nbadge{background:#E3242B;color:#fff;border-radius:99px;padding:2px 10px;font-size:12px}
+.tp-nlist{display:flex;flex-direction:column;gap:6px;max-height:340px;overflow:auto;margin-bottom:8px}.tp-n{border:2px solid #d6dde8;border-radius:10px;padding:8px 10px}.tp-n.new{border-color:#E3242B;background:#fff6f6}.tp-n p{margin:3px 0;font-size:13.5px}.tp-n small{color:#718096;font-size:12px}

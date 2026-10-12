@@ -4,28 +4,29 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Mis clubs — mrarrieta.com</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="app.css?v=63">
+<link rel="stylesheet" href="app.css?v=64">
 <style>.cb-staff{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:#fff;border:3px solid #0B2A5B;border-radius:14px;padding:10px 12px;margin-bottom:16px;font-weight:700;color:#0B2A5B}.cb-staff button{border:2px solid #0B2A5B;background:#fff;color:#0B2A5B;border-radius:10px;padding:6px 10px;font:700 14px Inter,sans-serif;cursor:pointer}.cb-staff button.on{background:#0B2A5B;color:#fff}</style>
 </head>
 <body>
 <header class="topbar"><div class="brand"><a href="index.html"><span class="logo-pill"><img class="logo" src="mra-brand.png" alt="mrarrieta.com"></span></a></div><div class="sp"></div><button class="tb-back" type="button" onclick="location.href='index.html'" title="Mi perfil">← Mi perfil</button></header>
 <div class="wrap"><div id="cb-staff"></div><div id="app"></div></div>
-<script src="config.js?v=63"></script>
-<script src="profile.js?v=63"></script>
-<script src="idle.js?v=63"></script>
-<script src="clubdata_conv.js?v=63"></script>
-<script src="clubdata_fon.js?v=63"></script>
-<script src="festivos.js?v=63"></script>
-<script src="clubs.js?v=63"></script>
+<script src="config.js?v=64"></script>
+<script src="profile.js?v=64"></script>
+<script src="idle.js?v=64"></script>
+<script src="clubdata_conv.js?v=64"></script>
+<script src="clubdata_fon.js?v=64"></script>
+<script src="festivos.js?v=64"></script>
+<script src="clubs.js?v=64"></script>
 <script>
 (function () {
   const P = window.MRAP, p = P && P.get(); if (!p) { location.replace('index.html'); return; }
-  const a = P.assigned && P.assigned(); const band = a && a.n >= 3 ? 'b' : 'a';
+  const a = P.assigned && P.assigned(); let band = a && a.n >= 3 ? 'b' : 'a';
   const pl = P.plan ? P.plan() : {}; const staff = p.type === 'staff';
   const premium = staff || p.demo || pl.eff === 'premium' || pl.premium;
   // horarios: los que guarda la nube (administración) o los de siempre
   const DEF = { a: { fon: ['Lunes', '18:00'], conv: ['Miércoles', '18:00'] }, b: { fon: ['Lunes', '19:00'], conv: ['Miércoles', '19:00'] } };
-  const cfg = p.clubs || {};
+  let cfg = {}; try { cfg = JSON.parse(localStorage.getItem('mra_clubs') || '{}') || {}; } catch (e) { }
+  if (cfg.band && !staff) band = cfg.band;
   const clubs = ['conv', 'fon'].map(k => { const c = cfg[k + '_' + band] || {}; return { key: k, day: c.day || DEF[band][k][0], time: c.time || DEF[band][k][1], link: c.link || '', teacher: c.teacher || '', start: cfg.start || '2026-10-12' }; });
   const name = (p.look && p.look.nick) || p.first || '';
   const el = document.getElementById('app');

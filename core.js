@@ -112,7 +112,7 @@
     if (curBtn) { curBtn.classList.remove('playing'); curBtn = null; }
     if (curEnd) { const e = curEnd; curEnd = null; e(); }
     ext.forEach(a => { a.pause(); a.dispatchEvent(new Event('ended')); }); ext.clear();
-    if (window.speechSynthesis) speechSynthesis.cancel();
+    if (window.speechSynthesis && !window.__mraGreet) speechSynthesis.cancel();
     audioUI();
   }
   // stop(): detiene TODO el audio y avisa a las secuencias ("Escuchar todo", diálogos, lecturas)

@@ -33,13 +33,14 @@
       if (!window.speechSynthesis) return; sessionStorage.setItem('mra_said', '1');
       const go = () => { try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang = 'en-US'; u.rate = 0.95; u.pitch = 1.05;
         const vs = speechSynthesis.getVoices().filter(v => /^en(-|_)US/i.test(v.lang)); const pref = vs.find(v => /Google US English|Samantha|Aria|Jenny|Natural/i.test(v.name)) || vs[0]; if (pref) u.voice = pref;
+        window.__mraGreet = true; u.onend = u.onerror = () => { window.__mraGreet = false; }; setTimeout(() => { window.__mraGreet = false; }, 6000);
         speechSynthesis.speak(u); } catch (e) { } };
-      // si el navegador aún no tiene las voces o no permite hablar sin un toque, espera un instante / el primer toque
+      // si aún no hubo ningún toque en la página, habla con el primer toque
       if (navigator.userActivation && !navigator.userActivation.hasBeenActive) { const once = () => { removeEventListener('pointerdown', once, true); go(); }; addEventListener('pointerdown', once, true); return; }
-      if (!speechSynthesis.getVoices().length) { speechSynthesis.onvoiceschanged = () => { speechSynthesis.onvoiceschanged = null; go(); }; setTimeout(go, 700); } else setTimeout(go, 250);
+      go(); // de inmediato, dentro del mismo toque de "Entrar" (necesario en iPhone)
     } catch (e) { }
   }
-  const hiName = () => { const p = P.get() || {}; return (p.look && p.look.nick) || p.first || ''; };
+  const hiName = () => { const p = P.get() || {}; const lu = P.lastUser() || {}; return (p.look && p.look.nick) || p.first || lu.first || ''; };
   const greetVoice = (back) => { const n = hiName(); sayHi(n ? `${back ? 'Welcome back' : 'Welcome'}, ${n}!` : 'Welcome to your English platform!'); };
   /* ---------- ingreso con código ---------- */
   function codeType(code) {
@@ -67,13 +68,13 @@
       <p class="center pt-links"><a href="reclutamiento.html">👩‍🏫 Trabaja con nosotros</a> · <a href="profesores.html">🧑‍🏫 Soy profesor</a></p></div>`;
     const i = $('#cd'); setTimeout(() => i.focus(), 200);
     const bad = (msg) => { i.classList.add('wrong'); sfx('bad'); setTimeout(() => i.classList.remove('wrong'), 500); M.toast(msg || 'Código no válido 😕'); };
-    const go = async () => {
+    const go = async () => { try { if (window.speechSynthesis) { const w = new SpeechSynthesisUtterance(' '); w.volume = 0; speechSynthesis.speak(w); } } catch (e) { } // desbloquea la voz en iPhone
       const v = i.value.trim(); if (!v) return bad('Escribe tu código 🙂');
       // 1) códigos de la nube (planes Acceso gratuito / Membership / Premium)
       if (window.MRAC && MRAC.on && !codeType(v)) {
         const b = $('#ok'); b.disabled = true; b.textContent = 'Entrando…';
         const r = await MRAC.login(v); b.disabled = false; b.textContent = 'Entrar →';
-        if (r.ok) { sfx('win'); M.confetti(1500); try { sessionStorage.removeItem('mra_back'); } catch (e) { } greetVoice(!!(P.get() || {}).lastSeen); return route('home'); }
+        if (r.ok) { sfx('win'); M.confetti(1500); try { sessionStorage.removeItem('mra_back'); } catch (e) { } greetVoice(!!((P.get() || {}).lastSeen || (P.lastUser() || {}).first)); return route('home'); }
         if (r.err === 'inactive') return bad('Tu acceso está inactivo. Escríbenos por WhatsApp 🙏');
         if (r.err === 'network' || r.err === 'offline') return bad('No hay conexión con la nube. Revisa tu internet e inténtalo de nuevo.');
         return bad();
@@ -82,7 +83,7 @@
       const r = codeType(v); if (!r) return bad();
       const old = P.get() || {};
       P.save(Object.assign({ created: Date.now() }, old, { type: r.type, codeHash: M.codeHash(i.value), module: r.module || old.module || null, assignedBy: r.module ? 'admin' : (old.assignedBy || null) }));
-      sfx('win'); M.confetti(1500); greetVoice(!!(old.first && old.lastSeen)); route('home'); };
+      sfx('win'); M.confetti(1500); greetVoice(!!((old.first && old.lastSeen) || (P.lastUser() || {}).first)); route('home'); };
     $('#ok').onclick = go; i.onkeydown = e => { if (e.key === 'Enter') go(); };
   }
   function nameStep() {

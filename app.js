@@ -388,28 +388,23 @@
   }
 
   /* ---------- transición divertida entre secciones de la clase ---------- */
-  const SCENES = [
-    { k: 'rocket', p: '🚀', mood: 'celebrate', fx: '✨⭐✨', say: 'Blast off!' },
-    { k: 'broom', p: '🧹', mood: 'wink', fx: '🌙✨', say: 'Abracadabra!' },
-    { k: 'guitar', p: '🎸', mood: 'celebrate', fx: '🎵🎶🎵', say: 'Rock on!' },
-    { k: 'balloon', p: '🎈', mood: 'smile', fx: '☁️☁️', say: 'Up, up and away!' },
-    { k: 'skate', p: '🛹', mood: 'thumbs', fx: '💨', say: "Let's roll!" },
-    { k: 'surf', p: '🏄', mood: 'wow', fx: '🌊🌊🌊', say: 'Catch the wave!' },
-    { k: 'dj', p: '🎧', mood: 'celebrate', fx: '🪩🎶', say: 'Drop the beat!' },
-    { k: 'hero', p: '🦸', mood: 'point', fx: '⚡', say: 'Super English!' },
-  ];
+  const SCENES = { rocket: { a: 'up', say: 'Blast off!' }, broom: { a: 'fly', say: 'Abracadabra!' }, drums: { a: 'stage', say: 'Rock on!' }, guitar: { a: 'stage', say: "Let's rock!" },
+    surf: { a: 'surf', say: 'Catch the wave!' }, hero: { a: 'fly', say: 'Super English!' }, books: { a: 'pop', say: "Let's read!" }, laptop: { a: 'pop', say: 'Homework time!' }, travel: { a: 'walk', say: "Let's go!" }, wave: { a: 'pop', say: 'Hello!' } };
   const SEC_IC = { Goal: '🎯', Speaking: '🗣️', Reading: '📖', Review: '🔁', Explanation: '💡', 'Listen & practice': '🎧', Practice: '🎮', 'Oral task': '🎤', Music: '🎵', Homework: '📝' };
-  const ITL_ON = false; // transiciones: se activan cuando lleguen las imágenes de Mr. Arrieta en cada escena
-  let sceneN = Math.floor(Math.random() * SCENES.length);
+  const SEC_SC = { Reading: 'books', Homework: 'laptop', Music: 'guitar', Review: 'travel' };
+  const FREE = ['rocket', 'broom', 'drums', 'surf', 'hero'];
+  const ITL_ON = true;
+  let sceneN = Math.floor(Math.random() * FREE.length);
+  const preloadScenes = () => Object.keys(SCENES).forEach(k => { const i = new Image(); i.src = 'mra-x-' + k + '.webp'; });
   function interlude(next) {
     return new Promise(res => {
-      const sc = SCENES[sceneN++ % SCENES.length];
-      const ov = h(`<div class="itl itl-${sc.k}" role="status"><div class="itl-sky">${sc.fx.split('').length ? `<span class="itl-fx">${sc.fx}</span>` : ''}</div>
-        <div class="itl-actor">${M.mascot('itl-mra', sc.mood)}<span class="itl-prop">${sc.p}</span><b class="itl-say">${esc(sc.say)}</b></div>
+      const k = SEC_SC[next] || FREE[sceneN++ % FREE.length], sc = SCENES[k];
+      const ov = h(`<div class="itl itl-${sc.a}" role="status">${sc.a === 'stage' ? '<div class="itl-lights"></div><span class="itl-notes">🎵 🎶 🎵</span>' : ''}${sc.a === 'up' || sc.a === 'fly' ? '<span class="itl-stars">✨ ⭐ ✨ ⭐</span>' : ''}
+        <div class="itl-actor"><b class="itl-say">${esc(sc.say)}</b><img class="itl-img" src="mra-x-${k}.webp" alt="Mr. Arrieta"></div>
         <div class="itl-next"><small>NEXT</small><b>${SEC_IC[next] || '➡️'} ${esc(next.toUpperCase())}</b><i>Toca para continuar</i></div></div>`);
       document.body.appendChild(ov); try { sfx('win'); } catch (e) { }
       let done = false; const end = () => { if (done) return; done = true; ov.classList.add('out'); setTimeout(() => { ov.remove(); res(); }, 250); };
-      ov.onclick = end; setTimeout(end, 2400);
+      ov.onclick = end; setTimeout(end, 2600);
     });
   }
   /* ---------- volver atrás: ver lo que respondió y corregir ---------- */
@@ -470,7 +465,7 @@
     const vis = () => { if (document.hidden) hiddenAt = Date.now(); else if (hiddenAt && Date.now() - hiddenAt > 90 * 1000) { hiddenAt = 0; where(); lastAct = Date.now(); } };
     ['pointerdown', 'keydown'].forEach(ev => document.addEventListener(ev, act, true)); document.addEventListener('visibilitychange', vis);
     const cleanup = () => { ['pointerdown', 'keydown'].forEach(ev => document.removeEventListener(ev, act, true)); document.removeEventListener('visibilitychange', vis); };
-    let i = startAt; const snaps = {}; let revisit = false; curRun = run; snaps_ = snaps;
+    preloadScenes(); let i = startAt; const snaps = {}; let revisit = false; curRun = run; snaps_ = snaps;
     while (i < steps.length) {
       const s = steps[i];
       rec.step = i; rec.run = run; save();

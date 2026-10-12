@@ -3543,25 +3543,26 @@ p.ce-revchip{margin:8px auto 0}
 .rface{width:64px;height:64px;border-radius:50%;object-fit:cover;border:3px solid #0B2A5B;background:#e8eef8;flex:none;vertical-align:middle;display:inline-block}
 .g3-ph-top .rface{width:30px;height:30px;border-width:2px}.g3-node .rface,.g5a-tr .rface,.g5a-call .rface{width:44px;height:44px}
 
-/* transiciones entre secciones */
-.itl{position:fixed;inset:0;z-index:9500;background:linear-gradient(180deg,#0B2A5B,#163f86);display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;animation:itlIn .25s ease}
+/* transiciones entre secciones (Mr. Arrieta en escena) */
+.itl{position:fixed;inset:0;z-index:9500;background:radial-gradient(circle at 50% 35%,#1d4c9c,#0B2A5B 70%);display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;animation:itlIn .25s ease}
 .itl.out{animation:itlOut .25s ease forwards}@keyframes itlIn{from{opacity:0}}@keyframes itlOut{to{opacity:0}}
-.itl-sky{position:absolute;inset:0;pointer-events:none}.itl-fx{position:absolute;top:18%;left:-30%;font-size:44px;white-space:nowrap;animation:itlFx 2.4s linear forwards}@keyframes itlFx{to{left:110%}}
-.itl-actor{position:relative;width:200px;height:220px;animation:itlFly 2.4s cubic-bezier(.45,.05,.55,.95) forwards}
-.itl-mra{width:150px;height:auto;position:absolute;left:25px;bottom:30px;filter:drop-shadow(0 8px 12px rgba(0,0,0,.35))}
-.itl-prop{position:absolute;font-size:90px;left:40px;bottom:-10px}.itl-say{position:absolute;top:-30px;left:50%;transform:translateX(-50%);background:#fff;color:#0B2A5B;border:3px solid #E3242B;border-radius:16px;padding:4px 12px;font:800 18px Poppins,sans-serif;white-space:nowrap}
-@keyframes itlFly{0%{transform:translateX(-120vw) rotate(-8deg)}35%{transform:translateX(0) rotate(4deg)}70%{transform:translateX(0) translateY(-10px) rotate(-3deg)}100%{transform:translateX(120vw) rotate(8deg)}}
-.itl-rocket .itl-prop{transform:rotate(45deg);left:-40px;bottom:10px}.itl-rocket .itl-actor{animation-name:itlUp}@keyframes itlUp{0%{transform:translate(-60vw,60vh) rotate(20deg)}40%{transform:translate(0,0)}70%{transform:translate(0,-12px)}100%{transform:translate(70vw,-80vh) rotate(20deg)}}
-.itl-broom .itl-prop{transform:rotate(-70deg) scaleX(-1);bottom:40px;left:0;font-size:110px}
-.itl-guitar .itl-actor{animation-name:itlStage}.itl-guitar{background:radial-gradient(circle at 50% 10%,#ffe36a55,transparent 45%),linear-gradient(#111,#0B2A5B)}.itl-guitar .itl-prop{left:90px;bottom:20px;transform:rotate(-20deg)}
-.itl-guitar .itl-fx{left:30%;top:auto;bottom:30%;animation:itlNotes 2.4s ease-out forwards}@keyframes itlNotes{to{transform:translateY(-55vh);opacity:0}}
-@keyframes itlStage{0%{transform:scale(.2);opacity:0}20%{transform:scale(1.1);opacity:1}30%,80%{transform:scale(1) rotate(0)}45%{transform:rotate(-5deg)}60%{transform:rotate(5deg)}100%{transform:scale(1)}}
-.itl-balloon .itl-prop{font-size:120px;bottom:120px;left:30px}.itl-balloon .itl-actor{animation-name:itlUp}
-.itl-surf{background:linear-gradient(#0B2A5B 55%,#1e7fd6)}.itl-surf .itl-fx{top:auto;bottom:4%;font-size:70px}
-.itl-dj .itl-actor{animation-name:itlStage}.itl-hero .itl-prop{left:-30px;bottom:60px}
-.itl-next{position:absolute;bottom:12%;text-align:center;color:#fff}.itl-next small{display:block;letter-spacing:4px;font-weight:800;color:#ffd43b}.itl-next b{display:block;font:900 clamp(26px,7vw,40px) Poppins,sans-serif;animation:itlPop .5s .6s both}.itl-next i{display:block;font-size:13px;opacity:.7;margin-top:6px;font-style:normal}
-@keyframes itlPop{from{transform:scale(.3);opacity:0}}
-@media (prefers-reduced-motion:reduce){.itl-actor,.itl-fx{animation:none}}
+.itl-actor{position:relative;width:min(78vw,400px);animation:itlFly 2.6s cubic-bezier(.45,.05,.55,.95) forwards}
+.itl-img{width:100%;height:auto;display:block;filter:drop-shadow(0 14px 18px rgba(0,0,0,.4))}
+.itl-say{position:absolute;top:-34px;left:50%;transform:translateX(-50%);background:#fff;color:#0B2A5B;border:3px solid #E3242B;border-radius:16px;padding:4px 14px;font:800 18px Poppins,sans-serif;white-space:nowrap;z-index:2}
+@keyframes itlFly{0%{transform:translateX(-120vw) rotate(-6deg)}30%{transform:translateX(0) rotate(3deg)}50%{transform:translateY(-14px) rotate(-2deg)}72%{transform:translateX(0) translateY(0)}100%{transform:translateX(130vw) rotate(6deg)}}
+.itl-up .itl-actor{animation-name:itlUp}@keyframes itlUp{0%{transform:translate(-70vw,70vh) rotate(12deg)}35%{transform:translate(0,0) rotate(0)}70%{transform:translate(0,-14px)}100%{transform:translate(80vw,-90vh) rotate(12deg)}}
+.itl-stage{background:radial-gradient(circle at 50% 0,#ffe36a66,transparent 50%),linear-gradient(#111,#0B2A5B)}.itl-stage .itl-actor{animation-name:itlStage}
+@keyframes itlStage{0%{transform:scale(.3);opacity:0}18%{transform:scale(1.08);opacity:1}26%{transform:scale(1)}40%,60%,80%{transform:scale(1.03) rotate(-1.5deg)}50%,70%,90%{transform:scale(1) rotate(1.5deg)}100%{transform:scale(1)}}
+.itl-lights{position:absolute;inset:0;background:conic-gradient(from 200deg at 30% 0,transparent 0 20deg,#ffffff22 20deg 32deg,transparent 32deg),conic-gradient(from 140deg at 70% 0,transparent 0 20deg,#E3242B33 20deg 32deg,transparent 32deg);animation:itlLight 1.2s ease-in-out infinite alternate}@keyframes itlLight{to{opacity:.4}}
+.itl-notes{position:absolute;bottom:30%;font-size:40px;animation:itlNotes 2.6s ease-out forwards}@keyframes itlNotes{to{transform:translateY(-50vh);opacity:0}}
+.itl-stars{position:absolute;top:16%;left:-40%;font-size:40px;white-space:nowrap;animation:itlStars 2.6s linear forwards}@keyframes itlStars{to{left:110%}}
+.itl-surf{background:linear-gradient(#0B2A5B 50%,#1e7fd6)}.itl-surf .itl-actor{animation-name:itlSurf}@keyframes itlSurf{0%{transform:translateX(-120vw)}30%{transform:translateX(0) translateY(0) rotate(-3deg)}45%{transform:translateY(-16px) rotate(3deg)}60%{transform:translateY(0) rotate(-3deg)}75%{transform:translateX(0)}100%{transform:translateX(130vw) rotate(4deg)}}
+.itl-pop .itl-actor{animation-name:itlPop2}@keyframes itlPop2{0%{transform:scale(.2) rotate(-10deg);opacity:0}25%{transform:scale(1.06) rotate(2deg);opacity:1}35%,85%{transform:scale(1) rotate(0)}100%{transform:scale(1.04)}}
+.itl-walk .itl-actor{animation-name:itlWalk}@keyframes itlWalk{0%{transform:translateX(-110vw)}35%,70%{transform:translateX(0)}50%{transform:translateX(0) translateY(-8px)}100%{transform:translateX(120vw)}}
+.itl-next{position:absolute;bottom:9%;text-align:center;color:#fff}.itl-next small{display:block;letter-spacing:4px;font-weight:800;color:#ffd43b}.itl-next b{display:block;font:900 clamp(26px,7vw,40px) Poppins,sans-serif;animation:itlPopN .5s .6s both}.itl-next i{display:block;font-size:13px;opacity:.7;margin-top:6px;font-style:normal}
+@keyframes itlPopN{from{transform:scale(.3);opacity:0}}
+@media (max-height:640px){.itl-actor{width:min(60vw,300px)}}
+@media (prefers-reduced-motion:reduce){.itl-actor,.itl-stars,.itl-notes,.itl-lights{animation:none}}
 
 .wg-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:10px 0}.wg-c{border:2px solid #0B2A5B;border-radius:999px;padding:5px 12px;font-weight:800;background:#fff;color:#0B2A5B}.wg-c.new{background:#E3242B;color:#fff;border-color:#E3242B}.wg-c small{display:block;font-weight:600;font-size:12px;opacity:.9}
 .imges{display:block;font-weight:600;font-size:13px;color:#4a5568;margin-top:2px;font-family:Inter,sans-serif}

@@ -373,6 +373,22 @@
   const FACES = { f: ['photo-1646293890121-b16539364dcc', 'photo-1623039497550-c4f2ccc7b875', 'photo-1662850886700-4ec19bd30d11', 'photo-1489424731084-a5d8b219a5bb', 'photo-1590650213165-c1fef80648c4', 'photo-1506863530036-1efeddceb993', 'photo-1663429122432-c2769373768f', 'photo-1713256449316-1a4067517c3b'],
     m: ['photo-1757744705465-ea08b0ddc38a', 'photo-1527082395-e939b847da0d', 'photo-1522529599102-193c0d76b5b6', 'photo-1757620765404-a1ee66df5e27', 'photo-1560250097-0b93528c311a', 'photo-1698510047345-ff32de8a3b74', 'photo-1631407251097-9da3239d73c3', 'photo-1758612897972-dba54225048a'] };
   function face(i, g) { const L = FACES[g === 'm' ? 'm' : g === 'f' ? 'f' : (i % 2 ? 'm' : 'f')]; const id = L[Math.abs(i | 0) % L.length]; return `<img class="rface" src="https://images.unsplash.com/${id}?w=160&h=160&fit=crop&crop=faces&q=80&auto=format" alt="" loading="lazy">`; }
+  /* ---------- palabras que no caben en su recuadro (celular): se achica la letra en vez de partir la palabra ---------- */
+  (function () {
+    const SEL = '.stage button, .stage .opt, .imglbl, .chip, .sb-c, .bb, .ml-b, .wg-c';
+    function fitEl(el) {
+      if (el.dataset.fit || !el.isConnected || !el.clientWidth) return; el.dataset.fit = '1';
+      el.style.overflowWrap = 'normal'; el.style.wordBreak = 'normal'; el.style.hyphens = 'manual';
+      let fs = parseFloat(getComputedStyle(el).fontSize) || 16, n = 0;
+      while (el.scrollWidth > el.clientWidth + 1 && fs > 11 && n < 14) { fs -= 1; el.style.fontSize = fs + 'px'; n++; }
+      if (el.scrollWidth > el.clientWidth + 1) el.style.overflowWrap = 'anywhere';
+    }
+    let q = false;
+    const run = () => { q = false; try { document.querySelectorAll(SEL).forEach(fitEl); } catch (e) { } };
+    const sched = () => { if (!q) { q = true; requestAnimationFrame(() => setTimeout(run, 30)); } };
+    const start = () => { try { new MutationObserver(sched).observe(document.body, { childList: true, subtree: true }); } catch (e) { } sched(); };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
+  })();
   window.M1 = { face, D, C, MOD, S, $, $$, h, esc, shuffle, sample, sleep, save, touchStreak, addSkill, addWeak, okWeak, skillPct, isUnlocked, finalUnlocked, reviewMode, revCount, PTS_TIP, hasAccess, progressOpen, lockReason, review, hasProfile, doneCount, totalParts, redeem, codeHash,
     allParts, partById, trackAudio, audioUI, floatStop, recordScore, letterScorer, voiceResult, floatBubble, setBubbleHidden, prevPart, nextPart, partStars, overallPct, imgURL, photo, play, playSeq, loadAudio, stop, sfx, praise, encourage, canSR, listen, recordVoice,
     norm, words, lev, speechScore, sheet, good, bad, toast, modal, xpFly, confetti, mascot, audioSrc };

@@ -205,8 +205,8 @@
     D.topics.forEach(t => {
       const un = M.isUnlocked(t.n); const done = rev || t.parts.every(p => S.parts[p.id] && S.parts[p.id].done);
       // las etiquetas van en su propia línea, debajo del título (nunca encima del texto ni de las estrellas)
-      const card = h(`<div class="topic"><div class="cov" style="background-image:url('${M.imgURL(t.cover, 640, 360)}')"><span class="num">${t.n}</span></div>
-        <div class="bd"><h3>${esc(t.title)}</h3><div class="es">${esc(t.es)}</div>${done ? `<div class="ce-tags"><b class="ce-tag ${rev ? 'ce-t-rev' : 'ce-t-done'}">${rev ? '✅ SUPERADO' : '✓ COMPLETO'}</b></div>` : ''}</div></div>`);
+      const card = h(`<div class="topic"><div class="cov" style="background-image:url('${M.imgURL(t.cover, 640, 360)}')"><span class="num">${t.n}</span>${done ? `<span class="cov-done">${rev ? '✅ SUPERADO' : '✓ COMPLETO'}</span>` : ''}</div>
+        <div class="bd"><h3>${esc(t.title)}</h3><div class="es">${esc(t.es)}</div></div></div>`);
       t.parts.forEach(p => {
         const st = M.partStars(p.id); const pd = S.parts[p.id];
         const b = h(`<button class="partbtn"><span class="t">${PL(p).toUpperCase()}<small>${esc(p.title)}</small></span><span class="stars">${[1, 2, 3].map(i => `<span class="${i <= st ? '' : 'off'}">⭐</span>`).join('')}</span></button>`);

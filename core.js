@@ -58,7 +58,10 @@
   function isUnlocked(topicN) { return !lockReason(topicN); }
   const doneCount = () => D.topics.reduce((a, t) => a + t.parts.filter(p => partDone(p.id)).length, 0);
   const totalParts = () => D.topics.reduce((a, t) => a + t.parts.length, 0);
-  function finalUnlocked() { if (review()) return true; if (hasProfile() && (PF.isTrial() || !['current', 'review'].includes(PF.role(MID)))) return false; return doneCount() === totalParts(); }
+  // MODO REPASO: el estudiante ya superó este módulo (clasificación o avance) → todo abierto y las clases cuentan como superadas
+  function reviewMode() { return !!(hasProfile() && !PF.isStaff() && PF.role(MID) === 'review'); }
+  function revCount() { const R = S.rev || {}; return D.topics.reduce((a, t) => a + t.parts.filter(p => R[p.id]).length, 0); }
+  function finalUnlocked() { if (review() || reviewMode()) return true; if (hasProfile() && (PF.isTrial() || !['current', 'review'].includes(PF.role(MID)))) return false; return doneCount() === totalParts(); }
   function redeem(code) {
     const hh = codeHash(code);
     if ((C.REVIEW_CODES || []).includes(hh)) { S.review = true; save(); return { topics: 'all', review: true }; }
@@ -339,9 +342,11 @@
     m.addEventListener('click', e => { if (e.target === m) m.remove(); }); return m;
   }
   function xpFly(n, x, y) {
-    const e = h(`<div class="xpfly">+${n} XP</div>`); e.style.left = (x || innerWidth / 2 - 40) + 'px'; e.style.top = (y || innerHeight / 2) + 'px';
+    const e = h(`<div class="xpfly">+${n} puntos ⚡</div>`); e.style.left = (x || innerWidth / 2 - 40) + 'px'; e.style.top = (y || innerHeight / 2) + 'px';
     document.body.appendChild(e); setTimeout(() => e.remove(), 1200);
+    if (!S.ptsTip) { S.ptsTip = 1; save(); setTimeout(() => toast('⚡ ' + PTS_TIP), 1300); }
   }
+  const PTS_TIP = 'Los puntos ⚡ se ganan al completar actividades, tareas y retos.';
   function confetti(ms = 2500) {
     const cv = h('<canvas id="confetti"></canvas>'); document.body.appendChild(cv); const ctx = cv.getContext('2d');
     cv.width = innerWidth; cv.height = innerHeight;
@@ -363,7 +368,11 @@
   }
   function audioSrc(au) { return window.AUD && window.AUD[au] ? 'data:audio/mpeg;base64,' + window.AUD[au] : 'audio/' + au + '.mp3'; }
 
-  window.M1 = { D, C, MOD, S, $, $$, h, esc, shuffle, sample, sleep, save, touchStreak, addSkill, addWeak, okWeak, skillPct, isUnlocked, finalUnlocked, hasAccess, progressOpen, lockReason, review, hasProfile, doneCount, totalParts, redeem, codeHash,
+  // caras reales (fotos) para personajes de juegos — en vez de emojis
+  const FACES = { f: ['photo-1646293890121-b16539364dcc', 'photo-1623039497550-c4f2ccc7b875', 'photo-1662850886700-4ec19bd30d11', 'photo-1489424731084-a5d8b219a5bb', 'photo-1590650213165-c1fef80648c4', 'photo-1506863530036-1efeddceb993', 'photo-1663429122432-c2769373768f', 'photo-1713256449316-1a4067517c3b'],
+    m: ['photo-1757744705465-ea08b0ddc38a', 'photo-1527082395-e939b847da0d', 'photo-1522529599102-193c0d76b5b6', 'photo-1757620765404-a1ee66df5e27', 'photo-1560250097-0b93528c311a', 'photo-1698510047345-ff32de8a3b74', 'photo-1631407251097-9da3239d73c3', 'photo-1758612897972-dba54225048a'] };
+  function face(i, g) { const L = FACES[g === 'm' ? 'm' : g === 'f' ? 'f' : (i % 2 ? 'm' : 'f')]; const id = L[Math.abs(i | 0) % L.length]; return `<img class="rface" src="https://images.unsplash.com/${id}?w=160&h=160&fit=crop&crop=faces&q=80&auto=format" alt="" loading="lazy">`; }
+  window.M1 = { face, D, C, MOD, S, $, $$, h, esc, shuffle, sample, sleep, save, touchStreak, addSkill, addWeak, okWeak, skillPct, isUnlocked, finalUnlocked, reviewMode, revCount, PTS_TIP, hasAccess, progressOpen, lockReason, review, hasProfile, doneCount, totalParts, redeem, codeHash,
     allParts, partById, trackAudio, audioUI, floatStop, recordScore, letterScorer, voiceResult, floatBubble, setBubbleHidden, prevPart, nextPart, partStars, overallPct, imgURL, photo, play, playSeq, loadAudio, stop, sfx, praise, encourage, canSR, listen, recordVoice,
     norm, words, lev, speechScore, sheet, good, bad, toast, modal, xpFly, confetti, mascot, audioSrc };
 })();

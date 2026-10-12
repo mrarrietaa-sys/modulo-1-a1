@@ -27,7 +27,19 @@
   const modState = (id) => read(mod(id).key) || {};
   const passed = (id) => { const s = modState(id); return !!(s.final && s.final.passed); };
   const isStaff = () => { const p = get(); return !!(p && p.type === 'staff'); };
-  const isTrial = () => { const p = get(); return !!(p && p.type === 'trial'); };
+  // ---- planes (nube): free · membership · premium, con fecha de vencimiento ----
+  const todayISO = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+  function plan() {
+    const p = get() || {}; if (p.type === 'staff') return { plan: 'staff', eff: 'staff', paid: true };
+    if (!p.cloud) return { plan: p.type === 'trial' ? 'free' : 'legacy', eff: p.type === 'trial' ? 'free' : 'legacy', paid: p.type !== 'trial', legacy: true };
+    const pl = p.plan || 'free', paidPlan = pl === 'membership' || pl === 'premium';
+    const expired = paidPlan && !!p.planEnd && p.planEnd < todayISO();
+    const eff = paidPlan && !expired ? pl : 'free';
+    const daysLeft = paidPlan && p.planEnd ? Math.round((new Date(p.planEnd + 'T00:00:00') - new Date(todayISO() + 'T00:00:00')) / 864e5) : null;
+    return { plan: pl, eff, paid: eff !== 'free', expired, end: p.planEnd || '', daysLeft, premium: eff === 'premium' };
+  }
+  const isTrial = () => { const p = get(); if (!p) return false; if (p.type === 'trial') return true; return !!(p.cloud && plan().eff === 'free'); };
+  const isBirthday = () => { const p = get(); return !!(p && p.birth && p.birth.slice(5, 10) === todayISO().slice(5)); };
   // módulo asignado: el de la clasificación, y sube solo cuando aprueba el examen final
   function assigned() {
     const p = get(); if (!p || !p.module) return null;
@@ -54,12 +66,12 @@
     return { done, total: m.classes, pct: m.classes ? Math.round(done / m.classes * 100) : 0 };
   }
   // al aprobar la clasificación: guarda el módulo recomendado (1-4)
-  function setPlacement(n, extra) { const p = get() || {}; p.assignedBy = null; p.module = Math.min(4, Math.max(1, n || 1)); p.placement = Object.assign({ module: p.module, date: new Date().toISOString() }, extra || {}); return save(p); }
+  function setPlacement(n, extra) { const p = get() || {}; p.assignedBy = null; p.module = Math.min(4, Math.max(1, n || 1)); p.moduleSet = Date.now(); p.placement = Object.assign({ module: p.module, date: new Date().toISOString() }, extra || {}); return save(p); }
   // personalización: foto / avatar / iniciales, apodo, color del encabezado, guía personalizada
   const look = () => { const p = get(); return (p && p.look) || {}; };
   const pic = () => { const l = look(); return l.pic === 'photo' && l.photo ? l.photo : l.pic === 'avatar' && l.head ? l.head : ''; };
   const initials = () => { const p = get() || {}; return (((p.first || '?')[0] || '') + ((p.last || '')[0] || '')).toUpperCase(); };
   const avHTML = (cls) => { const u = pic(), l = look(); return `<span class="${cls || 'pt-av'}${u ? ' has' : ''}">${u ? `<img src="${u}" alt="">` : initials()}${l.av && l.av.sticker && l.pic === 'avatar' ? `<i class="stk">${l.av.sticker}</i>` : ''}</span>`; };
   const setLook = (o) => { const p = get(); if (!p) return; p.look = Object.assign({}, p.look || {}, o); save(p); return p.look; };
-  window.MRAP = { KEY, MODS, get, save, clear, mod, modState, passed, assigned, role, progress, isStaff, isTrial, setPlacement, trialMod, TRIAL_TOPICS: 2, look, pic, avHTML, setLook, initials, isBack, lastUser };
+  window.MRAP = { KEY, MODS, get, save, clear, mod, modState, passed, assigned, role, progress, isStaff, isTrial, plan, isBirthday, todayISO, setPlacement, trialMod, TRIAL_TOPICS: 2, look, pic, avHTML, setLook, initials, isBack, lastUser };
 })();

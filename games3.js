@@ -21,6 +21,7 @@
     return new Promise(res => { const bar = h(`<div class="actionbar g3-next"><button class="btn k lg">${txt}</button></div>`); body.appendChild(bar); bar.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); $('button', bar).onclick = () => { stop(); bar.remove(); res(); }; });
   }
   // opciones de texto: devuelve true/false y marca la correcta
+  const famFace = (rel) => { const F = window.M1.face; const r = String(rel || ''); if (/grandmother/.test(r)) return F(6, 'f'); if (/grandfather/.test(r)) return F(7, 'm'); const fem = /mother|sister|aunt|daughter|wife|cousin \(f|niece/.test(r); return F(r.length, fem ? 'f' : 'm'); };
   async function ask(parent, labels, correct, cls = '') {
     const wrap = h(`<div class="opts g3-opts ${cls}"></div>`);
     const btns = labels.map(l => { const b = h(`<button class="opt">${l}</button>`); wrap.appendChild(b); return b; });
@@ -82,7 +83,7 @@
   async function chatReply(stage, p) {
     const R = G().chat || []; let c = 0; const missed = [];
     const body = head(stage, { lbl: 'Game', title: '💬 Chat express', ins: 'Te llegan mensajes en inglés. Escucha 🔊 y elige la <b>respuesta correcta</b> para seguir la conversación.' });
-    const ph = h(`<div class="g3-phone"><div class="g3-ph-top">👩🏻 <b>Laura</b> <small>en línea</small></div><div class="g3-msgs"></div></div>`); body.appendChild(ph);
+    const ph = h(`<div class="g3-phone"><div class="g3-ph-top">${window.M1.face(0,'f')} <b>Laura</b> <small>en línea</small></div><div class="g3-msgs"></div></div>`); body.appendChild(ph);
     const msgs = $('.g3-msgs', ph); const zone = h(`<div></div>`); body.appendChild(zone);
     for (let k = 0; k < R.length && live(stage); k++) {
       const r = R[k]; zone.innerHTML = '';
@@ -319,7 +320,7 @@
     for (let k = 0; k < R.length && live(stage); k++) {
       const r = R[k];
       const body = head(stage, { lbl: 'Game', title: '🌳 La familia de Tom', ins: 'Tú eres <b>Tom</b>. Mira la persona marcada y elige qué es de Tom.', count: `${k + 1} / ${R.length}` });
-      const node = (n) => n === 'TOM' ? `<div class="g3-node me">🧑🏻<b>Tom</b><small>YOU</small></div>` : `<div class="g3-node ${n === r.name ? 'hl' : ''}">${by[n].e}<b>${n}</b><small>${known.has(n) ? by[n].rel : ''}</small></div>`;
+      const node = (n) => n === 'TOM' ? `<div class="g3-node me">${window.M1.face(1,'m')}<b>Tom</b><small>YOU</small></div>` : `<div class="g3-node ${n === r.name ? 'hl' : ''}">${famFace(by[n].rel)}<b>${n}</b><small>${known.has(n) ? by[n].rel : ''}</small></div>`;
       body.appendChild(h(`<div class="g3-tree">${rows.map((row, i) => `<div class="g3-trow ${i === 3 ? 'wife' : ''}">${row.map(node).join('')}</div>`).join('')}</div>`));
       body.appendChild(h(`<div class="g3-sent">${esc(r.name)} is Tom's <u>______</u>.<small>¿Qué es ${esc(r.name)} de Tom?</small></div>`));
       const opts = shuffle([r.rel, ...sample(F.filter(x => x.rel !== r.rel).map(x => x.rel), 2)]);

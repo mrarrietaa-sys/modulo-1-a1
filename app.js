@@ -19,17 +19,18 @@
   function topbar() {
     const tb = $('#topbar');
     tb.innerHTML = `<div class="brand" id="go-home"><span class="logo-pill"><img class="logo" src="mra-brand.png" alt="mrarrieta.com"></span></div><div class="sp"></div><span class="tb-tag">${M.MOD.es.toUpperCase()} · ${M.MOD.id}</span>
-      <span class="pill y" title="Puntos de experiencia">⚡ ${S.xp} XP</span>
+      <button class="pill y ce-pts" id="pts-b" title="${esc(M.PTS_TIP)}" aria-label="${S.xp} puntos. ${esc(M.PTS_TIP)}">⚡ ${S.xp} <span class="ce-ptw">puntos</span></button>
       <span class="pill hide-s" title="Días seguidos estudiando">🔥 ${S.streak.n || 0}</span>
       <button class="iconbtn chat-ic" id="chat-tb" title="Chat con mi profe" aria-label="Chat con mi profe"><svg viewBox="0 0 32 32" width="26" height="26" aria-hidden="true"><path d="M13 4C7.5 4 3 7.8 3 12.5c0 2.6 1.4 4.9 3.6 6.5L5.8 23.5l4.6-2.6c.8.2 1.7.3 2.6.3 5.5 0 10-3.8 10-8.5S18.5 4 13 4z" fill="#111"/><circle cx="8.6" cy="12.6" r="1.6" fill="#FFD43B"/><circle cx="13" cy="12.6" r="1.6" fill="#FFD43B"/><circle cx="17.4" cy="12.6" r="1.6" fill="#FFD43B"/><path d="M25.2 12.2c2.3 1.4 3.8 3.6 3.8 6.1 0 1.9-.9 3.7-2.3 5l.9 4-4.2-2.2c-.9.2-1.8.3-2.7.3-3.1 0-5.9-1.3-7.5-3.3" fill="none" stroke="#111" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><i class="fbadge hidden" id="chat-n"></i></button>${S.dictHidden ? '<button class="iconbtn" id="dict-b" title="Diccionario">🔎</button>' : ''}${window.MRAP && MRAP.get() ? (MRAP.pic() ? `<a class="tb-avbtn" id="prof-b" href="index.html" title="Mi perfil">${MRAP.avHTML('tb-av')}</a>` : '<a class="iconbtn" id="prof-b" href="index.html" title="Mi perfil">👤</a>') : ''}<button class="iconbtn" id="menu-b" title="Menú">☰</button>`;
     $('#go-home', tb).onclick = () => { stop(); route('home'); };
     $('#menu-b', tb).onclick = menu;
     const db = $('#dict-b', tb); if (db) db.onclick = () => window.M1DICT && M1DICT.open();
     const ct = $('#chat-tb', tb); if (ct) ct.onclick = openChat;
+    const pb = $('#pts-b', tb); if (pb) pb.onclick = () => M.toast('⚡ ' + M.PTS_TIP);
     chatFab();
   }
   function menu() {
-    const m = M.modal(`<div class="mhead"><h3>☰ Menú</h3><button class="mclose" data-a="close" title="Cerrar">✕</button></div><div class="menu-stats"><span class="pill y">⚡ ${S.xp} XP</span><span class="pill">🔥 ${S.streak.n || 0} días</span></div><div style="display:grid;gap:10px;margin-top:10px">
+    const m = M.modal(`<div class="mhead"><h3>☰ Menú</h3><button class="mclose" data-a="close" title="Cerrar">✕</button></div><div class="menu-stats"><span class="pill y">⚡ ${S.xp} puntos</span><span class="pill">🔥 ${S.streak.n || 0} días</span></div><p class="muted ce-ptsline">${esc(M.PTS_TIP)}</p><div style="display:grid;gap:10px;margin-top:10px">
       ${window.MRAP && MRAP.get() ? '<a class="btn w block" style="text-decoration:none" href="index.html">👤 Mi perfil y mis módulos</a>' : ''}
       <button class="btn w block" data-a="home">🏠 Inicio</button>
       <button class="btn w block" data-a="progress">📊 Mi progreso</button>
@@ -175,18 +176,21 @@
   function home() {
     const pct = M.overallPct(); const nu = nextUp(); const first = (window.MRAP && MRAP.look().nick) || S.name.split(' ')[0];
     const doneN = M.allParts().filter(p => S.parts[p.id] && S.parts[p.id].done).length;
+    const rev = M.reviewMode(), revN = M.revCount(), totP = M.totalParts();
+    const revNext = rev ? (M.allParts().find(p => !(S.rev && S.rev[p.id])) || M.allParts()[0]) : null;
     app.innerHTML = `<div class="wrap">
       <section class="hero solo">
         <div class="card hello">
-          ${window.MRAP && MRAP.get() ? '<a class="mod-back" href="index.html">← Mi perfil<span class="mb-x"> · Mi ruta de aprendizaje</span></a>' : ''}<span class="lbl">${esc(M.MOD.es)} · ${esc(M.MOD.levelEs || M.MOD.id)}</span>${window.MRAP && MRAP.get() ? (MRAP.isTrial() ? ' <span class="rolechip trial">🟢 Acceso gratuito</span>' : MRAP.role(C.MODULE_ID || 'A1') === 'review' && !MRAP.isStaff() ? ' <span class="rolechip rev">🔁 Modo repaso</span>' : MRAP.isStaff() ? ' <span class="rolechip rev">👨‍🏫 Profe</span>' : ' <span class="rolechip cur">🧭 Tu ruta de aprendizaje</span>') : ''}
+          ${window.MRAP && MRAP.get() ? '<a class="mod-back" href="index.html">← Mi perfil<span class="mb-x"> · Mi ruta de aprendizaje</span></a>' : ''}<span class="lbl">${esc(M.MOD.es)} · ${esc(M.MOD.levelEs || M.MOD.id)}</span>${window.MRAP && MRAP.get() ? (MRAP.isTrial() ? ` <span class="rolechip trial">${MRAP.plan && MRAP.plan().expired ? '⏰ Plan vencido' : '🟢 Acceso gratuito'}</span>` : MRAP.role(C.MODULE_ID || 'A1') === 'review' && !MRAP.isStaff() ? ' <span class="rolechip rev">🔁 Modo repaso</span>' : MRAP.isStaff() ? ' <span class="rolechip rev">👨‍🏫 Profe</span>' : ' <span class="rolechip cur">🧭 Tu ruta de aprendizaje</span>') : ''}
           <h1 style="margin-top:10px">${greeting()}, <span class="nm">${esc(first)}</span>! 👋</h1>
-          <div class="ringbox"><div class="ring" style="--p:${pct}"><b>${pct}%</b></div>
-            <div><div style="font-weight:800;font-size:18px">Tu progreso del ${M.MOD.es}</div><div class="muted">${doneN} de ${M.MOD.classes} clases completadas · 🔥 ${S.streak.n || 0} día(s) seguidos</div>
-            ${!nu && window.MRAP && MRAP.isTrial() ? `<button class="btn k" style="margin-top:12px" id="buy3">🎁 Inscribirme para seguir</button>` : ''}</div></div>
+          <div class="ringbox"><div class="ring" style="--p:${rev ? 100 : pct}"><b>${rev ? 100 : pct}%</b></div>
+            <div><div style="font-weight:800;font-size:18px">Tu progreso del ${M.MOD.es}</div>${rev ? `<div class="muted">✅ Superado · ${totP} de ${totP} clases · 🔥 ${S.streak.n || 0} día(s) seguidos</div>${revN ? `<div class="ce-revprog"><b>🔁 Repasando: ${revN} de ${totP} clases</b><div class="ce-revbar"><i style="width:${Math.round(revN / totP * 100)}%"></i></div></div>` : ''}` : `<div class="muted">${doneN} de ${M.MOD.classes} clases completadas · 🔥 ${S.streak.n || 0} día(s) seguidos</div>`}
+            ${!nu && window.MRAP && MRAP.isTrial() ? `<button class="btn k" style="margin-top:12px" id="buy3">🔓 Desbloquear toda mi ruta</button>` : ''}</div></div>
           <div class="skills">${SKILLS.map(([k, ic, nm]) => `<div class="skill"><div class="ic">${ic}</div><div class="nm">${nm}</div><div class="bar"><i style="width:${M.skillPct(k)}%"></i></div><small class="muted">${S.skills[k][1] ? M.skillPct(k) + '%' : '—'}</small></div>`).join('')}</div>
         </div>
       </section>
-      ${pendingBlock()}
+      ${rev ? `<div class="card ce-revcard">${M.mascot('mascot', 'thumbs')}<div class="grow"><span class="lbl">🔁 Modo repaso</span><h3>¡Ya superaste el ${esc(M.MOD.es)}! ✅</h3><p class="muted">Todas sus clases cuentan como completadas. Repasa cuando quieras para refrescar lo que aprendiste: aquí no se bloquea nada.</p><button class="btn k" id="rev-go">🔁 ${revN ? 'Seguir repasando' : 'Empezar a repasar'}: ${esc(revNext._t.title)} · ${PL(revNext)} →</button></div></div>` : ''}
+      ${pendingBlock()}<div id="hwfb"></div>
       <div class="sect-title"><h2>📚 Temas del ${M.MOD.es}</h2><div class="row"><button class="btn sm w" id="prog">📊 Mi progreso</button>${M.hasProfile() ? '' : '<button class="btn sm" id="code">🔑 Código de acceso</button>'}</div></div>
       <div class="grid" id="tgrid"></div>
       <div class="sect-title"><h2>🏆 Final Test</h2></div>
@@ -198,14 +202,21 @@
     const g = $('#tgrid');
     const nuP = nextUp(); const curId = (M.allParts().find(x => M.isUnlocked(x.topic) && S.parts[x.id] && !S.parts[x.id].done && S.parts[x.id].step) || nuP || {}).id;
     D.topics.forEach(t => {
-      const un = M.isUnlocked(t.n); const done = t.parts.every(p => S.parts[p.id] && S.parts[p.id].done);
-      const card = h(`<div class="topic"><div class="cov" style="background-image:url('${M.imgURL(t.cover, 640, 360)}')"><span class="num">${t.n}</span>${done ? '<span class="done">✓ COMPLETO</span>' : ''}</div>
-        <div class="bd"><h3>${esc(t.title)}</h3><div class="es">${esc(t.es)}</div></div></div>`);
+      const un = M.isUnlocked(t.n); const done = rev || t.parts.every(p => S.parts[p.id] && S.parts[p.id].done);
+      // las etiquetas van en su propia línea, debajo del título (nunca encima del texto ni de las estrellas)
+      const card = h(`<div class="topic"><div class="cov" style="background-image:url('${M.imgURL(t.cover, 640, 360)}')"><span class="num">${t.n}</span></div>
+        <div class="bd"><h3>${esc(t.title)}</h3><div class="es">${esc(t.es)}</div>${done ? `<div class="ce-tags"><b class="ce-tag ${rev ? 'ce-t-rev' : 'ce-t-done'}">${rev ? '✅ SUPERADO' : '✓ COMPLETO'}</b></div>` : ''}</div></div>`);
       t.parts.forEach(p => {
         const st = M.partStars(p.id); const pd = S.parts[p.id];
         const b = h(`<button class="partbtn"><span class="t">${PL(p).toUpperCase()}<small>${esc(p.title)}</small></span><span class="stars">${[1, 2, 3].map(i => `<span class="${i <= st ? '' : 'off'}">⭐</span>`).join('')}</span></button>`);
-        if (pd && pd.done) { b.classList.add('pdone'); b.querySelector('small').innerHTML += ' <b class="donetag">✓ COMPLETADA</b>'; }
-        if (p.id === curId) { b.classList.add('cur'); b.querySelector('small').innerHTML += ' <b class="curtag">▶ EN CURSO</b>'; }
+        const tags = [];
+        if (rev) { const rv = S.rev && S.rev[p.id]; b.classList.add('pdone', 'ce-prev');
+          tags.push('<b class="ce-tag ce-t-rev">✅ Superado</b>', rv && rv.d ? '<b class="ce-tag ce-t-rv">🔁 Repasada</b>' : rv ? '<b class="ce-tag ce-t-cur">▶ Repasando</b>' : '<b class="ce-tag ce-t-rv">🔁 Repasar</b>'); }
+        else {
+          if (pd && pd.done) { b.classList.add('pdone'); tags.push('<b class="ce-tag ce-t-done donetag">✓ COMPLETADA</b>'); }
+          if (p.id === curId) { b.classList.add('cur'); tags.push('<b class="ce-tag ce-t-cur curtag">▶ EN CURSO</b>'); }
+        }
+        if (tags.length) $('.t', b).appendChild(h(`<span class="ce-tags">${tags.join('')}</span>`));
         b.onclick = () => route('class', p.id); $('.bd', card).appendChild(b);
       });
       if (!un) { const why = M.lockReason(t.n);
@@ -214,6 +225,8 @@
       g.appendChild(card);
     });
     if ($('#cont')) $('#cont').onclick = () => route('class', nu.id);
+    if ($('#rev-go')) $('#rev-go').onclick = () => route('class', revNext.id);
+    hwFbBlock();
     if ($('#tofinal')) $('#tofinal').onclick = () => route('final');
     if ($('#buy2')) $('#buy2').onclick = unlockModal; if ($('#buy3')) $('#buy3').onclick = trialModal;
     $('#prog').onclick = () => route('progress'); if ($('#code')) $('#code').onclick = unlockModal;
@@ -238,6 +251,15 @@
       <div class="pend-list hidden" id="pend-l" style="margin-top:10px">${pend.map(p => `<button class="partbtn" data-hw="${p.id}"><span class="t">${esc(p._t.title)} · ${PL(p)}<small>${esc(p.hw.es)}</small></span><span class="btn sm k" style="pointer-events:none">Hacer tarea →</span></button>`).join('')}</div>
       <div style="margin-top:10px"><button class="btn sm w" id="rem-b">🔔 Recordarme todos los días</button></div></div></div>`;
   }
+  function hwFbBlock() {
+    const box = $('#hwfb', app); if (!box || !hwPremium()) return;
+    const draw = () => { if (!box.isConnected) return;
+      const rows = M.allParts().filter(p => p.hw && S.hw[p.id] && S.hw[p.id].sent).map(p => ({ p, fb: hwFeedback(p.id) }));
+      if (!rows.length) { box.innerHTML = ''; return; }
+      box.innerHTML = `<div class="card ce-hwsum"><span class="lbl">✍️ Mis tareas</span><h3>Tareas entregadas a tu profe</h3>${rows.map(({ p, fb }) => `<div class="ce-hwrow"><div class="grow"><b>${esc(p._t.title)} · ${PL(p)}</b><small>${fb.length ? '💬 ' + esc(fb[fb.length - 1].teacher || 'Tu profe') + ': ' + esc(fb[fb.length - 1].feedback || '') : '⏳ Tu profe la está revisando'}</small></div><button class="btn sm w" data-hw="${p.id}">Ver</button></div>`).join('')}</div>`;
+      $$('[data-hw]', box).forEach(b => b.onclick = () => route('hw', b.dataset.hw)); };
+    draw(); MRAC.me().then(draw).catch(() => { });
+  }
   function dailyReminder() {
     const pend = pendingHW(); const t = new Date().toISOString().slice(0, 10);
     if (!pend.length || S.remindDay === t) return;
@@ -245,7 +267,7 @@
     if (window.Notification && Notification.permission === 'granted') { try { new Notification('📚 Mr. Arrieta', { body: `Tienes ${pend.length} tarea(s) pendiente(s) en el ${M.MOD.es}. ¡Vamos!`, icon: 'mra-point.webp' }); } catch (e) { } }
     setTimeout(() => {
       const m = M.modal(`<div class="center">${M.mascot('mascot', 'watch')}</div><h3 class="center">¡Hola, ${esc(S.name.split(' ')[0])}! 👋</h3>
-        <p class="center" style="font-size:17px">Te recuerdo que tienes <b>${pend.length} ${pend.length === 1 ? 'tarea pendiente' : 'tareas pendientes'}</b>.<br>Hazla ahora y suma XP ⚡</p>
+        <p class="center" style="font-size:17px">Te recuerdo que tienes <b>${pend.length} ${pend.length === 1 ? 'tarea pendiente' : 'tareas pendientes'}</b>.<br>Hazla ahora y suma puntos ⚡</p><p class="muted center ce-ptsline">${esc(M.PTS_TIP)}</p>
         <div style="display:grid;gap:10px"><button class="btn k block lg" id="go">✍️ Hacer mi tarea ahora</button><button class="btn w block" id="later">Más tarde</button></div>`);
       $('#go', m).onclick = () => { m.remove(); route('hw', pend[0].id); }; $('#later', m).onclick = () => m.remove();
     }, 600);
@@ -277,7 +299,7 @@
     app.innerHTML = `<div class="player"><div class="phead"><button class="x" title="Salir">✕</button><div class="prog"><i style="width:50%"></i></div></div><div class="stage"></div></div>`;
     $('.x', app).onclick = () => route('home');
     const r = await homework($('.stage', app), p);
-    if (r && r.t) { M.addSkill('writing', r.c, r.t); const gain = r.c * 10 + 20; S.xp += gain; save(); sfx('win'); M.confetti(1500); M.toast(`¡Tarea entregada! +${gain} XP ⚡`); }
+    if (r && r.t) { M.addSkill('writing', r.c, r.t); const gain = r.c * 10 + 20; S.xp += gain; save(); sfx('win'); M.confetti(1500); M.toast(`¡Tarea entregada! +${gain} puntos ⚡`); }
     route('home');
   }
   function tipOfDay() { const t = ['Tip: escucha y repite en voz alta 🗣️', 'Tip: usa el 📖 diccionario cuando no entiendas algo', 'Tip: graba tu voz y compárala 🎙️', 'Tip: estudia 15 min cada día 🔥', 'Tip: escribe tus tareas en inglés ✍️']; return t[new Date().getDay() % t.length]; }
@@ -308,6 +330,7 @@
   }
   function lockGate(n) { const r = M.lockReason(n); if (r === 'progress') progressModal(n); else if (r === 'trial') trialModal(); else if (r === 'access') unlockModal(); else if (r === 'module') location.href = 'index.html'; }
   function trialModal() {
+    if (window.MRPLANS) return MRPLANS.modal(M);
     const m = M.modal(`<div class="center">${M.mascot('mascot', 'present')}</div><h3 class="center">🟢 Fin de tu acceso gratuito</h3>
       <p class="center" style="font-size:17px">Tu acceso gratuito incluye los <b>2 primeros temas</b> de tu ruta. ¿Te gustó la experiencia? <b>Inscríbete</b> y sigue aprendiendo con todos los temas, el examen final y tu certificado 🎓</p>
       <a class="btn block" style="text-decoration:none;background:#25D366;color:#fff" target="_blank" rel="noopener" href="https://wa.me/${C.WHATSAPP}?text=${encodeURIComponent(`¡Hola! Soy ${S.name}. Empecé gratis en la plataforma y quiero inscribirme 🚀`)}">💬 Quiero inscribirme</a>
@@ -348,6 +371,7 @@
   function buildSteps(p) {
     const st = [];
     st.push({ sec: 'Goal', k: 'goal' });
+    if (p.vocab && p.vocab.length) st.push({ sec: 'Speaking', k: 'warmGame' });
     if (p.warm) st.push({ sec: 'Speaking', k: 'warm' });
     if (p.reading) st.push({ sec: 'Reading', k: 'reading' });
     if (M.prevPart(p)) st.push({ sec: 'Review', k: 'review' });
@@ -363,9 +387,34 @@
     return st;
   }
 
+  /* ---------- transición divertida entre secciones de la clase ---------- */
+  const SCENES = [
+    { k: 'rocket', p: '🚀', mood: 'celebrate', fx: '✨⭐✨', say: 'Blast off!' },
+    { k: 'broom', p: '🧹', mood: 'wink', fx: '🌙✨', say: 'Abracadabra!' },
+    { k: 'guitar', p: '🎸', mood: 'celebrate', fx: '🎵🎶🎵', say: 'Rock on!' },
+    { k: 'balloon', p: '🎈', mood: 'smile', fx: '☁️☁️', say: 'Up, up and away!' },
+    { k: 'skate', p: '🛹', mood: 'thumbs', fx: '💨', say: "Let's roll!" },
+    { k: 'surf', p: '🏄', mood: 'wow', fx: '🌊🌊🌊', say: 'Catch the wave!' },
+    { k: 'dj', p: '🎧', mood: 'celebrate', fx: '🪩🎶', say: 'Drop the beat!' },
+    { k: 'hero', p: '🦸', mood: 'point', fx: '⚡', say: 'Super English!' },
+  ];
+  const SEC_IC = { Goal: '🎯', Speaking: '🗣️', Reading: '📖', Review: '🔁', Explanation: '💡', 'Listen & practice': '🎧', Practice: '🎮', 'Oral task': '🎤', Music: '🎵', Homework: '📝' };
+  let sceneN = Math.floor(Math.random() * SCENES.length);
+  function interlude(next) {
+    return new Promise(res => {
+      const sc = SCENES[sceneN++ % SCENES.length];
+      const ov = h(`<div class="itl itl-${sc.k}" role="status"><div class="itl-sky">${sc.fx.split('').length ? `<span class="itl-fx">${sc.fx}</span>` : ''}</div>
+        <div class="itl-actor">${M.mascot('itl-mra', sc.mood)}<span class="itl-prop">${sc.p}</span><b class="itl-say">${esc(sc.say)}</b></div>
+        <div class="itl-next"><small>NEXT</small><b>${SEC_IC[next] || '➡️'} ${esc(next.toUpperCase())}</b><i>Toca para continuar</i></div></div>`);
+      document.body.appendChild(ov); try { sfx('win'); } catch (e) { }
+      let done = false; const end = () => { if (done) return; done = true; ov.classList.add('out'); setTimeout(() => { ov.remove(); res(); }, 250); };
+      ov.onclick = end; setTimeout(end, 2400);
+    });
+  }
   async function runClass(id) {
     const p = M.partById(id);
     if (!M.isUnlocked(p.topic)) { route('home'); return lockGate(p.topic); }
+    const revM = M.reviewMode(); if (revM) { S.rev = S.rev || {}; if (!S.rev[id]) { S.rev[id] = { s: Date.now() }; save(); } }
     app.innerHTML = `<div class="wrap center" style="padding-top:80px">${M.mascot('mascot bounce', 'book')}<h2>Cargando tu clase…</h2></div>`;
     const pv = M.prevPart(p); await M.loadAudio(['common', ...[].concat(M.MOD.games || []), M.MOD.audio + p.topic].concat(pv ? [M.MOD.audio + pv.topic] : []));
     const steps = buildSteps(p); const secs = [...new Set(steps.map(s => s.sec))];
@@ -377,7 +426,7 @@
     }
     const run = (startAt && rec.run && !Array.isArray(rec.run.res)) ? rec.run : { res: {}, xp: 0 };
     app.innerHTML = `<div class="player"><div class="phead"><button class="x" title="Salir">✕</button><button class="back" title="Volver al paso anterior">← Atrás</button><div class="prog"><i style="width:0%"></i></div></div>
-      <div class="ptopic">📍 Estás en: <b>Topic ${p.topic} · ${esc(p._t.title)}</b> — ${PL(p)}: ${esc(p.title)} <span class="psec"></span></div>
+      <div class="ptopic">📍 Estás en: <b>Topic ${p.topic} · ${esc(p._t.title)}</b> — ${PL(p)}: ${esc(p.title)} <span class="psec"></span>${revM ? `<span class="ce-revchip">🔁 Repasando: ${M.revCount()} de ${M.totalParts()} clases</span>` : ''}</div>
       <button class="resume hidden">⏩ Continuar donde quedé</button>
       <div class="secbar">${secs.map(s => `<span data-s="${esc(s)}">${esc(s)}</span>`).join('')}</div><div class="stage"></div></div>`;
     $('.x', app).onclick = () => { stop(); route('home'); };
@@ -429,6 +478,7 @@
       }
       save();
       i++;
+      if (i < steps.length && steps[i].sec !== s.sec && app.contains(player)) await interlude(steps[i].sec);
     }
     $('.prog i', app).style.width = '100%'; cleanup();
     results(p, run);
@@ -447,6 +497,22 @@
         ${prev && !(S.parts[prev.id] && S.parts[prev.id].done) ? `<p class="hint" style="margin-top:6px">💡 Te recomendamos completar primero: ${esc(prev._t.title)} · ${PL(prev)}</p>` : ''}
       </div>`;
       await A.waitNext(stage, '¡Empezar clase! 🚀'); M.confetti(2200); sfx('win'); return null;
+    },
+
+    // WARM-UP GAME: juego dinámico con la clase anterior + un adelanto (2 palabras) de la clase nueva
+    warmGame: async (stage, p) => {
+      const pv = M.prevPart(p); const uniq = (a) => a.filter((v, i, x) => v && v.en && x.findIndex(y => y.en === v.en) === i);
+      const old = pv ? sample(uniq(pv.vocab || []), 6) : []; const neu = sample(uniq(p.vocab || []).filter(v => !old.some(o => o.en === v.en)), old.length ? 2 : 6);
+      const vocab = uniq(old.concat(neu)); if (vocab.length < 4) return null;
+      const used = (C.PLAN || PLAN)[p.id] || p.acts || [];
+      const POOL = ['bubblePop', 'catchWord', 'memory', 'raceGame', 'spinWheel', 'matchLines', 'oddOneOut', 'sayPop', 'quizShow'].filter(g => typeof A[g] === 'function' && !used.includes(g));
+      let hsh = 0; for (const ch of String(M.MOD.id) + p.id) hsh = (hsh * 31 + ch.charCodeAt(0)) >>> 0;
+      const g = POOL[hsh % POOL.length] || 'memory';
+      const body = A.head(stage, { lbl: 'Warm-up', title: '🔥 Warm-up game', ins: pv ? `Calienta motores: juega con lo que aprendiste en <b>${esc(pv._t.title)} · ${PL(pv)}</b> y descubre <b>${neu.length} palabras nuevas</b> de la clase de hoy.` : 'Calienta motores: descubre jugando algunas palabras de la clase de hoy.' });
+      body.appendChild(h(`<div class="wg-chips">${old.map(v => `<span class="wg-c old">🔁 ${esc(v.en)}</span>`).join('')}${neu.map(v => `<span class="wg-c new">✨ ${esc(v.en)}<small>${esc(v.es || '')}</small></span>`).join('')}</div>`));
+      await A.waitNext(stage, '¡A jugar! 🎮');
+      const pseudo = Object.assign(Object.create(p), { vocab, sentences: (pv && pv.sentences) || p.sentences, pairs: null });
+      try { return await A[g](stage, pseudo); } catch (e) { console.error('warmGame', g, e); return null; }
     },
 
     warm: async (stage, p) => {
@@ -510,7 +576,7 @@
       const r = await A.qloop(stage, { lbl: 'Review', title: 'Let\'s remember last class', ins: `Repaso de <b>${esc(pv._t.title)} · ${PL(pv)}</b>. Escucha y elige.` }, items, async (body, it) => {
         body.appendChild(A.playBtn(it.au));
         const opts = shuffle([it, ...sample(pool.filter(x => x.en !== it.en), 3)]); const wrap = h(`<div class="opts" style="margin-top:12px"></div>`); body.appendChild(wrap);
-        const btns = opts.map(o => { const b = h(usePh ? `<button class="opt imgopt">${photo(o.img)}<span class="imglbl">${esc(o.en)}</span></button>` : `<button class="opt">${esc(o.en)}</button>`); wrap.appendChild(b); return b; });
+        const btns = opts.map(o => { const b = h(usePh ? `<button class="opt imgopt">${photo(o.img)}<span class="imglbl">${esc(o.en)}<small class="imges">${esc(o.es || '')}</small></span></button>` : `<button class="opt">${esc(o.en)}<small class="imges">${esc(o.es || '')}</small></button>`); wrap.appendChild(b); return b; });
         setTimeout(() => play(it.au), 350);
         const i = await A.choose(btns); const ok = opts[i] === it; btns[opts.indexOf(it)].classList.add('right'); if (!ok) btns[i].classList.add('wrong');
         await A.feedback(ok, `${it.en} (${it.es})`, 'Repasa la clase anterior si lo necesitas.'); return ok;
@@ -591,9 +657,9 @@
     const msg = $('.yt-msg', host);
     const showLink = () => { msg.innerHTML = `<a class="btn w sm" href="https://www.youtube.com/watch?v=${esc(ids[0])}" target="_blank" rel="noopener" style="text-decoration:none">▶ Ver la canción en YouTube</a>`; msg.classList.remove('hidden'); };
     loadYT().then(() => {
-      if (!(window.YT && YT.Player)) { $('.ytwrap', host).innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${esc(ids[0])}?rel=0&playsinline=1" allowfullscreen></iframe>`; showLink(); return; }
-      const player = new YT.Player($('.ytp', host), { videoId: ids[0], width: '100%', height: '100%', playerVars: { rel: 0, modestbranding: 1, playsinline: 1 },
-        events: { onError: () => { k++; if (k < ids.length) player.loadVideoById(ids[k]); else { $('.ytwrap', host).classList.add('hidden'); showLink(); } } } });
+      if (!(window.YT && YT.Player)) { $('.ytwrap', host).innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${esc(ids[0])}?rel=0&playsinline=1&cc_load_policy=1&cc_lang_pref=en&hl=en" allow="autoplay; encrypted-media" allowfullscreen></iframe>`; showLink(); return; }
+      const player = new YT.Player($('.ytp', host), { videoId: ids[0], width: '100%', height: '100%', playerVars: { rel: 0, modestbranding: 1, playsinline: 1, cc_load_policy: 1, cc_lang_pref: 'en', hl: 'en', enablejsapi: 1 },
+        events: { onStateChange: (e) => host.dispatchEvent(new CustomEvent('ytstate', { detail: e.data })), onReady: () => { try { player.loadModule('captions'); player.setOption('captions', 'track', { languageCode: 'en' }); } catch (e) { } }, onError: () => { k++; if (k < ids.length) player.loadVideoById(ids[k]); else { $('.ytwrap', host).classList.add('hidden'); showLink(); } } } });
     });
   }
   async function playLearn(stage, p) {
@@ -605,10 +671,8 @@
     {
       const body = A.head(stage, { lbl, title: `🎵 ${esc(sg.title)}`, ins: `<b>${esc(sg.artist)}</b> · ${esc(sg.theme)}. Primero descubre de qué trata la canción.` });
       body.appendChild(h(`<div class="row song-intro">${M.mascot('mascot bounce', 'celebrate')}<div class="bubble">Let's learn English with music! 🎶</div></div>`));
-      const kw = h(`<div class="kwrow"><b>🔑 Palabras clave (toca para escuchar):</b><div class="row" style="gap:8px;margin-top:8px"></div></div>`); body.appendChild(kw);
-      sg.kw.forEach(k => { const b = h(`<button class="chip">🔊 ${esc(k.en)}</button>`); b.onclick = () => { sfx('tap'); M.play(k.au); }; $('.row', kw).appendChild(b); });
       const q = sg.pred;
-      body.appendChild(h(`<div class="sent" style="font-size:20px">${esc(q.question)}</div>`));
+      body.appendChild(h(`<div class="sent" style="font-size:20px">What do you think this song is about? 🤔<small class="muted" style="display:block;font-size:15px;font-weight:600;margin-top:4px">¿De qué crees que trata esta canción?</small></div>`));
       const wrap = h(`<div class="opts" style="grid-template-columns:1fr 1fr"></div>`); body.appendChild(wrap);
       const btns = q.options.map(o => { const b = h(`<button class="opt">${esc(o)}</button>`); wrap.appendChild(b); return b; });
       const i = await A.choose(btns); const ok = i === q.correctIndex;
@@ -618,10 +682,15 @@
     }
     // 2) Escuchar la canción
     {
-      const body = A.head(stage, { lbl, title: '🎧 Listen to the song', ins: 'Escucha la canción completa. Fíjate en las <b>palabras clave</b>. ¡Si quieres, canta! Cuando termines, continúa con los retos.' });
+      const body = A.head(stage, { lbl, title: '🎧 Listen to the song', ins: 'Escucha la canción completa y <b>sigue la letra en los subtítulos</b> del video: se van mostrando a medida que suena. ¡Si quieres, canta! Cuando termines, continúa con los retos.' });
+      body.appendChild(h(`<p class="ce-cc"><b>CC</b> La letra aparece en los subtítulos del video, sincronizada con la canción. Si no la ves, toca <b>CC</b> en el video.</p>`));
       const yh = h('<div></div>'); body.appendChild(yh); ytBox(sg, yh);
-      body.appendChild(h(`<div class="row" style="gap:8px;justify-content:center;margin-top:12px">${sg.kw.map(k => `<span class="pill" style="background:var(--y3);color:var(--k);border-color:var(--k)">${esc(k.en)}</span>`).join('')}</div>`));
-      await A.waitNext(stage, 'Ya la escuché, ¡a jugar! 🎮');
+      const dz = h(`<div class="dance"><div class="dance-floor"><span class="dn n1">🎵</span><span class="dn n2">🎶</span><span class="dn n3">🎵</span><div class="dance-mra">${M.mascot('dance-img', 'celebrate')}</div></div><small class="muted">▶ Dale play al video y Mr. Arrieta baila contigo 🕺</small></div>`); body.appendChild(dz);
+      const moods = ['celebrate', 'wink', 'thumbs', 'wow', 'smile', 'point']; let mi = 0, iv = null;
+      const setPlay = (on) => { dz.classList.toggle('on', on); clearInterval(iv); if (on) iv = setInterval(() => { const im = $('.dance-img', dz); if (im) im.src = im.src.replace(/mra-[a-z]+\.webp/, 'mra-' + moods[++mi % moods.length] + '.webp'); }, 1000); };
+      yh.addEventListener('ytstate', e => setPlay(e.detail === 1));
+      $('.dance-mra', dz).onclick = () => setPlay(!dz.classList.contains('on'));
+      await A.waitNext(stage, 'Ya la escuché, ¡a jugar! 🎮'); setPlay(false);
     }
     // 3) Listen & choose / order (frases inspiradas en la canción)
     const lc = sample(sg.lc.filter(x => x.type === 'blank'), 3);
@@ -717,6 +786,10 @@
     const ta = h(`<textarea class="hw" placeholder="Escribe aquí en inglés…">${esc(saved)}</textarea>`); body.appendChild(ta);
     const ex = h(`<details style="margin-top:10px"><summary style="cursor:pointer;font-weight:700">👀 Ver un ejemplo</summary><div class="tipbox" style="margin-top:8px">${esc(hw.model)}</div></details>`); body.appendChild(ex);
     const out = h(`<ul class="checks"></ul>`); body.appendChild(out);
+    const sent = h(`<div class="ce-hwsent hidden"></div>`); body.appendChild(sent);
+    const fbBox = h(`<div class="ce-hwfb hidden"></div>`); body.appendChild(fbBox);
+    const prem = hwPremium();
+    if (prem) { renderHwFeedback(fbBox, p.id); MRAC.me(true).then(() => renderHwFeedback(fbBox, p.id)).catch(() => { }); if (S.hw[p.id] && S.hw[p.id].sent) showSent(sent); }
     const bar = h(`<div class="actionbar"></div>`); body.appendChild(bar);
     return await new Promise(res => {
       const idle = () => {
@@ -728,19 +801,36 @@
         const txt = ta.value.trim(); if (txt.length < 5) { ta.focus(); M.toast('Escribe tu tarea primero ✍️'); return; }
         const fb = checkWriting(txt, hw); out.innerHTML = '';
         fb.items.forEach(f => out.appendChild(h(`<li class="${f.cls}"><span>${f.cls === 'ok' ? '✅' : f.cls === 'no' ? '❌' : '💡'}</span><span>${f.msg}</span></li>`)));
-        S.hw[p.id] = { text: txt, at: Date.now(), score: fb.score }; save();
-        const wa = `https://wa.me/${C.WHATSAPP}?text=${encodeURIComponent(`📚 Tarea ${M.MOD.es} — ${p._t.title} ${PL(p)}\n👤 ${S.name}\n\n${txt}`)}`;
+        const prevSent = S.hw[p.id] && S.hw[p.id].sent;
+        S.hw[p.id] = { text: txt, at: Date.now(), score: fb.score }; if (prevSent && prevSent.text === txt) S.hw[p.id].sent = prevSent; save();
         bar.innerHTML = '';
         const again = h(`<button class="btn w">✏️ Corregir</button>`);
-        const send = h(`<a class="btn" target="_blank" rel="noopener" style="text-decoration:none;background:#25D366;color:#fff" href="${wa}">💬 Enviar a mi profe</a>`);
-        const nx = h(`<button class="btn k lg">Terminar clase →</button>`);
-        bar.append(again, send, nx); fb.ok >= fb.total * .7 ? sfx('ok') : sfx('bad');
+        const nx = h(`<button class="btn k lg">${prem ? 'Entregar tarea' : 'Terminar clase'} →</button>`);
+        bar.append(again, nx); fb.ok >= fb.total * .7 ? sfx('ok') : sfx('bad');
         out.scrollIntoView({ behavior: 'smooth', block: 'start' });
         again.onclick = () => { out.innerHTML = ''; idle(); ta.focus(); };
-        nx.onclick = () => res(A.result(fb.ok, fb.total, 'writing'));
+        nx.onclick = async () => {
+          // Premium: la tarea le llega al profe, que la revisa y da feedback (sin WhatsApp)
+          if (prem && !(S.hw[p.id].sent && S.hw[p.id].sent.text === txt)) {
+            nx.disabled = again.disabled = true; nx.textContent = 'Entregando…';
+            let r = null; try { r = await MRAC.homework({ module: M.MOD.id, part: p.id, title: `${M.MOD.es} · ${p._t.title} · ${PL(p)}: ${p.title}`, text: txt, score: fb.score }); } catch (e) { }
+            if (r && r.ok) { S.hw[p.id].sent = { at: Date.now(), text: txt }; save(); showSent(sent); sfx('win'); await sleep(1600); }
+            else { nx.disabled = again.disabled = false; nx.textContent = 'Entregar tarea →'; M.toast(r && r.err === 'not_premium' ? 'Tu plan no incluye revisión del profe' : 'No se pudo entregar. Revisa tu conexión e intenta otra vez 🙏'); if (!(r && r.err === 'not_premium')) return; }
+          }
+          res(A.result(fb.ok, fb.total, 'writing'));
+        };
       };
       idle();
     });
+  }
+  // tareas con revisión del profe: solo estudiantes Premium con sesión en la nube
+  function hwPremium() { try { return !!(window.MRAC && MRAC.code() && MRAC.isPremium()); } catch (e) { return false; } }
+  function showSent(box) { box.innerHTML = '✅ <b>Tu profe recibió tu tarea</b> y te dará feedback.'; box.classList.remove('hidden'); }
+  function hwFeedback(id) { try { return (window.MRAC && MRAC.code() && MRAC.feedbackFor(id)) || []; } catch (e) { return []; } }
+  function renderHwFeedback(box, id) {
+    const fb = hwFeedback(id); if (!fb.length) { box.classList.add('hidden'); return; }
+    box.innerHTML = `<h3>💬 Feedback de tu profe</h3>` + fb.map(f => `<div class="ce-fbi"><div class="ce-fbh"><b>${esc(f.teacher || 'Tu profe')}</b><small>${esc(String(f.date || '').slice(0, 10))}</small></div><p>${esc(f.feedback || '')}</p></div>`).join('');
+    box.classList.remove('hidden');
   }
   function checkWriting(txt, hw) {
     const items = []; let ok = 0, total = 0;
@@ -772,7 +862,7 @@
     if (/\bis (a )?(red|blue|green|black|white|yellow) (car|house|dog|cat|dress|shirt)\b/i.test(txt) === false && /\b(car|house|dog|cat|dress|shirt) (red|blue|green|black|white|yellow)\b/i.test(txt)) tips.push('El color va <b>antes</b> del sustantivo: <i>a red car</i>.');
     if (/\s{2,}/.test(txt)) tips.push('Evita los espacios dobles entre palabras.');
     tips.forEach(t => items.push({ cls: 'tip', msg: t }));
-    if (!tips.length && ok === total) items.push({ cls: 'ok', msg: '¡Excelente trabajo! No encontré errores comunes. 🌟 Envíala a tu profe para una revisión final.' });
+    if (!tips.length && ok === total) items.push({ cls: 'ok', msg: '¡Excelente trabajo! No encontré errores comunes. 🌟' + (hwPremium() ? ' Entrégala y tu profe te dará feedback.' : '') });
     return { items, ok, total, score: Math.round(ok / total * 100) };
   }
 
@@ -783,6 +873,7 @@
     const pct = t ? Math.round(c / t * 100) : 100; const stars = pct >= 90 ? 3 : pct >= 70 ? 2 : 1;
     const rec = S.parts[p.id]; const wasDone = rec.done;
     rec.done = true; rec.stars = Math.max(rec.stars || 0, stars); rec.best = Math.max(rec.best || 0, pct); rec.step = 0; rec.run = null; rec.at = Date.now();
+    const revM = M.reviewMode(); if (revM) { S.rev = S.rev || {}; S.rev[p.id] = Object.assign(S.rev[p.id] || { s: Date.now() }, { d: Date.now() }); }
     const bonus = wasDone ? 10 : 50; S.xp += bonus; M.touchStreak(); S.last = p.id; save(); topbar();
     // per-skill breakdown in this class
     const sk = {}; run.res.forEach(r => { sk[r.skill] = sk[r.skill] || [0, 0]; sk[r.skill][0] += r.c; sk[r.skill][1] += r.t; });
@@ -792,9 +883,9 @@
     const head = pct >= 90 ? '¡Clase perfecta! 🏆' : pct >= 70 ? '¡Muy buen trabajo! 💪' : '¡Clase completada! 👏';
     const advice = pct >= 90 ? `¡Lo hiciste increíble, ${esc(S.name.split(' ')[0])}! Ya dominas este tema. Sigue con la próxima clase.` : pct >= 70 ? 'Vas muy bien. Repasa las palabras que te costaron y pasa a la siguiente clase.' : 'Te recomendamos repetir esta clase mañana: la repetición es la clave para aprender. ¡Tú puedes!';
     app.innerHTML = `<div class="player"><div class="card">
-      <div class="center">${M.mascot('mascot bounce', pct >= 90 ? 'celebrate' : pct >= 70 ? 'thumbs' : 'smile')}<h2 style="font-size:30px">${head}</h2><p class="muted">${esc(p._t.title)} · ${PL(p)}: ${esc(p.title)}</p></div>
+      <div class="center">${M.mascot('mascot bounce', pct >= 90 ? 'celebrate' : pct >= 70 ? 'thumbs' : 'smile')}<h2 style="font-size:30px">${head}</h2><p class="muted">${esc(p._t.title)} · ${PL(p)}: ${esc(p.title)}</p>${revM ? `<p class="ce-revchip">🔁 Repasando: ${M.revCount()} de ${M.totalParts()} clases</p>` : ''}</div>
       <div class="res-stars">${[1, 2, 3].map(i => `<span style="${i <= stars ? '' : 'opacity:.2;filter:grayscale(1)'}">⭐</span>`).join('')}</div>
-      <div class="stats"><div class="stat"><b>${pct}%</b><small>Precisión</small></div><div class="stat"><b>+${run.xp + bonus}</b><small>XP ganados</small></div><div class="stat"><b>${c}/${t}</b><small>Respuestas</small></div></div>
+      <div class="stats"><div class="stat"><b>${pct}%</b><small>Precisión</small></div><div class="stat"><b>+${run.xp + bonus}</b><small>Puntos ganados ⚡</small></div><div class="stat"><b>${c}/${t}</b><small>Respuestas</small></div></div>
       <h3 style="margin:18px 0 8px">📊 Tus 4 habilidades en esta clase</h3>
       <div class="skills" style="margin-top:0">${SKILLS.map(([k, ic, nm]) => { const v = sk[k]; const pc = v && v[1] ? Math.round(v[0] / v[1] * 100) : null; return `<div class="skill"><div class="ic">${ic}</div><div class="nm">${nm}</div><div class="bar"><i style="width:${pc || 0}%"></i></div><small class="muted">${pc === null ? '—' : pc + '%'}</small></div>`; }).join('')}</div>
       <div class="lesson"><h3>🧑‍🏫 Consejos del profe</h3><p>${advice}</p>
@@ -820,7 +911,7 @@
     ['five', '📚', 'Estudiante dedicado', 'Completa 5 clases', () => M.allParts().filter(p => S.parts[p.id] && S.parts[p.id].done).length >= 5],
     ['perfect', '🏆', 'Clase perfecta', 'Obtén 3 estrellas', () => M.allParts().some(p => M.partStars(p.id) === 3)],
     ['streak3', '🔥', 'En racha', 'Estudia 3 días seguidos', () => (S.streak.n || 0) >= 3],
-    ['xp1000', '⚡', '1000 XP', 'Acumula 1000 puntos', () => S.xp >= 1000],
+    ['xp1000', '⚡', '1000 puntos', 'Acumula 1000 puntos', () => S.xp >= 1000],
     ['speaker', '🎤', 'Gran speaker', 'Speaking por encima de 80%', () => S.skills.speaking[1] >= 10 && M.skillPct('speaking') >= 80],
     ['half', '⭐', 'Mitad del camino', 'Completa 14 clases', () => M.allParts().filter(p => S.parts[p.id] && S.parts[p.id].done).length >= 14],
     ['grad', '🎓', 'Graduado ' + M.MOD.id, 'Aprueba el examen final', () => S.final && S.final.best >= C.PASS_SCORE],
@@ -837,7 +928,7 @@
     const low = sk.sort((a, b) => a[1] - b[1])[0];
     app.innerHTML = `<div class="wrap">
       <div class="card"><div class="row"><div class="ring" style="--p:${M.overallPct()}"><b>${M.overallPct()}%</b></div><div class="grow"><span class="lbl">Mi progreso</span><h1 style="font-size:30px;margin-top:8px">${esc(S.name)}</h1><p class="muted" style="margin:4px 0">${M.MOD.es} · Nivel ${M.MOD.id}</p></div></div>
-        <div class="stats" style="grid-template-columns:repeat(4,1fr)"><div class="stat"><b>${done}/28</b><small>Clases</small></div><div class="stat"><b>${stars}/84</b><small>Estrellas</small></div><div class="stat"><b>${S.xp}</b><small>XP</small></div><div class="stat"><b>🔥 ${S.streak.n || 0}</b><small>Racha (días)</small></div></div>
+        <div class="stats" style="grid-template-columns:repeat(4,1fr)"><div class="stat"><b>${done}/${parts.length}</b><small>Clases</small></div><div class="stat"><b>${stars}/${parts.length * 3}</b><small>Estrellas</small></div><div class="stat" title="${esc(M.PTS_TIP)}"><b>${S.xp}</b><small>Puntos ⚡</small></div><div class="stat"><b>🔥 ${S.streak.n || 0}</b><small>Racha (días)</small></div></div>
         <h3 style="margin:14px 0 8px">Tus 4 habilidades</h3>
         <div class="skills" style="margin-top:0">${SKILLS.map(([k, ic, nm]) => `<div class="skill"><div class="ic">${ic}</div><div class="nm">${nm}</div><div class="bar"><i style="width:${M.skillPct(k)}%"></i></div><small class="muted">${S.skills[k][1] ? M.skillPct(k) + '% · ' + S.skills[k][1] + ' ejercicios' : 'Sin datos aún'}</small></div>`).join('')}</div>
         ${low ? `<div class="tipbox" style="margin-top:12px"><span>🎯</span><span><b>Recomendación:</b> tu habilidad para mejorar es <b>${low[0]}</b>. ${SKILL_TIPS[low[0]]}</span></div>` : ''}
@@ -856,7 +947,7 @@
     if ($('#pw')) $('#pw').onclick = () => practiceWeak(weak);
     $('#exp').onclick = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(S, null, 1)], { type: 'application/json' })); a.download = `progreso-modulo1-${S.name.replace(/\s+/g, '_')}.json`; a.click(); };
     $('#imp').onchange = async (e) => { try { const d = JSON.parse(await e.target.files[0].text()); if (!d.v) throw 0; Object.keys(S).forEach(k => delete S[k]); Object.assign(S, d); save(); M.toast('Progreso restaurado ✅'); route('progress'); } catch (er) { M.toast('Archivo no válido'); } };
-    $('#rst').onclick = () => { const m = M.modal(`<h3>¿Reiniciar todo tu progreso?</h3><p class="muted">Se borrarán tus estrellas, XP y clases completadas en este dispositivo. Los códigos de acceso se conservan.</p><div class="row"><button class="btn w" id="n">Cancelar</button><button class="btn k" id="y" style="background:var(--bad);color:#fff">Sí, reiniciar</button></div>`);
+    $('#rst').onclick = () => { const m = M.modal(`<h3>¿Reiniciar todo tu progreso?</h3><p class="muted">Se borrarán tus estrellas, puntos y clases completadas en este dispositivo. Los códigos de acceso se conservan.</p><div class="row"><button class="btn w" id="n">Cancelar</button><button class="btn k" id="y" style="background:var(--bad);color:#fff">Sí, reiniciar</button></div>`);
       $('#n', m).onclick = () => m.remove(); $('#y', m).onclick = () => { const keep = { name: S.name, unlocked: S.unlocked, all: S.all, review: S.review }; localStorage.removeItem('mra_m1_progress_v1'); Object.keys(S).forEach(k => delete S[k]); Object.assign(S, { v: 1, created: Date.now(), xp: 0, streak: { last: '', n: 0 }, parts: {}, skills: { listening: [0, 0], reading: [0, 0], speaking: [0, 0], writing: [0, 0] }, weak: {}, final: null, hw: {}, sound: true, badges: [] }, keep); save(); m.remove(); route('home'); }; };
   }
   async function practiceWeak(weak) {

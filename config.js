@@ -4,6 +4,16 @@
    ===================================================================== */
 window.M1CONFIG = {
 
+  // ☁️ NUBE: pega aquí la URL /exec de tu Apps Script (ver LEEME-NUBE.md).
+  // Vacío = la plataforma funciona solo en este dispositivo (como antes).
+  CLOUD_URL: "",
+
+  // PLANES (se muestran a los estudiantes)
+  PLANS: {
+    membership: { name: "Membership", price: "$59.900", per: "/mes" },
+    premium: { name: "Premium", price: "$349.000", per: "/mes" }
+  },
+
   // MODO REVISIÓN GLOBAL: true = TODAS las clases y el examen abiertos para TODOS (no usar con estudiantes).
   // Los temas se abren en orden: el Topic 2 se abre al terminar Part 1 y Part 2 del Topic 1, etc.
   // El examen final solo se abre cuando el estudiante termina las 28 clases.

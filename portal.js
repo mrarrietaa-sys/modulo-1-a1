@@ -12,7 +12,7 @@
   function topbar() {
     const p = P.get();
     $('#topbar').innerHTML = `<div class="brand" id="go-home"><span class="logo-pill"><img class="logo" src="mra-brand.png" alt="mrarrieta.com"></span></div><div class="sp"></div><span class="tb-tag">MI PERFIL</span>
-      ${p ? `<span class="pill hide-s">${p.type === 'staff' ? '👨‍🏫 Profe' : p.type === 'trial' ? '🟢 Acceso gratis' : '🎓 Estudiante'}</span>${p.type === 'staff' && window.MRANN && MRANN.isHidden() ? '<button class="iconbtn" id="ann-b" title="Mostrar la barra del profesor">✏️</button>' : ''}${p.first ? `<button class="tb-avbtn" id="me-b" title="Personaliza tu perfil">${P.avHTML('tb-av')}</button>` : ''}<button class="iconbtn" id="out" title="Salir">⏻</button>` : ''}`;
+      ${p ? `<span class="pill hide-s">${window.MRPLANS ? MRPLANS.badge() : p.type === 'staff' ? '👨‍🏫 Profe' : p.type === 'trial' ? '🟢 Acceso gratis' : '🎓 Estudiante'}</span>${p.type === 'staff' && window.MRANN && MRANN.isHidden() ? '<button class="iconbtn" id="ann-b" title="Mostrar la barra del profesor">✏️</button>' : ''}${p.first ? `<button class="tb-avbtn" id="me-b" title="Personaliza tu perfil">${P.avHTML('tb-av')}</button>` : ''}<button class="iconbtn" id="out" title="Salir">⏻</button>` : ''}`;
     $('#go-home').onclick = () => route('home');
     if ($('#me-b')) $('#me-b').onclick = () => route('me');
     if ($('#ann-b')) $('#ann-b').onclick = () => { MRANN.show(); topbar(); };
@@ -21,7 +21,7 @@
   }
   function route(r) { M.stop && M.stop(); window.scrollTo(0, 0); topbar(); const p = P.get();
     if (!p) return login();
-    if (!p.first) return nameStep();
+    if (!p.first || (p.cloud && p.type !== 'staff' && !p.birth)) return nameStep(); // nombre + fecha de nacimiento obligatorios
     if (r === 'placement') return placement();
     if (r === 'me' || r === 'me-photo' || r === 'me-av' || r === 'me-plat') return personalize(r === 'me' ? 'av' : r.slice(3));
     return home();
@@ -48,9 +48,24 @@
       <div class="pt-free"><h2>🟢 EMPIEZA GRATIS</h2>
         <p><b>Crea tu acceso gratuito y descubre tu ruta de aprendizaje.</b></p>
         <p class="muted">Realiza nuestro examen de clasificación y explora los primeros temas de tu módulo.</p>
-        <a class="btn block lg pt-wa" target="_blank" rel="noopener" href="${WA('¡Hola! 👋 Quiero EMPEZAR GRATIS en la plataforma de mrarrieta.com y descubrir mi ruta de aprendizaje. ¿Me envían mi código de acceso gratuito? 🟢')}">EMPEZAR GRATIS →</a></div></div></div>`;
+        <a class="btn block lg pt-wa" target="_blank" rel="noopener" href="${WA('¡Hola! 👋 Quiero EMPEZAR GRATIS en la plataforma de mrarrieta.com y descubrir mi ruta de aprendizaje. ¿Me envían mi código de acceso gratuito? 🟢')}">EMPEZAR GRATIS →</a>
+        <a class="btn w block pt-insc" href="inscripcion.html">📝 Formulario de inscripción</a></div></div>
+      <p class="center pt-links"><a href="reclutamiento.html">👩‍🏫 Trabaja con nosotros</a> · <a href="profesores.html">🧑‍🏫 Soy profesor</a></p></div>`;
     const i = $('#cd'); setTimeout(() => i.focus(), 200);
-    const go = () => { const r = codeType(i.value); if (!r) { i.classList.add('wrong'); sfx('bad'); setTimeout(() => i.classList.remove('wrong'), 500); M.toast('Código no válido 😕'); return; }
+    const bad = (msg) => { i.classList.add('wrong'); sfx('bad'); setTimeout(() => i.classList.remove('wrong'), 500); M.toast(msg || 'Código no válido 😕'); };
+    const go = async () => {
+      const v = i.value.trim(); if (!v) return bad('Escribe tu código 🙂');
+      // 1) códigos de la nube (planes Acceso gratuito / Membership / Premium)
+      if (window.MRAC && MRAC.on && !codeType(v)) {
+        const b = $('#ok'); b.disabled = true; b.textContent = 'Entrando…';
+        const r = await MRAC.login(v); b.disabled = false; b.textContent = 'Entrar →';
+        if (r.ok) { sfx('win'); M.confetti(1500); try { sessionStorage.removeItem('mra_back'); } catch (e) { } return route('home'); }
+        if (r.err === 'inactive') return bad('Tu acceso está inactivo. Escríbenos por WhatsApp 🙏');
+        if (r.err === 'network' || r.err === 'offline') return bad('No hay conexión con la nube. Revisa tu internet e inténtalo de nuevo.');
+        return bad();
+      }
+      // 2) códigos guardados en config.js (modo sin nube / profes)
+      const r = codeType(v); if (!r) return bad();
       const old = P.get() || {};
       P.save(Object.assign({ created: Date.now() }, old, { type: r.type, codeHash: M.codeHash(i.value), module: r.module || old.module || null, assignedBy: r.module ? 'admin' : (old.assignedBy || null) }));
       sfx('win'); M.confetti(1500); route('home'); };
@@ -59,24 +74,35 @@
   function nameStep() {
     const s1 = (M.S && M.S.name) || ''; const p = P.get();
     app.innerHTML = `<div class="wrap pt-wrap"><div class="card pt-login"><div class="pt-hello">${M.mascot('pt-mra', 'smile')}<div class="bubble">Nice to meet you! 😊<small>¡Mucho gusto!</small></div></div>
-      <h1>¿Cómo te llamas?</h1><p class="muted">Así aparecerá tu nombre en tu perfil, tus reportes y tus certificados.</p>
+      <h1>${p.first ? 'Completa tu perfil' : '¿Cómo te llamas?'}</h1><p class="muted">Así aparecerá tu nombre en tu perfil, tus reportes y tus certificados.</p>
       <label class="pt-lab">Nombre</label><input class="inp" id="f" value="${esc(s1.split(' ')[0] || '')}" autocomplete="given-name">
-      <label class="pt-lab">Apellido</label><input class="inp" id="l" value="${esc(s1.split(' ').slice(1).join(' '))}" autocomplete="family-name">
+      <label class="pt-lab">Apellido</label><input class="inp" id="l" value="${esc(s1.split(' ').slice(1).join(' ') || p.last || '')}" autocomplete="family-name">
+      ${p.type === 'staff' ? '' : `<label class="pt-lab">🎂 Fecha de nacimiento</label><input class="inp" id="bd" type="date" max="${P.todayISO()}" min="1930-01-01" value="${esc(p.birth || '')}">
+      <small class="pt-hint">¡Queremos celebrar tu cumpleaños contigo! 🎉</small>
+      <label class="pt-lab">Correo electrónico</label><input class="inp" id="em" type="email" inputmode="email" autocomplete="email" placeholder="tucorreo@gmail.com" value="${esc(p.email || '')}">
+      <small class="pt-hint">Aquí te llegan tus resultados, avisos de tus clases y tu saludo de cumpleaños.</small>`}
       <button class="btn k block lg" id="ok" style="margin-top:14px">Continuar →</button></div></div>`;
+    if ($('#f').value === '' && p.first) $('#f').value = p.first;
     $('#ok').onclick = () => { const f = $('#f').value.trim(), l = $('#l').value.trim(); if (!f) return $('#f').classList.add('wrong'); if (!l) return $('#l').classList.add('wrong');
-      P.save(Object.assign(p, { first: f, last: l, name: f + ' ' + l }));
+      const extra = {};
+      if (p.type !== 'staff') { const bd = $('#bd').value, em = $('#em').value.trim();
+        if (!bd || bd > P.todayISO() || bd < '1930-01-01') { $('#bd').classList.add('wrong'); return M.toast('Escribe tu fecha de nacimiento 🎂'); }
+        if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) { $('#em').classList.add('wrong'); return M.toast('Escribe un correo válido 📧'); }
+        extra.birth = bd; extra.email = em; }
+      P.save(Object.assign(p, { first: f, last: l, name: f + ' ' + l }, extra));
+      if (window.MRAC && MRAC.code()) { MRAC.saveProfile(Object.assign({ first: f, last: l }, extra)); MRAC.sync(true); }
       // el nombre también se usa dentro de los módulos
       P.MODS.forEach(m => { try { const s = JSON.parse(localStorage.getItem(m.key) || 'null'); if (s && !s.name) { s.name = f + ' ' + l; localStorage.setItem(m.key, JSON.stringify(s)); } } catch (e) { } });
       route('home'); };
   }
   function logout() {
-    const m = M.modal(`<h3>¿Salir de tu perfil?</h3><p class="muted">Tu progreso queda guardado en este dispositivo. Para volver a entrar necesitarás tu código.</p><div class="row"><button class="btn k" id="y">Sí, salir</button><button class="btn w" id="n">Cancelar</button></div>`, { x: true });
-    $('#n', m).onclick = () => m.remove(); $('#y', m).onclick = () => { m.remove(); const cur = P.get(); if (cur && cur.first) P.save(cur); P.clear(); route('home'); };
+    const m = M.modal(`<h3>¿Salir de tu perfil?</h3><p class="muted">Tu progreso queda guardado${window.MRAC && MRAC.code() ? ' en la nube: puedes continuar desde cualquier dispositivo' : ' en este dispositivo'}. Para volver a entrar necesitarás tu código.</p><div class="row"><button class="btn k" id="y">Sí, salir</button><button class="btn w" id="n">Cancelar</button></div>`, { x: true });
+    $('#n', m).onclick = () => m.remove(); $('#y', m).onclick = async () => { const cur = P.get(); if (window.MRAC && MRAC.code()) { $('#y', m).disabled = true; $('#y', m).textContent = 'Guardando…'; await MRAC.sync(true); } m.remove(); if (cur && cur.first) P.save(cur); P.clear(); try { sessionStorage.removeItem('mra_me_cache'); } catch (e) { } route('home'); };
   }
 
   /* ---------- perfil ---------- */
   function home() {
-    const p = P.get(); const a = P.assigned(); const staff = p.type === 'staff', trial = p.type === 'trial';
+    const p = P.get(); const a = P.assigned(); const staff = p.type === 'staff', trial = P.isTrial();
     const ini = ((p.first || '?')[0] + (p.last || '')[0]).toUpperCase();
     const pst = window.MRAPLACE ? MRAPLACE.status() : { attempts: 0, max: 2 };
     const pl = p.placement;
@@ -99,8 +125,13 @@
     app.innerHTML = `<div class="wrap">
       <section class="card pt-head ban-${esc(P.look().banner || 'w')}"><button class="pt-avwrap" id="me-av" title="Personaliza tu foto">${P.avHTML('pt-av')}<i class="pt-pen">✏️</i></button><div class="pt-hi"><span class="lbl">${greet}!</span><h1>${back ? '¡Hola de nuevo' : '¡Hola'}, <span class="nm">${esc(P.look().nick || p.first)}</span>! 👋</h1>
         <p class="muted">${staff ? '👨‍🏫 Perfil de profesor — puedes revisar todo.' : trial ? '🟢 Acceso gratuito — descubre tu ruta de aprendizaje.' : '🎓 Estudiante de mrarrieta.com'}</p></div>${M.mascot('pt-headmra', 'welcome')}</section>
-      ${trial ? `<div class="pt-trialbar">🟢 <div><b>Estás en tu acceso gratuito.</b> Tienes acceso al examen de clasificación y a los <b>2 primeros temas</b> de tu módulo. ¿Te gustó? <a target="_blank" rel="noopener" href="${WA(`¡Hola! Soy ${p.name}. Empecé gratis en la plataforma y quiero inscribirme 🚀`)}">Inscríbete aquí 💬</a></div></div>` : ''}
+      ${birthdayBanner()}
+      <div id="pt-ann"></div>
+      ${trial ? `<div class="pt-trialbar">${P.plan().expired ? `⏰ <div><b>Tu plan venció.</b> Tu progreso sigue guardado. Renuévalo para seguir con toda tu ruta. <a href="#pt-plan" id="tb-up">Renovar mi plan →</a></div>` : `🟢 <div><b>Estás en tu acceso gratuito.</b> Tienes el examen de clasificación y los <b>2 primeros temas</b> de tu módulo. ¿Te gustó? <a href="#pt-plan" id="tb-up">Desbloquea toda tu ruta →</a></div>`}</div>` : ''}
       ${main}
+      ${birthAsk()}
+      ${planSection()}
+      <div id="pt-live"></div>
       ${P.look().pic ? '' : `<div class="card pt-perso"><div class="pt-perso-img">${M.mascot('', 'wink')}</div><div><span class="lbl">Nuevo ✨</span><h2>Personaliza tu perfil</h2><p class="muted">Tómate una foto o crea <b>tu propio Mr. Arrieta</b>: vístelo, ponle sombrero y elige su fondo. ¡Haz tu plataforma más tuya!</p><button class="btn k" id="me-go">🎨 Personalizar ahora</button></div></div>`}
       <div class="sect-title"><h2>🧭 Mi ruta de aprendizaje</h2></div>
       ${routeBar()}
@@ -111,12 +142,15 @@
       ${certs()}
       <p class="center fx-foot" style="margin-top:22px;font-size:13.5px;font-weight:600">mrarrieta.com · ¡Aprende inglés HABLANDO! · WhatsApp ${esc(C.WHATSAPP.replace(/^57/, ''))}</p></div>`;
     if ($('#pt')) $('#pt').onclick = () => route('placement');
+    if ($('#tb-up')) $('#tb-up').onclick = (e) => { e.preventDefault(); const t = $('#pt-plan'); if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+    wireBirth(); live(); birthdayParty();
     // bienvenida de regreso (una vez por sesión)
-    try { if (back && !sessionStorage.getItem('mra_wb')) { sessionStorage.setItem('mra_wb', '1'); const pr = a && a.ready ? P.progress(a.id) : null;
+    try { if (P.isBirthday()) sessionStorage.setItem('mra_wb', '1'); // en su cumpleaños el saludo es la fiesta 🎂
+      if (back && !sessionStorage.getItem('mra_wb')) { sessionStorage.setItem('mra_wb', '1'); const pr = a && a.ready ? P.progress(a.id) : null;
       const wm = M.modal(`<div class="center wb">${P.pic() ? P.avHTML('pt-av big') : M.mascot('mascot bounce', 'wink')}<h2>Welcome back, ${esc(P.look().nick || p.first)}! 👋</h2><p style="font-size:17px">¡Qué bueno verte de nuevo! ${pr && pr.done ? `Llevas <b>${pr.done} clase(s)</b> en tu ruta. ¡Sigamos!` : 'Hoy es un gran día para avanzar en tu ruta de aprendizaje.'}</p>
         ${a && a.ready && !staff ? `<a class="btn k block lg" style="text-decoration:none" href="${a.url}">▶ Continuar mi ruta</a>` : ''}<button class="btn w block" id="wbx" style="margin-top:8px">Ir a mi perfil</button></div>`, { x: true });
       $('#wbx', wm).onclick = () => wm.remove(); M.confetti && M.confetti(900); } } catch (e) { }
-    if (!p.tourDone && !$('.modal')) setTimeout(portalTour, 700);
+    if (!p.tourDone) setTimeout(portalTour, 900);
     $('#me-av').onclick = () => route('me'); if ($('#me-go')) $('#me-go').onclick = () => route('me');
     if ($('#pt2')) $('#pt2').onclick = () => { if (staff) return route('placement'); const m = M.modal(`<h3>¿Repetir el examen de clasificación?</h3><p>¿No te sentiste a gusto con tu resultado? Puedes repetirlo: <b>tu ruta de aprendizaje se actualizará con el nuevo resultado</b>.</p><p class="muted">Tienes ${pst.rounds || 1} oportunidades de 2 intentos cada una. Llevas ${pst.attempts} intento(s)${pst.attempts >= pst.max && (pst.round || 1) < (pst.rounds || 1) ? ' — se activará tu <b>segunda oportunidad</b>' : ''}.</p><div class="row"><button class="btn k" id="y">Sí, repetir</button><button class="btn w" id="n">Cancelar</button></div>`, { x: true }); $('#n', m).onclick = () => m.remove(); $('#y', m).onclick = () => { m.remove(); route('placement'); }; };
     $$('.pt-mod').forEach(el => el.onclick = () => openMod(el.dataset.id));
@@ -132,12 +166,13 @@
     return `<button class="pt-mod ${r}" data-id="${m.id}"><div class="pt-mod-img" style="background-image:url('${U(m.img, 640, 360)}')"><span class="pt-mod-n">${m.n}</span><span class="pt-chip ${r}">${chip}</span></div>
       <div class="pt-mod-bd"><h3>${esc(m.name)} · ${esc(m.id)}</h3><div class="es">${esc(m.es)}</div><p>${esc(m.desc)}</p>
       ${showBar ? `<div class="pt-bar"><i style="width:${pr.pct}%"></i></div><small class="muted">${pr.done} de ${r === 'current' && trial ? 4 : m.classes} clases${P.passed(m.id) ? ' · 🎓 Aprobado' : ''}</small>` : ''}
-      ${r === 'locked' ? `<small class="muted">${trial ? 'Disponible al inscribirte' : 'Se abre cuando avances en tu ruta'}</small>` : ''}</div></button>`;
+      ${r === 'locked' ? `<small class="muted">${trial ? 'Disponible con Membership o Premium' : 'Se abre cuando avances en tu ruta'}</small>` : ''}</div></button>`;
   }
   function openMod(id) {
     const m = P.mod(id), r = P.role(id), a = P.assigned();
     if (r === 'current' || r === 'review') { location.href = m.url; return; }
     if (r === 'soon') return M.modal(`<div class="center">${M.mascot('mascot', 'think')}</div><h3 class="center">🚧 ${esc(m.name)} · ${esc(m.es)}</h3><p class="center">Este módulo está en construcción. ¡Muy pronto estará disponible en tu perfil!</p>`, { x: true });
+    if (P.isTrial() && window.MRPLANS && a) return MRPLANS.modal(M);
     const msg = P.isTrial() ? `Tu acceso gratuito incluye solo el inicio de tu ruta. ¡Inscríbete para estudiar todos los módulos!`
       : !a ? 'Primero toma tu examen de clasificación para saber en qué módulo empiezas.'
       : `Para abrir el ${m.name} primero debes <b>terminar y aprobar el examen final del ${esc(a.name)}</b>. ¡Paso a paso! 💪`;
@@ -148,7 +183,7 @@
   const courseState = () => { try { return JSON.parse(localStorage.getItem('mra_final_progress_v1') || '{}'); } catch (e) { return {}; } };
   const courseOpen = () => { const p = P.get(); return !!p && (p.type === 'staff' || ['A1', 'A2', 'B2', 'B2+'].every(id => P.passed(id))); };
   function courseCard() {
-    const p = P.get(); if (!p || p.type === 'trial') return '';
+    const p = P.get(); if (!p || P.isTrial()) return '';
     const open = courseOpen(), st = courseState(), passed = !!(st.final && st.final.passed);
     const n = ['A1', 'A2', 'B2', 'B2+'].filter(id => P.passed(id)).length;
     return `<a class="card pt-course ${open ? 'open' : ''} ${passed ? 'done' : ''}" href="examen-final.html${passed ? '#cert' : ''}"><div class="pt-course-ic">🏆</div><div><span class="lbl">Meta final de tu ruta</span><h3>Examen final del curso</h3>
@@ -161,7 +196,8 @@
   }
   /* ---------- tour guiado del perfil (primera vez de cualquier estudiante) ---------- */
   function portalTour() {
-    if ($('#tour')) return; const p = P.get(); if (!p) return;
+    if ($('#tour')) return; const p = P.get(); if (!p || p.tourDone) return;
+    if ($('.modal')) return setTimeout(portalTour, 800); // espera a que cierre el saludo (cumpleaños / welcome back)
     const fn = esc(P.look().nick || p.first || ''); const a = P.assigned();
     const all = [
       { mood: 'welcome', t: `¡Hola, ${fn}! 👋`, d: 'Soy Mr. Arrieta, tu profe. Te muestro en 1 minuto cómo funciona tu plataforma.' },
@@ -169,6 +205,8 @@
       { sel: '.pt-step', mood: 'idea', t: 'Primer paso: tu examen de clasificación', d: 'Son 40 preguntas de Listening, Reading, Writing y Speaking. Con tu resultado se crea <b>tu ruta de aprendizaje</b>.' },
       { sel: '.pt-mymod', mood: 'pointside', t: 'Tu ruta de aprendizaje', d: 'Aquí ves <b>en qué punto de tu ruta estás</b> y entras a tus clases.' },
       { sel: '.pt-trialbar', mood: 'present', t: 'Tu acceso gratuito', d: 'Puedes tomar el examen de clasificación y explorar los <b>2 primeros temas</b> de tu ruta. ¡Disfrútalo!' },
+      { sel: '#pt-plan', mood: 'idea', t: 'Tu plan', d: P.plan().premium ? 'Tienes <b>Premium</b>: toda la plataforma + clases grupales, clases VIP y el Club de conversación.' : P.plan().paid ? 'Tienes <b>Membership</b>: toda la plataforma y tu ruta completa. Si quieres acompañamiento de profes, pásate a Premium.' : 'Aquí ves los planes: <b>Membership</b> desbloquea toda la plataforma y <b>Premium</b> suma clases con profes.' },
+      { sel: '.lv-wrap', mood: 'present', t: 'Tus clases con profes', d: 'Aquí ves tu <b>grupo</b>, reservas tus <b>clases VIP</b> con tus créditos y entras al <b>Club de conversación</b>.' },
       { sel: '.pt-routebar', mood: 'present', t: 'Tu camino', d: 'Tu ruta va de A1 a B2+. Cada etapa se abre cuando <b>apruebas el examen final</b> de la anterior.' },
       { sel: '.pt-perso', mood: 'wink', t: 'Hazla tuya', d: 'Viste a tu Mr. Arrieta, ponle sombrero, elige colores y fondo. ¡Tu plataforma, a tu estilo!' },
       { sel: '#out', mood: 'watch', t: 'Salir', d: 'Con este botón cierras tu sesión. Tu progreso queda guardado.' },
@@ -295,6 +333,136 @@
       }
     }
     show(tab || 'av');
+  }
+
+  /* ---------- planes y clases con profes (nube) ---------- */
+  const fmtD = (iso, o) => { try { return new Date(String(iso).slice(0, 10) + 'T12:00:00').toLocaleDateString('es-CO', o || { weekday: 'short', day: 'numeric', month: 'short' }); } catch (e) { return iso; } };
+  const fmtT = (t) => { const [hh, mm] = String(t || '00:00').split(':').map(Number); const ap = hh >= 12 ? 'p. m.' : 'a. m.'; return `${((hh + 11) % 12) + 1}:${String(mm || 0).padStart(2, '0')} ${ap}`; };
+  function planSection() {
+    const p = P.get(); if (!p || p.type === 'staff' || !window.MRPLANS) return '';
+    const pl = P.plan(); if (pl.legacy && !P.isTrial()) return '';
+    const name = { free: 'Acceso gratuito', membership: 'Membership', premium: 'Premium' }[pl.eff] || 'Acceso gratuito';
+    const ic = { free: '🟢', membership: '⭐', premium: '👑' }[pl.eff] || '🟢';
+    const end = pl.end ? fmtD(pl.end, { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+    const sub = pl.expired ? `Tu plan ${esc(MRPLANS.PL[pl.plan] ? MRPLANS.PL[pl.plan].name : '')} venció el ${end}. Tu progreso sigue guardado.`
+      : pl.eff === 'free' ? 'Examen de clasificación, tu ruta de aprendizaje y los 2 primeros temas.'
+      : `Activo hasta el <b>${end}</b>${pl.daysLeft !== null && pl.daysLeft <= 5 ? ` · <b class="pl-warn">vence en ${pl.daysLeft} día${pl.daysLeft === 1 ? '' : 's'}</b>` : ''}`;
+    const renew = pl.expired || (pl.paid && pl.daysLeft !== null && pl.daysLeft <= 5);
+    return `<div class="sect-title" id="pt-plan"><h2>💎 Mi plan</h2></div>
+      <div class="card pl-mine ${pl.eff}${pl.expired ? ' exp' : ''}"><div class="pl-mine-ic">${pl.expired ? '⏰' : ic}</div><div class="grow"><span class="lbl">Tu plan actual</span><h2>${pl.expired ? 'Plan vencido' : name}</h2><p class="muted">${sub}</p></div></div>
+      ${pl.eff === 'premium' && !renew ? '' : MRPLANS.cards(pl.expired ? pl.plan : pl.eff, renew)}`;
+  }
+  // sección Premium: grupo, créditos VIP, próximas clases, club — se llena con datos de la nube
+  async function live() {
+    if (!window.MRAC || !MRAC.code()) return;
+    const box = $('#pt-live'); const sig = () => { const q = P.get() || {}; return [q.plan, q.planEnd, q.type, q.module, q.expired].map(x => String(x == null ? '' : x)).join('|'); }; const before = sig();
+    if (box && P.plan().premium) box.innerHTML = '<div class="sect-title"><h2>👩‍🏫 Mis clases con profes</h2></div><div class="card lv-load">⏳ Cargando tus clases…</div>';
+    const r = await MRAC.me(); if (!r || !document.body.contains(box)) return;
+    if (r.ok === false && (r.err === 'notfound' || r.err === 'inactive')) { M.toast('Tu acceso ya no está activo. Escríbenos por WhatsApp.'); return; }
+    if (before !== sig()) { topbar(); return home(); } // el plan cambió en la nube → actualizar perfil
+    const ann = r.conf && r.conf.announcement; if (ann && $('#pt-ann')) $('#pt-ann').innerHTML = `<div class="pt-ann">📣 ${esc(ann)}</div>`;
+    if (!r.premium) { if (box) box.innerHTML = ''; return; }
+    renderLive(box, r);
+  }
+  function renderLive(box, r) {
+    const pr = r.premium, cr = pr.credits, g = pr.group;
+    const up = pr.upcoming || [];
+    const today = P.todayISO();
+    const pend = (pr.requests || []).find(q => q.status === 'pendiente');
+    box.innerHTML = `<div class="sect-title"><h2>👩‍🏫 Mis clases con profes</h2></div><div class="lv-wrap">
+      <div class="lv-stats"><div class="lv-st vip"><b>${cr.vipLeft}<small>/${cr.vipTotal}</small></b><span>Créditos VIP</span><em>Se renuevan el ${fmtD(addDay(cr.cycleEnd, 1), { day: 'numeric', month: 'short' })}</em></div>
+        <div class="lv-st grp"><b>${cr.groupDone}<small>/${cr.groupTotal}</small></b><span>Clases grupales</span><em>Este mes</em></div>
+        <div class="lv-st all"><b>${r.attendedTotal || 0}</b><span>Clases asistidas</span><em>En total</em></div></div>
+      <div class="card lv-card lv-vip"><div class="lv-h"><span class="lv-ic">⭐</span><div><span class="lbl">Clases VIP · 1 a 1</span><h3>Reserva tu clase VIP</h3></div></div>
+        <p class="muted">Elige <b>profesor, fecha y hora</b> entre los espacios disponibles. Cada reserva usa 1 crédito. Puedes cancelar hasta ${pr.cancelHours} horas antes y recuperarlo.</p>
+        <button class="btn k lg" id="lv-book" ${cr.vipLeft ? '' : 'disabled'}>${cr.vipLeft ? '📅 Reservar clase VIP' : '✅ Usaste tus créditos de este mes'}</button></div>
+      <div class="card lv-card lv-grp"><div class="lv-h"><span class="lv-ic">👥</span><div><span class="lbl">Clases grupales · asignadas por la escuela</span><h3>${g ? esc(g.name) : 'Tu grupo se está asignando'}</h3></div></div>
+        ${g ? `<div class="lv-kv"><span>📚 Nivel</span><b>${esc(g.level || '—')}</b><span>👩‍🏫 Profe</span><b>${esc(g.teacher || '—')}</b><span>🗓️ Horario</span><b>${esc(g.days || '')} · ${g.time ? fmtT(g.time) : ''} <small>(hora Colombia)</small></b></div>
+          <div class="row lv-btns">${g.meet ? `<a class="btn w" target="_blank" rel="noopener" href="${esc(g.meet)}">🎥 Enlace de mi grupo</a>` : ''}${pend ? `<span class="lv-pend">⏳ Solicitud de cambio en revisión: “${esc(pend.preferred)}”</span>` : '<button class="btn w" id="lv-chg">🔁 Solicitar cambio de horario</button>'}</div>`
+        : `<p class="muted">${esc(pr.groupInfo || 'La escuela te asignará un grupo según tu nivel. Te avisaremos por correo.')}</p>${pend ? `<span class="lv-pend">⏳ Solicitud en revisión: “${esc(pend.preferred)}”</span>` : '<button class="btn w" id="lv-chg">🗓️ Indicar mi horario preferido</button>'}`}
+        ${(pr.requests || []).filter(q => q.status !== 'pendiente').slice(-1).map(q => `<p class="lv-res ${q.status}">${q.status === 'aprobada' ? '✅ Tu último cambio de horario fue aprobado.' : '❌ Tu última solicitud no fue aprobada.'}${q.note ? ' ' + esc(q.note) : ''}</p>`).join('')}</div>
+      <div class="card lv-card lv-next"><div class="lv-h"><span class="lv-ic">📅</span><div><span class="lbl">Agenda</span><h3>Mis próximas clases</h3></div></div>
+        ${up.length ? `<div class="lv-list">${up.map(c => `<div class="lv-cl ${c.type}${c.date === today ? ' hoy' : ''}"><div class="lv-dt"><b>${fmtD(c.date, { day: 'numeric' })}</b><small>${fmtD(c.date, { month: 'short' })}</small></div>
+          <div class="grow"><b>${c.type === 'vip' ? '⭐ Clase VIP' : '👥 Clase grupal'}${c.date === today ? ' <i class="lv-today">HOY</i>' : ''}</b><small>${fmtD(c.date, { weekday: 'long' })} · ${fmtT(c.time)} · ${esc(c.teacher || '')}${c.topic ? ' · ' + esc(c.topic) : ''}</small></div>
+          <div class="lv-act">${c.meet ? `<a class="btn k sm" target="_blank" rel="noopener" href="${esc(c.meet)}">🎥 Entrar</a>` : ''}${c.canCancel ? `<button class="btn w sm" data-cancel="${esc(c.id)}">Cancelar</button>` : ''}</div></div>`).join('')}</div>` : '<p class="muted">No tienes clases programadas todavía.</p>'}</div>
+      <div class="card lv-card lv-club"><div class="lv-h"><span class="lv-ic">🗣️</span><div><span class="lbl">Incluido en Premium</span><h3>${esc(pr.club.title)}</h3></div></div>
+        <p>${esc(pr.club.text)}</p>${pr.club.link ? `<a class="btn k" target="_blank" rel="noopener" href="${esc(pr.club.link)}">🎙️ Entrar al club</a>` : '<p class="muted">El enlace se publica aquí antes de cada sesión.</p>'}</div>
+      ${(pr.history || []).length ? `<details class="card lv-card lv-hist"><summary>📜 Historial de clases (${pr.history.length})</summary><div class="lv-list">${pr.history.map(c => `<div class="lv-cl ${c.type}"><div class="grow"><b>${c.type === 'vip' ? '⭐ VIP' : '👥 Grupal'} · ${fmtD(c.date)} ${fmtT(c.time)}</b><small>${esc(c.teacher || '')} · ${c.status === 'done' ? (c.attended ? '✅ Asististe' : '❌ No asististe') : c.status === 'cancelled' ? 'Cancelada' : c.status === 'noshow' ? '❌ No asististe' : esc(c.status)}</small></div></div>`).join('')}</div></details>` : ''}
+    </div>`;
+    if ($('#lv-book')) $('#lv-book').onclick = vipBooking;
+    if ($('#lv-chg')) $('#lv-chg').onclick = () => changeModal(g);
+    $$('[data-cancel]', box).forEach(b => b.onclick = () => cancelVip(b.dataset.cancel));
+  }
+  function addDay(iso, n) { const d = new Date(String(iso) + 'T12:00:00'); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); }
+  async function vipBooking() {
+    const m = M.modal(`<div class="vb"><h3>📅 Reserva tu clase VIP</h3><div id="vb-b" class="center">⏳ Buscando espacios disponibles…</div></div>`, { x: true });
+    const r = await MRAC.call('vipOptions', { code: MRAC.code() }); const b = $('#vb-b', m); if (!b) return;
+    if (!r.ok) { b.innerHTML = `<p>${r.err === 'not_premium' ? 'Las clases VIP son parte del plan Premium.' : 'No pudimos cargar los espacios. Revisa tu conexión.'}</p>`; return; }
+    if (!r.teachers.length) { b.innerHTML = `<p class="muted">Por ahora no hay espacios disponibles en los próximos días. Los profes publican nuevos horarios cada semana: vuelve pronto o escríbenos.</p><a class="btn w block" target="_blank" rel="noopener" href="${WA('¡Hola! Soy ' + P.get().name + ' (Premium) y no encuentro espacios para mi clase VIP 🙏')}">💬 Escribir a la escuela</a>`; return; }
+    let T = null, D = null, S = null;
+    const step = () => {
+      if (!T) { b.innerHTML = `<p class="vb-st">1️⃣ Elige tu profesor</p><div class="vb-teachers">${r.teachers.map(t => `<button class="vb-t" data-t="${esc(t.id)}"><span class="vb-av">${esc((t.name || '?').split(' ').map(x => x[0]).slice(0, 2).join(''))}</span><div><b>${esc(t.name)}</b><small>${esc(t.levels || '')}${t.bio ? ' · ' + esc(t.bio) : ''}</small><em>${t.slots.length} espacio${t.slots.length === 1 ? '' : 's'} disponible${t.slots.length === 1 ? '' : 's'}</em></div></button>`).join('')}</div><p class="muted vb-cr">Te quedan <b>${r.credits.vipLeft}</b> crédito(s) VIP este mes.</p>`;
+        $$('.vb-t', b).forEach(x => x.onclick = () => { T = r.teachers.find(t => t.id === x.dataset.t); sfx('tap'); step(); }); return; }
+      const dates = [...new Set(T.slots.map(s => s.date))];
+      if (!D) D = dates[0];
+      const times = T.slots.filter(s => s.date === D);
+      b.innerHTML = `<button class="btn w sm" id="vb-back">← Profes</button><p class="vb-st">2️⃣ ${esc(T.name)}: elige fecha y hora <small>(hora Colombia)</small></p>
+        <div class="vb-dates">${dates.map(d => `<button class="vb-d${d === D ? ' on' : ''}" data-d="${d}"><small>${fmtD(d, { weekday: 'short' })}</small><b>${fmtD(d, { day: 'numeric' })}</b><small>${fmtD(d, { month: 'short' })}</small></button>`).join('')}</div>
+        <div class="vb-times">${times.map(s => `<button class="vb-h${S && S.id === s.id ? ' on' : ''}" data-s="${esc(s.id)}">${fmtT(s.time)}<small>${esc(s.duration || '60')} min</small></button>`).join('')}</div>
+        <label class="pt-lab">¿Qué quieres practicar? <small class="muted">(opcional)</small></label><input class="inp" id="vb-topic" maxlength="200" placeholder="Ej: entrevista de trabajo en inglés">
+        <button class="btn k block lg" id="vb-ok" ${S ? '' : 'disabled'}>${S ? `✅ Reservar ${fmtD(S.date)} · ${fmtT(S.time)}` : 'Elige una hora'}</button>`;
+      $('#vb-back', b).onclick = () => { T = null; D = null; S = null; step(); };
+      $$('.vb-d', b).forEach(x => x.onclick = () => { D = x.dataset.d; S = null; step(); });
+      $$('.vb-h', b).forEach(x => x.onclick = () => { S = T.slots.find(s => s.id === x.dataset.s); sfx('tap'); const tp = $('#vb-topic', b).value; step(); $('#vb-topic', b).value = tp; });
+      $('#vb-ok', b).onclick = async () => { const ok = $('#vb-ok', b); ok.disabled = true; ok.textContent = 'Reservando…';
+        const res = await MRAC.call('vipBook', { code: MRAC.code(), slotId: S.id, topic: $('#vb-topic', b).value.trim() });
+        if (res.ok) { m.remove(); sfx('win'); M.confetti(1800); M.modal(`<div class="center">${M.mascot('mascot bounce', 'celebrate')}<h3>¡Clase VIP reservada! 🎉</h3><p style="font-size:17px">${esc(T.name)} · <b>${fmtD(S.date, { weekday: 'long', day: 'numeric', month: 'long' })}</b> · ${fmtT(S.time)} (hora Colombia)</p><p class="muted">Te enviamos la confirmación a tu correo. El enlace de la clase aparece en “Mis próximas clases”.</p></div>`, { x: true }); await MRAC.me(true); live(); }
+        else { M.toast({ taken: 'Ese espacio acaba de ser reservado. Elige otro 🙏', no_credits: 'Ya usaste tus créditos VIP de este mes.', too_late: 'Ese espacio ya no se puede reservar (muy pronto).' }[res.err] || 'No se pudo reservar. Inténtalo de nuevo.');
+          if (res.err === 'taken') { const rr = await MRAC.call('vipOptions', { code: MRAC.code() }); if (rr.ok) { r.teachers = rr.teachers; T = r.teachers.find(t => t.id === T.id) || null; S = null; D = null; } step(); } else { ok.disabled = false; ok.textContent = 'Reintentar'; } } };
+    };
+    step();
+  }
+  function changeModal(g) {
+    const m = M.modal(`<h3>🔁 ${g ? 'Solicitar cambio de horario' : 'Mi horario preferido'}</h3>${g ? `<p class="muted">Grupo actual: <b>${esc(g.name)}</b> · ${esc(g.days || '')} ${g.time ? fmtT(g.time) : ''}</p>` : ''}
+      <label class="pt-lab">¿Qué horario te funciona mejor?</label><input class="inp" id="cq-p" maxlength="200" placeholder="Ej: lunes y miércoles después de las 7 p. m.">
+      <label class="pt-lab">Motivo <small class="muted">(opcional)</small></label><textarea class="inp" id="cq-r" rows="3" maxlength="500" placeholder="Cuéntanos brevemente"></textarea>
+      <p class="muted" style="font-size:14px">Administración revisa tu solicitud y te avisa por correo.</p><button class="btn k block" id="cq-ok">Enviar solicitud</button>`, { x: true });
+    $('#cq-ok', m).onclick = async () => { const pf = $('#cq-p', m).value.trim(); if (!pf) { $('#cq-p', m).classList.add('wrong'); return; }
+      const b = $('#cq-ok', m); b.disabled = true; b.textContent = 'Enviando…';
+      const r = await MRAC.call('changeReq', { code: MRAC.code(), preferred: pf, reason: $('#cq-r', m).value.trim() });
+      if (r.ok) { m.remove(); sfx('win'); M.toast('✅ Solicitud enviada. Te avisaremos por correo.'); await MRAC.me(true); live(); }
+      else { b.disabled = false; b.textContent = 'Enviar solicitud'; M.toast(r.err === 'pending' ? 'Ya tienes una solicitud en revisión.' : 'No se pudo enviar. Inténtalo de nuevo.'); } };
+  }
+  function cancelVip(id) {
+    const m = M.modal(`<h3>¿Cancelar tu clase VIP?</h3><p>Recuperas tu crédito y el espacio queda libre para otro estudiante.</p><div class="row"><button class="btn k" id="y">Sí, cancelar</button><button class="btn w" id="n">No</button></div>`, { x: true });
+    $('#n', m).onclick = () => m.remove();
+    $('#y', m).onclick = async () => { $('#y', m).disabled = true; const r = await MRAC.call('vipCancel', { code: MRAC.code(), classId: id }); m.remove();
+      if (r.ok) { M.toast('Clase cancelada. Recuperaste tu crédito ✅'); await MRAC.me(true); live(); } else M.toast(r.err === 'too_late' ? 'Ya no se puede cancelar (faltan menos de 24 horas).' : 'No se pudo cancelar.'); };
+  }
+  /* ---------- cumpleaños ---------- */
+  const bdKey = () => 'mra_bday_' + P.todayISO();
+  const bdaySeen = () => { try { return !!localStorage.getItem(bdKey()); } catch (e) { return true; } };
+  function birthdayBanner() { const p = P.get(); if (!P.isBirthday()) return ''; return `<div class="pt-bday" id="pt-bday"><span class="bd-cake">🎂</span><div><b>Happy Birthday, ${esc(P.look().nick || p.first)}! 🎉</b><small>¡Feliz cumpleaños! Todo el equipo de mrarrieta.com te desea un año increíble.</small></div><button class="btn w sm" id="bd-again">🎉</button></div>`; }
+  function birthdayParty(force) {
+    if (!P.isBirthday() || (bdaySeen() && !force)) { const b = $('#bd-again'); if (b) b.onclick = () => birthdayParty(true); return; }
+    try { localStorage.setItem(bdKey(), '1'); } catch (e) { }
+    const p = P.get(); const age = p.birth ? (+P.todayISO().slice(0, 4) - +p.birth.slice(0, 4)) : 0;
+    setTimeout(() => { M.confetti(5000); sfx('win');
+      const m = M.modal(`<div class="center bd-modal"><div class="bd-balloons">🎈🎂🎈</div>${M.mascot('mascot bounce', 'celebrate')}<h2>Happy Birthday, ${esc(P.look().nick || p.first)}! 🥳</h2>
+        <p style="font-size:18px"><b>Today is your special day!</b><br>¡Hoy es tu día especial! Te deseamos un año lleno de alegría, salud y muchos logros… ¡también en inglés!</p>
+        ${age > 0 && age < 110 ? `<p class="bd-age">🎉 ${age} years young! 🎉</p>` : ''}<button class="btn k block lg" id="bd-ok">Thank you! 💛</button></div>`, { x: true });
+      $('#bd-ok', m).onclick = () => m.remove();
+      try { const u = new SpeechSynthesisUtterance(`Happy birthday, ${p.first}!`); u.lang = 'en-US'; speechSynthesis.speak(u); } catch (e) { } }, 500);
+    const b = $('#bd-again'); if (b) b.onclick = () => birthdayParty(true);
+  }
+  // perfiles antiguos sin fecha de nacimiento: la pedimos una vez
+  function birthAsk() { const p = P.get(); if (!p || p.type === 'staff' || p.birth || !p.first) return ''; return `<div class="card pt-bask"><span class="bd-cake">🎂</span><div class="grow"><b>¿Cuándo es tu cumpleaños?</b><small>Queremos felicitarte ese día 🎉</small><div class="row"><input class="inp" id="bq-d" type="date" max="${P.todayISO()}" min="1930-01-01">${p.email ? '' : '<input class="inp" id="bq-e" type="email" placeholder="tu correo">'}<button class="btn k" id="bq-ok">Guardar</button></div></div></div>`; }
+  function wireBirth() {
+    const ok = $('#bq-ok'); if (!ok) return;
+    ok.onclick = () => { const d = $('#bq-d').value; const e = $('#bq-e') ? $('#bq-e').value.trim() : ''; if (!d) return $('#bq-d').classList.add('wrong');
+      if ($('#bq-e') && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)) return $('#bq-e').classList.add('wrong');
+      const p = P.get(); p.birth = d; if (e) p.email = e; P.save(p); if (window.MRAC && MRAC.code()) MRAC.saveProfile(Object.assign({ birth: d }, e ? { email: e } : {}));
+      sfx('win'); M.toast('¡Gracias! 🎂 Lo tendremos presente.'); home(); };
   }
   function placement() {
     window.MRAPLACE.run(app, { route: (r) => route(r || 'home'), after: () => topbar() });

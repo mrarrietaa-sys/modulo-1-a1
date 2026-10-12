@@ -107,7 +107,7 @@
   /* ====== t9p1 — TELÉFONO ROTO EN LA OFICINA ====== */
   async function reportedGossipChain(stage, p) {
     const R = sample(G().gossip || [], 6); let c = 0; const missed = []; const hops = [];
-    const crew = ['🧑‍💼', '👩‍💻', '🧔', '👩‍🦱', '👨‍🦰', '👩‍🔧', '🧑‍🎤'];
+    const crew = [0, 1, 2, 3, 4, 5, 6].map(i => window.M1.face(i));
     for (let k = 0; k < R.length && live(stage); k++) {
       const r = R[k];
       const body = head(stage, { lbl: 'Game', title: '📞 Teléfono roto en la oficina', ins: 'Pasa el mensaje <b>sin romperlo</b>: completa el estilo indirecto hueco por hueco (<b>say/tell</b>, <b>backshift</b>, tiempo y lugar).', count: `${k + 1} / ${R.length}` });
@@ -140,7 +140,7 @@
     for (let k = 0; k < R.length && live(stage); k++) {
       const r = R[k];
       const body = head(stage, { lbl: 'Game', title: '⚖️ Orden en la sala', ins: 'Eres el/la <b>taquígrafo(a)</b> del juicio. 1) Elige el <b>verbo</b> que resume lo que dijo. 2) Elige la oración con el <b>patrón correcto</b>.', count: `Caso ${k + 1} / ${R.length}` });
-      const court = h(`<div class="g6b-court"><div class="g6b-bench"><span class="g6b-judge">👩‍⚖️</span><span class="g6b-gavel">🔨</span><small>THE HONORABLE J. MARTÍNEZ</small></div>
+      const court = h(`<div class="g6b-court"><div class="g6b-bench"><span class="g6b-judge">${window.M1.face(5,'f')}</span><span class="g6b-gavel">🔨</span><small>THE HONORABLE J. MARTÍNEZ</small></div>
         <div class="g6b-stand"><span class="g6b-wit">${r.e}</span><div class="g6b-q"><small>${esc(r.role)}</small>“${esc(r.q)}”</div></div></div>`); body.appendChild(court);
       $('.g6b-q', court).appendChild(rep(r.qau, '🔊'));
       body.appendChild(h(`<p class="g6b-step">① ¿Qué hizo? <i>He / She…</i></p>`));
@@ -221,7 +221,7 @@
       const r = R[k]; const aud = 40 + Math.round(c / R.length * 60);
       const body = head(stage, { lbl: 'Game', title: '📺 Noticiero en vivo', ins: 'El reportero envía la noticia en voz <b>activa</b>. Tú eres el presentador: léela al aire en <b>voz pasiva</b> con el tiempo verbal correcto.', count: `${k + 1} / ${R.length}` });
       const tv = h(`<div class="g6b-tv"><div class="g6b-tv-top"><span class="g6b-live">● LIVE</span><b>NEWS 24</b><span>👁️ ${aud}%</span></div>
-        <div class="g6b-tv-scr"><span class="g6b-anchor">🧑‍💼</span><div class="g6b-desk">NEWS 24</div></div>
+        <div class="g6b-tv-scr"><span class="g6b-anchor">${window.M1.face(4,'m')}</span><div class="g6b-desk">NEWS 24</div></div>
         <div class="g6b-ticker"><span>BREAKING ▸ …</span></div></div>`); body.appendChild(tv);
       const note = h(`<div class="g6b-note"><b>📝 From the field (active voice):</b><p>${esc(r.act)}</p></div>`); body.appendChild(note); note.appendChild(rep(r.aau, '🔊'));
       const ok = await pick(body, r.a, r.o);

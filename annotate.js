@@ -158,14 +158,16 @@ body.ann-draw{user-select:none;-webkit-user-select:none}
     fab = document.createElement('button'); fab.id = 'ann-fab'; fab.title = 'Barra del profesor: escribe y señala en la pantalla (arrástrala; suéltala en la ✕ para quitarla)'; fab.setAttribute('aria-label', 'Barra del profesor'); fab.innerHTML = I.logo;
     drop = document.createElement('div'); drop.id = 'ann-drop'; drop.textContent = '✕';
     document.body.appendChild(fab); document.body.appendChild(drop);
-    let sx, sy, ox, oy, moved = false, down = false;
-    const over = (x, y) => { const r = drop.getBoundingClientRect(); return x > r.left - 20 && x < r.right + 20 && y > r.top - 20 && y < r.bottom + 20; };
-    fab.addEventListener('pointerdown', e => { down = true; moved = false; sx = e.clientX; sy = e.clientY; const r = fab.getBoundingClientRect(); ox = r.left; oy = r.top; try { fab.setPointerCapture(e.pointerId); } catch (x) { } });
+    let sx, sy, ox, oy, moved = false, down = false, hot = false;
+    // zona de la ✕: se mide SIEMPRE mientras está visible (si se oculta antes de medir, su caja mide 0 y nunca se quita la barra)
+    const over = (x, y) => { const r = drop.getBoundingClientRect(); if (!r.width) return false; return x > r.left - 24 && x < r.right + 24 && y > r.top - 24 && y < r.bottom + 24; };
+    const fabOver = () => { const a = fab.getBoundingClientRect(), r = drop.getBoundingClientRect(); if (!r.width) return false; return Math.hypot(a.left + a.width / 2 - (r.left + r.width / 2), a.top + a.height / 2 - (r.top + r.height / 2)) < 60; };
+    fab.addEventListener('pointerdown', e => { down = true; moved = false; hot = false; sx = e.clientX; sy = e.clientY; const r = fab.getBoundingClientRect(); ox = r.left; oy = r.top; try { fab.setPointerCapture(e.pointerId); } catch (x) { } });
     fab.addEventListener('pointermove', e => { if (!down) return; const dx = e.clientX - sx, dy = e.clientY - sy; if (!moved && Math.hypot(dx, dy) < 8) return;
       if (!moved) { drop.classList.add('show'); bar.classList.add('hidden'); } moved = true; fab.classList.add('drag');
-      fab.style.left = Math.min(Math.max(4, ox + dx), innerWidth - 56) + 'px'; fab.style.top = Math.min(Math.max(4, oy + dy), innerHeight - 56) + 'px'; drop.classList.toggle('hot', over(e.clientX, e.clientY)); });
+      fab.style.left = Math.min(Math.max(4, ox + dx), innerWidth - 56) + 'px'; fab.style.top = Math.min(Math.max(4, oy + dy), innerHeight - 56) + 'px'; hot = over(e.clientX, e.clientY) || fabOver(); drop.classList.toggle('hot', hot); });
     const up = e => { if (!down) return; down = false; fab.classList.remove('drag');
-      if (moved) { drop.classList.remove('show', 'hot'); if (e && over(e.clientX, e.clientY)) { hide(true); return; }
+      if (moved) { const kill = hot || (e && (over(e.clientX, e.clientY) || fabOver())); hot = false; drop.classList.remove('show', 'hot'); if (kill) { hide(true); return; }
         const r = fab.getBoundingClientRect(); st.x = r.left / innerWidth; st.y = r.top / innerHeight; save(); layout(); } };
     fab.addEventListener('pointerup', up); fab.addEventListener('pointercancel', () => up(null));
     fab.addEventListener('click', e => { if (moved) { e.preventDefault(); moved = false; return; } st.open = !st.open; save(); if (st.open && tool === 'cursor') setTool('pen'); if (!st.open) setTool('cursor'); layout(); });

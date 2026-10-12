@@ -173,7 +173,7 @@
     for (let k = 0; k < R.length && live(stage); k++) {
       const r = R[k];
       const body = head(stage, { lbl: 'Game', title: '💊 En la farmacia', ins: 'Eres el farmaceuta. Escucha al cliente y elige el <b>mejor consejo</b> (should / shouldn\'t).', count: `Cliente ${k + 1} / ${R.length}` });
-      body.appendChild(h(`<div class="g3-officer">${k % 2 ? '🧔🏽' : '👩🏻'}<div class="bubble">“${esc(r.p)}”<small>${esc(r.pes)}</small></div></div>`)).appendChild(rep(r.pau));
+      body.appendChild(h(`<div class="g3-officer">${window.M1.face(k, k % 2 ? 'm' : 'f')}<div class="bubble">“${esc(r.p)}”<small>${esc(r.pes)}</small></div></div>`)).appendChild(rep(r.pau));
       play(r.pau);
       const opts = shuffle([r, ...sample(PH.filter(x => x !== r), 2)]);
       const ok = await ask(body, opts.map(o => `💊 ${esc(o.a)}`), opts.indexOf(r));
@@ -391,7 +391,7 @@
   /* ====== t9p1 — SHOW DE TALENTOS ====== */
   async function talentShow(stage, p) {
     const AB = [['🏊', 'swim', 'nadar'], ['🚗', 'drive', 'manejar'], ['🎸', 'play the guitar', 'tocar guitarra'], ['🍳', 'cook', 'cocinar'], ['💃', 'dance salsa', 'bailar salsa'], ['🇫🇷', 'speak French', 'hablar francés'], ['🎤', 'sing', 'cantar']];
-    const C = [['Laura', 'she', '👩🏻'], ['Andrés', 'he', '👨🏽'], ['Sofía', 'she', '👩🏽‍🦱'], ['Mateo', 'he', '🧔🏻']]; let c = 0; const missed = []; const ROUNDS = 6;
+    const C = [['Laura', 'she', window.M1.face(0,'f')], ['Andrés', 'he', window.M1.face(0,'m')], ['Sofía', 'she', window.M1.face(1,'f')], ['Mateo', 'he', window.M1.face(1,'m')]]; let c = 0; const missed = []; const ROUNDS = 6;
     const people = C.map(([n, pr, e]) => ({ n, pr, e, ab: sample(AB, 4).map(a => [a, Math.random() < .5]) }));
     const body0 = () => people.map(x => `<div class="g4-cand"><div class="g4-ce">${x.e}</div><b>${x.n}</b>${x.ab.map(([a, y]) => `<span class="${y ? 'y' : 'n'}">${a[0]} ${y ? '✓' : '✗'}</span>`).join('')}</div>`).join('');
     for (let k = 0; k < ROUNDS && live(stage); k++) {
@@ -449,7 +449,7 @@
     for (let k = 0; k < R.length && live(stage); k++) {
       const r = R[k];
       const body = head(stage, { lbl: 'Game', title: '🎉 Eres el anfitrión', ins: 'Tus invitados llegan a la fiesta. Escucha lo que dicen y elige la <b>respuesta correcta</b> con el pronombre reflexivo.', count: `Invitado ${k + 1} / ${R.length}` });
-      body.appendChild(h(`<div class="g4-party"><div class="g4-pguest">${['👩🏽', '🧑🏻', '👨🏾', '👩🏼‍🦰', '🧔🏽', '👱🏻‍♀️'][k % 6]}<div class="bubble">“${esc(r.g)}”</div></div><div class="g4-pdeco">🎈🎶🍰🥤🎉</div></div>`)).appendChild(rep(r.gau)); play(r.gau);
+      body.appendChild(h(`<div class="g4-party"><div class="g4-pguest">${window.M1.face(k)}<div class="bubble">“${esc(r.g)}”</div></div><div class="g4-pdeco">🎈🎶🍰🥤🎉</div></div>`)).appendChild(rep(r.gau)); play(r.gau);
       const opts = shuffle([r.a, ...r.o]);
       const ok = await ask(body, opts.map(o => `🏠 ${esc(o)}`), opts.indexOf(r.a));
       if (ok) c++; else missed.push({ en: r.a, au: r.aau });

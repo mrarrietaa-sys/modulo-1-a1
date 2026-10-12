@@ -30,19 +30,44 @@
   /* ================= 1. LEARN (Explanation) ================= */
   async function learn(stage, p) {
     const isPl = !!p.plurals;
-    const body = head(stage, { lbl: 'Explanation', title: 'Listen and repeat', ins: 'Toca cada tarjeta para escuchar la pronunciación y <b>repítela en voz alta</b>. Usa <b>“Escuchar todo”</b> para oírlas seguidas.' });
-    const tools = h(`<div class="row" style="margin-bottom:14px"><button class="btn sm k" id="all">▶ Escuchar todo</button><span class="muted" id="cnt"></span></div>`);
+    // escuchar + grabar la voz del estudiante repitiendo + calificación con voz (o autoevaluación si el navegador no reconoce voz)
+    const canRec = M.canSR || !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder);
+    const body = head(stage, { lbl: 'Explanation', title: 'Listen and repeat', ins: canRec
+      ? `Toca cada tarjeta para <b>escuchar</b> la pronunciación. Luego toca <b>🎙️ Repetir</b> y dila en voz alta: ${M.canSR ? 'te digo si la dijiste bien.' : 'grábate y compárate con el modelo.'} Usa <b>“Escuchar todo”</b> para oírlas seguidas.`
+      : 'Toca cada tarjeta para escuchar la pronunciación y <b>repítela en voz alta</b>. Usa <b>“Escuchar todo”</b> para oírlas seguidas.' });
+    const tools = h(`<div class="row ce-ltools"><button class="btn sm k" id="all">▶ Escuchar todo</button><span class="ce-lcnt" id="cnt"></span>${canRec ? '<span class="ce-lcnt ce-lok" id="cnt2"></span>' : ''}</div>`);
     body.appendChild(tools);
+    if (canRec && !M.canSR) body.appendChild(h('<p class="ce-lnosr">🎧 Tu navegador no puede calificar la voz. Igual puedes <b>grabarte y escucharte</b> para compararte con el modelo. (En Chrome te califico automáticamente.)</p>'));
     const grid = h(`<div class="lgrid"></div>`); body.appendChild(grid);
-    const heard = new Set();
-    const upd = () => { $('#cnt', tools).textContent = `${heard.size} / ${p.vocab.length} escuchadas`; };
+    const heard = new Set(), said = new Set(); const n = p.vocab.length;
+    const upd = () => { $('#cnt', tools).textContent = `👂 ${heard.size} / ${n} escuchadas`; if (canRec) $('#cnt2', tools).textContent = `🎙️ ${said.size} / ${n} ${M.canSR ? 'repetidas bien' : 'grabadas'}`; };
     const cards = p.vocab.map((it, i) => {
       const badge = it.x === 'near' ? '👉 cerca' : it.x === 'far' ? '👉 lejos' : '';
       const en = isPl ? `${esc(it.sg)} → <u>${esc(it.en)}</u>` : esc(it.en);
+      const wrap = h(`<div class="ce-lw"></div>`);
       const c = h(`<button class="lcard">${photo(it.img, { badge })}<div class="tx"><div class="en">${en}</div><div class="esn">${esc(it.es)}</div></div></button>`);
       c.onclick = async () => { $$('.lcard', grid).forEach(x => x.classList.remove('on')); c.classList.add('on'); heard.add(i); upd(); if (!c.querySelector('.heard')) c.appendChild(h('<span class="heard">✓</span>'));
         if (isPl) { await play(it.sgau); await sleep(200); } await play(it.au); };
-      grid.appendChild(c); return c;
+      wrap.appendChild(c);
+      if (canRec) {
+        const rep = h(`<div class="ce-lrep"><button class="btn w sm ce-mic">🎙️ Repetir</button><div class="ce-lres"></div></div>`); wrap.appendChild(rep);
+        const mic = $('.ce-mic', rep), res = $('.ce-lres', rep);
+        const target = String(it.en || '').replace(/[≠→]/g, ' ');
+        const secs = Math.min(8, Math.max(3, Math.ceil(target.split(/\s+/).length * .6) + 2));
+        const markOk = () => { said.add(i); upd(); c.classList.add('ce-said'); if (!c.querySelector('.ce-saidb')) c.appendChild(h('<span class="ce-saidb" title="¡Repetida bien!">🎙️</span>')); };
+        const doRec = async () => {
+          if (mic.disabled) return; stop(); mic.disabled = true; res.innerHTML = '';
+          try {
+            const r = await M.recordScore(target, secs * 1000, f => mic.textContent = `🔴 Te escucho… ${Math.max(0, Math.ceil(secs * (1 - f)))}s`);
+            mic.disabled = false; mic.textContent = '🎙️ Repetir otra vez';
+            const ok = M.voiceResult(res, { score: r.score, heard: r.heard, url: r.url, model: () => play(it.au), onRetry: doRec, pass: 70 });
+            if (ok) markOk();
+            res.addEventListener('selfok', markOk, { once: true });
+          } catch (err) { mic.disabled = false; mic.textContent = '🎙️ Repetir'; M.toast('Permite el acceso al micrófono 🎤'); }
+        };
+        mic.onclick = (e) => { e.stopPropagation(); sfx('tap'); doRec(); };
+      }
+      grid.appendChild(wrap); return c;
     });
     upd();
     $('#all', tools).onclick = async (e) => { const b = e.currentTarget; if (b._run) { b._run = false; stop(); b.textContent = '▶ Escuchar todo'; return; } b._run = true; b.textContent = '⏹ Detener'; const onStop = () => { b._run = false; }; window.addEventListener('m1-audio-stop', onStop, { once: true }); const hideF = M.floatStop(b);

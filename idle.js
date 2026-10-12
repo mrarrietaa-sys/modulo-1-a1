@@ -14,23 +14,28 @@
   const loggedIn = () => {
     try {
       if (localStorage.getItem('mra_profile_v1')) return true;
-      if (sessionStorage.getItem('mra_teacher_session')) return true;
+      if (sessionStorage.getItem('mra_teacher_session') || sessionStorage.getItem('mra_tp_session')) return true;
+      if (sessionStorage.getItem('mra_admin_key')) return true;
       if (document.body && document.body.dataset.idle === 'always') return true; // páginas sin login (administración)
     } catch (e) { }
     return false;
   };
   function logout(silent) {
+    try { if (window.MRAC && MRAC.flush) MRAC.flush(); } catch (e) { } // guarda el progreso en la nube antes de cerrar
     try {
       const p = JSON.parse(localStorage.getItem('mra_profile_v1') || 'null');
       if (p && p.first) localStorage.setItem('mra_last_user', JSON.stringify({ first: (p.look && p.look.nick) || p.first, pic: (p.look && (p.look.pic === 'photo' ? p.look.photo : p.look.pic === 'avatar' ? p.look.head : '')) || '' }));
       localStorage.removeItem('mra_profile_v1');           // cierra la sesión del estudiante / profe (el progreso se conserva)
       sessionStorage.removeItem('mra_teacher_session');     // panel de docentes
+      sessionStorage.removeItem('mra_tp_session');          // portal de profesores
+      sessionStorage.removeItem('mra_admin_key');           // panel de administración
+      sessionStorage.removeItem('mra_me_cache');
       sessionStorage.removeItem('mra_back'); sessionStorage.removeItem('mra_wb');
       sessionStorage.setItem('mra_idle_out', '1');
     } catch (e) { }
     set(0);
     const page = location.pathname.split('/').pop() || 'index.html';
-    if (/docente|admin/.test(page)) location.reload(); else location.href = 'index.html';
+    if (/docente|admin|profesores/.test(page)) location.reload(); else location.href = 'index.html';
   }
   let warnEl = null, tick = null;
   function hideWarn() { if (warnEl) { warnEl.remove(); warnEl = null; } }

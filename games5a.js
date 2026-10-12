@@ -205,7 +205,7 @@
       const r = R[k];
       const body = head(stage, { lbl: 'Game', title: '🧑‍💼 La entrevista: el CV de Javier', ins: 'Mira la línea de tiempo: las barras <b style="color:#E3242B">rojas</b> siguen hasta hoy (→ <b>presente perfecto</b> + for/since); las <b>azules</b> ya terminaron (→ <b>pasado simple</b>).', count: `${k + 1} / ${R.length}` });
       body.appendChild(h(`<div class="g5a-cv">${resumeSVG(D, r.i)}</div>`));
-      body.appendChild(h(`<div class="g5a-call g5a-qq"><span>👩‍💼</span><div><small>Interviewer:</small><b>“${esc(r.q)}”</b></div></div>`));
+      body.appendChild(h(`<div class="g5a-call g5a-qq"><span>${window.M1.face(4,'f')}</span><div><small>Interviewer:</small><b>“${esc(r.q)}”</b></div></div>`));
       center(body, rep(r.qau, '🔊 Escuchar')); play(r.qau);
       const ok = await askS(body, r.o, 'g5a-col');
       if (ok) c++; else missed.push({ en: r.o[0], au: r.au });
@@ -294,7 +294,7 @@
       const body = head(stage, { lbl: 'Game', title: '🎙️ The Commute Show', ins: 'El editor del pódcast tapó una palabra con un <b>¡BIP!</b> 🔇 Elige la palabra que falta (during, for, while, within, in time, on time…).', count: `${k + 1} / ${R.length}` });
       const bars = Array.from({ length: 26 }, (_, i) => `<i style="--h:${20 + Math.round(Math.abs(Math.sin(i * 1.7 + k)) * 70)}%;--d:${(i % 7) * .09}s"></i>`).join('');
       const pl = h(`<div class="g5a-pod"><div class="g5a-cover"><b>🎙️</b><span>THE<br>COMMUTE<br>SHOW</span></div><div class="g5a-pr"><small>EP. ${41 + k} · Life in traffic</small><div class="g5a-wave">${bars}</div><div class="g5a-prog"><i style="width:${Math.round((k + 1) / R.length * 100)}%"></i></div></div></div>`); body.appendChild(pl);
-      const tr = h(`<div class="g5a-tr"><span class="${r.v}">${r.v === 'f' ? '👩🏽' : '👨🏻'}</span><p><small>${esc(r.who)}</small>${esc(r.s).replace('___', '<mark class="bleep">BIP 🔇</mark>')}</p></div>`); body.appendChild(tr);
+      const tr = h(`<div class="g5a-tr"><span class="${r.v}">${window.M1.face(k, r.v === 'f' ? 'f' : 'm')}</span><p><small>${esc(r.who)}</small>${esc(r.s).replace('___', '<mark class="bleep">BIP 🔇</mark>')}</p></div>`); body.appendChild(tr);
       sfx('flip');
       const ok = await askS(body, r.o, 'g3-three');
       $('p', tr).innerHTML = `<small>${esc(r.who)}</small>${esc(r.full)}`;

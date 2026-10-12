@@ -28,7 +28,17 @@
   const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } };
   const store = (o) => { try { localStorage.setItem(KEY, JSON.stringify(o)); } catch (e) { } };
   let ST = Object.assign({ attempts: 0, extra: 0, used: [], prog: null }, load());
-  const persist = () => store(ST);
+  // los intentos extra que aprueba administración los escribe cloud.js en localStorage: nunca se pisan con un estado viejo
+  const persist = () => { const c = load(); ['extra', 'cloudExtra'].forEach(k => { if ((+c[k] || 0) > (+ST[k] || 0)) ST[k] = +c[k]; }); store(ST); };
+  const cloud = () => !!(window.MRAC && MRAC.code && MRAC.code());
+  let pollIv = null;
+  const stopPoll = () => { if (pollIv) clearInterval(pollIv); pollIv = null; };
+  window.addEventListener('mra-extra', (e) => {
+    if (e.detail !== KEY) return;
+    ST = Object.assign({ attempts: 0, extra: 0, used: [], prog: null }, load()); ST.reqPending = 0; store(ST);
+    if (app && (document.getElementById('ex-req') || document.querySelector('.fx-res'))) run(app, ctx);
+    else if (M.toast) M.toast('✅ Administración te habilitó un intento adicional');
+  });
   const ROUNDS = 2; // 2 oportunidades de 2 intentos cada una
   const maxAttempts = () => CFG.ATTEMPTS * Math.min(ROUNDS, ST.round || 1) + (ST.extra || 0);
 
@@ -53,8 +63,8 @@
     const [hx, hy] = pt(((hour % 12) + minute / 60) * 30, 46), [mx, my] = pt(minute * 6, 70);
     return `<div class="pt-clock"><svg viewBox="0 0 200 200" width="190" height="190"><circle cx="100" cy="100" r="92" fill="#fff" stroke="#0B2A5B" stroke-width="5"/>${ticks}${nums}<line x1="100" y1="100" x2="${hx.toFixed(1)}" y2="${hy.toFixed(1)}" stroke="#0B2A5B" stroke-width="7" stroke-linecap="round"/><line x1="100" y1="100" x2="${mx.toFixed(1)}" y2="${my.toFixed(1)}" stroke="#E3242B" stroke-width="5" stroke-linecap="round"/><circle cx="100" cy="100" r="7" fill="#0B2A5B" stroke="#E3242B" stroke-width="2"/></svg></div>`;
   }
-  function saveProg() { ST.prog = { first, last, temail, wa, course, cur, startedAt, answers: answers.map(a => a && a.url ? Object.assign({}, a, { url: null }) : a) }; persist(); }
-  function shell(html) { stopRec(); app.innerHTML = `<div class="wrap fx">${html}</div>`; window.scrollTo(0, 0); }
+  function saveProg() { ST.prog = { first, last, temail, wa, course, cur, startedAt, answers: answers.map(a => a && (a.url || a.blob) ? Object.assign({}, a, { url: null, blob: null }) : a) }; persist(); }
+  function shell(html) { stopRec(); stopPoll(); app.innerHTML = `<div class="wrap fx">${html}</div>`; window.scrollTo(0, 0); }
   function top(extra = '') {
     return `<div class="fx-top"><span class="lbl">Placement test · Clasificación</span><span class="fx-chip">INTENTO ${Math.min(ST.attempts + 1, maxAttempts())}/${maxAttempts()}</span>${extra}<div class="grow"></div><button class="btn w sm" id="fx-exit">✕ Salir</button></div>`;
   }
@@ -72,11 +82,17 @@
     if (p && (done > 0 || p.startedAt)) return resume(p, done);
     welcome();
   }
+  // aviso único cuando administración aprobó un intento extra (por evento o al cargar)
+  function extraNotice() {
+    const g = +ST.cloudExtra || 0; if (g <= (+ST.seenExtra || 0)) return '';
+    ST.seenExtra = g; ST.reqPending = 0; persist(); setTimeout(() => sfx('win'), 300);
+    return '<div class="ex-ok">✅ Administración te habilitó un intento adicional</div>';
+  }
   function welcome() {
-    const PX = (u) => `https://images.pexels.com/photos/${u}?auto=compress&cs=tinysrgb&w=500`;
-    const SK = [['Listening', '🎧', PX('6399/woman-girl-technology-music.jpg'), 10], ['Reading', '📖', PX('8553920/pexels-photo-8553920.jpeg'), 10], ['Writing', '✍️', PX('210661/pexels-photo-210661.jpeg'), 10], ['Speaking', '🎤', PX('8872482/pexels-photo-8872482.jpeg'), 10]];
-    shell(`${top()}<div class="card center fx-welcome">
-      <div class="fx-photos">${SK.map(([l, ic, u, n]) => `<div class="fx-pbox"><div class="fx-pimg"><img src="${u}" alt="${l}" loading="lazy" onerror="this.style.opacity=0"></div><div class="fx-pcap"><b>${n}</b> ${ic} ${l}</div></div>`).join('')}</div>
+    // portada (ID de Unsplash verificado en build/imgmap3.json: 'road signs two directions')
+    shell(`${top()}<div class="card center fx-welcome">${extraNotice()}
+      <figure class="ex-cover"><div class="ex-cimg"><img src="https://images.unsplash.com/photo-1583125320604-8245f1e50c1e?w=1200&h=600&fit=crop&crop=entropy&q=80&auto=format" alt="Find your starting point" onerror="this.style.opacity=0"><span class="ex-cbadge">🧭 A1 → B2+</span></div><figcaption>Find your starting point</figcaption></figure>
+      <div class="ex-skills">${EX.sections.map(s => `<span><b>${s.items.length}</b> ${s.icon} ${esc(s.label)}</span>`).join('')}</div>
       <span class="lbl" style="margin-top:6px">✦ Examen de clasificación interactivo</span>
       <h1 style="font-size:clamp(26px,5.5vw,34px);margin:10px 0 4px">Placement Test</h1>
       <p style="font-weight:800;margin:0">Listening + Reading + Writing + Speaking</p>
@@ -91,7 +107,7 @@
       <div class="row" style="justify-content:center"><button class="btn k lg" id="c">Continuar donde quedé</button><button class="btn w" id="r">Empezar de nuevo</button></div>
       <p class="muted" style="font-size:13px;margin-top:10px">Las grabaciones de Speaking no se pueden recuperar al recargar: tendrás que grabarlas otra vez.</p></div>`);
     wireExit();
-    $('#c').onclick = () => { first = p.first || first; last = p.last || last; temail = p.temail || temail; wa = p.wa || wa; course = p.course || course;
+    $('#c').onclick = async () => { await M.loadAudio(['pt', 'maPT']); first = p.first || first; last = p.last || last; temail = p.temail || temail; wa = p.wa || wa; course = p.course || course;
       answers = (p.answers && p.answers.length === N) ? p.answers.map((a, i) => a && ITEMS[i].section === 'speaking' ? null : a) : new Array(N).fill(null);
       startedAt = p.startedAt || Date.now(); startTimer(); go(p.cur || 0, true); };
     $('#r').onclick = () => { if (p.startedAt) { ST.attempts++; } ST.prog = null; persist(); run(app, ctx); };
@@ -137,13 +153,14 @@
       <li>Las preguntas empiezan fáciles y se vuelven más difíciles — así sabremos exactamente en qué módulo debes comenzar.</li>
       <li>En cada pregunta verás de inmediato si tu respuesta es <b>correcta o incorrecta</b>.</li>
       <li>En Listening toca <b>🔊 Escuchar</b> para oír el audio en inglés americano. En Speaking toca <b>🎤</b>, habla y toca otra vez para detener; puedes grabar de nuevo.</li>
+      <li>En Speaking puedes tocar <b>🎧 Escuchar un ejemplo de respuesta</b> antes de grabar, como guía.</li>
       <li>Debes responder todas las preguntas antes de enviar.</li>
       <li>Tienes <b>${ROUNDS} oportunidades de ${CFG.ATTEMPTS} intentos</b> cada una. Si no te sientes a gusto con tu resultado, puedes repetir el examen y <b>tu ruta se actualiza con el nuevo resultado</b>. Al finalizar verás tu <b>módulo recomendado</b>, un PDF descargable, y tu resultado se enviará a tu correo y a administración. <b>Con tu resultado se crea automáticamente tu ruta de aprendizaje.</b></li>
       <li>Tu progreso se guarda solo: si se recarga la página, puedes continuar donde quedaste.</li></ul>
       <p class="muted" style="font-size:14px">🎤 Tu navegador te pedirá permiso para usar el micrófono en la sección de Speaking.</p>
       <div class="actionbar"><button class="btn k lg" id="go">🚀 Comenzar examen</button></div></div>`);
     wireExit();
-    $('#go').onclick = async () => { await M.loadAudio(['pt']); answers = new Array(N).fill(null); startedAt = Date.now(); saveProg(); startTimer(); go(0, false); };
+    $('#go').onclick = async () => { await M.loadAudio(['pt', 'maPT']); answers = new Array(N).fill(null); startedAt = Date.now(); saveProg(); startTimer(); go(0, false); };
   }
 
   // ---------- cronómetro ----------
@@ -212,16 +229,27 @@
   }
   // ---------- Speaking: grabar + transcribir + calificar ----------
   function stopRec() { if (rec) { try { rec.cancel(); } catch (e) { } rec = null; } }
+  // respuesta modelo (audio + texto oculto) para guiarse antes de grabar
+  function modelBox(it) {
+    if (!it.model) return '';
+    return `<div class="ex-model"><div class="ex-mrow"><button class="btn k sm" id="ex-mp">🎧 Escuchar un ejemplo de respuesta</button><button class="btn w sm" id="ex-mt" aria-expanded="false">👁 Ver texto</button></div>
+      <div class="ex-mtx" id="ex-mx" hidden><small>Ejemplo de respuesta — responde con tus propias ideas.</small>“${esc(it.model)}”</div></div>`;
+  }
+  function wireModel(body, it) {
+    const bp = $('#ex-mp', body), bt = $('#ex-mt', body), tx = $('#ex-mx', body); if (!bp) return;
+    bp.onclick = async () => { if (rec) return; bp.classList.add('playing'); bp.textContent = '🔊 Reproduciendo ejemplo…'; try { await M.play(it.mau); } catch (e) { } bp.classList.remove('playing'); bp.textContent = '🎧 Escuchar el ejemplo otra vez'; };
+    bt.onclick = () => { tx.hidden = !tx.hidden; bt.textContent = tx.hidden ? '👁 Ver texto' : '🙈 Ocultar texto'; bt.setAttribute('aria-expanded', String(!tx.hidden)); };
+  }
   function renderS(body, it, a, feedback) {
     body.innerHTML = `${img(it.img)}<div class="fx-task"><small>Task</small><div class="fx-q" style="margin:4px 0">${esc(it.task)}</div><div class="muted">${esc(it.es)}</div><button class="btn w sm" id="tl" style="margin-top:8px">🔊 Escuchar la instrucción</button></div>
-      <div class="center"><button class="mic" id="mc">🎤</button><p class="fx-st" id="st">Toca el micrófono, habla y toca otra vez para detener.</p></div><div id="vr"></div>`;
-    $('#tl', body).onclick = () => M.play(it.au);
+      ${modelBox(it)}<div class="center"><button class="mic" id="mc">🎤</button><p class="fx-st" id="st">Toca el micrófono, habla y toca otra vez para detener.</p></div><div id="vr"></div>`;
+    $('#tl', body).onclick = () => M.play(it.au); wireModel(body, it);
     const mc = $('#mc', body), st = $('#st', body), vr = $('#vr', body);
     const result = () => {
       vr.innerHTML = `<div class="vres ${a.correct === null ? 'self' : a.correct ? 'ok' : 'bad'}"><div class="vres-t">${a.neutral ? '✔ Grabación guardada (tu navegador no puede evaluar la voz).' : a.correct ? '✅ ¡Muy bien! Respondiste correctamente.' : '❌ Todavía no. ' + (it.special === 'spellName' ? 'Deletrea tu nombre letra por letra.' : `Responde con al menos ${it.minWords} palabras e incluye lo que pide la tarea.`)}</div>
         ${a.value ? `<small class="muted">Te escuché: “${esc(a.value)}”</small>` : ''}<div class="row vres-b">${a.url ? '<button class="btn w sm" id="me">▶ Mi voz</button>' : ''}<button class="btn ${a.correct ? 'w' : 'k'} sm" id="ag">🔁 Grabar de nuevo</button></div></div>`;
       if (a.url) $('#me', vr).onclick = () => { const x = new Audio(a.url); x.play(); };
-      $('#ag', vr).onclick = () => { a.answered = false; a.correct = null; a.value = null; a.url = null; vr.innerHTML = ''; mc.click(); refreshPills(); };
+      $('#ag', vr).onclick = () => { a.answered = false; a.correct = null; a.value = null; a.url = null; a.blob = null; vr.innerHTML = ''; mc.click(); refreshPills(); };
       if (a.neutral) feedback(true, '', true); else feedback(a.correct, '');
     };
     if (a.answered) result();
@@ -239,7 +267,7 @@
           const pRec = new Promise(r => { if (!mr || mr.state === 'inactive') return r(); mr.onstop = r; mr.stop(); });
           const pSr = new Promise(r => { if (!sr) return r(); sr.onend = r; try { sr.stop(); } catch (e) { r(); } setTimeout(r, 3500); });
           await Promise.all([pRec, pSr]); stream && stream.getTracks().forEach(t => t.stop()); if (cancelled) return;
-          a.url = chunks.length ? URL.createObjectURL(new Blob(chunks, { type: (mr && mr.mimeType) || 'audio/webm' })) : null;
+          a.blob = chunks.length ? new Blob(chunks, { type: (mr && mr.mimeType) || 'audio/webm' }) : null; a.url = a.blob ? URL.createObjectURL(a.blob) : null;
           const tr = transcript.trim(); a.value = tr; a.answered = true;
           if (!srOk && !tr) { a.correct = true; a.neutral = true; }
           else { a.neutral = false; a.correct = it.special === 'spellName' ? (M.letterScorer((first || '').replace(/[^A-Za-z]/g, '') || 'NAME')([tr]).score >= 70) : rubric(it, tr); }
@@ -285,7 +313,7 @@
     if (!startedAt && !timedOut) return; stopTimer(); stopRec();
     ST.attempts++; ST.prog = null; persist(); startedAt = null;
     const { per, fin } = scores(); const ms = mastery();
-    last_ = { per, fin, ms, date: new Date(), name: name(), temail, wa, course, attempt: ST.attempts, attemptLabel: ST.attempts > CFG.ATTEMPTS ? 'Intento adicional' : `Intento ${ST.attempts} de ${CFG.ATTEMPTS}`, timedOut };
+    last_ = { answersSnap: answers.slice(), per, fin, ms, date: new Date(), name: name(), temail, wa, course, attempt: ST.attempts, attemptLabel: ST.attempts > CFG.ATTEMPTS ? 'Intento adicional' : `Intento ${ST.attempts} de ${CFG.ATTEMPTS}`, timedOut };
     P.setPlacement(ms.rec, { score: fin, mods: Object.fromEntries(Object.entries(ms.mods).map(([k, v]) => [k, Math.round(v.pct * 100)])), skills: Object.fromEntries(Object.entries(per).map(([k, v]) => [k, +v.score.toFixed(1)])), all: ms.all });
     ctx.after && ctx.after(last_);
     results(); notify(last_);
@@ -301,21 +329,41 @@
       <div class="fx-comment">${r.timedOut ? `<b>⏱ Se acabó el tiempo (${CFG.TIME_MIN} minutos).</b> Tu examen se envió automáticamente con las respuestas que tenías.<br><br>` : ''}<b>Comentario:</b> ${esc(comment(r.per, r.ms))}</div>
       ${(() => { const asg = P.assigned(); return asg && asg.n > m.n ? `<div class="pt-trial">🎓 <b>Ojo:</b> en este dispositivo ya aprobaste el examen final del ${esc(P.mod(asg.n - 1).name)}, por eso hoy tu ruta está en el <b>${esc(asg.name)} (${esc(asg.es)})</b>.</div>` : ''; })()}
       ${trial ? `<div class="pt-trial">🟢 <b>Acceso gratuito:</b> ya puedes explorar los <b>2 primeros temas</b> del ${esc((P.trialMod() || m).name)}.</div>` : ''}
-      <div class="fx-notify"><div id="n1" class="pending">⏳ Guardando resultados…</div><div id="n2" class="pending">⏳ Enviando correo con tu resultado…</div><div id="n3" class="pending">⏳ Enviando copia a administración…</div></div>
+      <div class="fx-notify">${cloud() ? '<div id="n0" class="pending">⏳ Avisando a tu profe y a administración…</div>' : ''}<div id="n1" class="pending">⏳ Guardando resultados…</div><div id="n2" class="pending">⏳ Enviando correo con tu resultado…</div><div id="n3" class="pending">⏳ Enviando copia a administración…</div></div>
       <div class="row" style="justify-content:center;margin-top:14px"><button class="btn k lg" id="prof">👤 Ir a mi perfil y empezar →</button>
         <button class="btn w" id="pdf">📄 Descargar reporte PDF</button><button class="btn w" id="cp">📋 Copiar resumen</button>
         <a class="btn" style="text-decoration:none;background:#25D366;color:#fff" target="_blank" rel="noopener" href="https://wa.me/${C.WHATSAPP}?text=${waMsg}">💬 ${trial ? 'Quiero inscribirme' : 'Escribir a mrarrieta.com'}</a>
-        ${left > 0 ? `<button class="btn w" id="again">🔁 Intentar de nuevo (te queda${left > 1 ? 'n' : ''} ${left})</button>` : (ST.round || 1) < ROUNDS ? `<button class="btn w" id="again2">🔁 Usar mi segunda oportunidad (${CFG.ATTEMPTS} intentos)</button>` : ''}</div>
+        ${left > 0 ? `<button class="btn w" id="again">🔁 Intentar de nuevo (te queda${left > 1 ? 'n' : ''} ${left})</button>` : (ST.round || 1) < ROUNDS ? `<button class="btn w" id="again2">🔁 Usar mi segunda oportunidad (${CFG.ATTEMPTS} intentos)</button>` : cloud() ? '<button class="btn w" id="extra">🙋 Solicitar un intento adicional</button>' : ''}</div>
       <p class="muted center" style="font-size:14px;margin-top:10px">¿No te sientes a gusto con tu resultado? Puedes repetir el examen: <b>tu ruta de aprendizaje se actualiza con el nuevo resultado</b>.</p></div>`);
     wireExit(); sfx('win'); M.confetti(3500);
     $('#prof').onclick = () => ctx.route('home'); $('#pdf').onclick = reportPDF; $('#cp').onclick = copySummary;
     if ($('#again')) $('#again').onclick = () => run(app, ctx);
     if ($('#again2')) $('#again2').onclick = secondChance;
+    if ($('#extra')) $('#extra').onclick = locked;
   }
   function setN(id, ok, txt) { const e = $('#' + id); if (e) { e.className = ok === true ? 'ok' : ok === false ? 'err' : 'pending'; e.textContent = txt; } }
   const waLink = (raw) => { let d = String(raw || '').replace(/\D/g, ''); if (!d) return ''; if (d.length === 10) d = '57' + d; return 'https://wa.me/' + d; };
+  // ☁️ nube: guarda el resultado y sube los audios de Speaking (el admin los escucha en el panel)
+  async function cloudSave(r) {
+    if (!(window.MRAC && MRAC.on)) return;
+    const m = P.mod(r.ms.rec); const prof = P.get() || {};
+    const sp = []; ITEMS.forEach((it, i) => { if (it.section === 'speaking') sp.push({ i: i + 1, task: it.task, transcript: (r.answersSnap[i] && r.answersSnap[i].value) || '' }); });
+    const res = await MRAC.call('placement', { code: prof.code || '', name: r.name, email: r.temail || prof.email || '', whatsapp: r.wa || prof.whatsapp || '', attempt: r.attemptLabel, listening: r.per.listening.score.toFixed(1), reading: r.per.reading.score.toFixed(1), writing: r.per.writing.score.toFixed(1), speaking: r.per.speaking.score.toFixed(1), final: r.fin.toFixed(1), module: r.ms.rec, moduleSet: prof.moduleSet || Date.now(), level: m.name + ' · ' + m.es, mods: Object.fromEntries(Object.entries(r.ms.mods).map(([k, v]) => [k, Math.round(v.pct * 100)])), speakingAnswers: sp, timedOut: r.timedOut });
+    if (!res.ok) return;
+    let n = 0; for (let i = 0; i < ITEMS.length; i++) { const a = r.answersSnap[i]; if (ITEMS[i].section !== 'speaking' || !a || !a.blob) continue; n++;
+      let up = await MRAC.upload('placement', res.id, a.blob, { name: 'speaking_' + (i + 1) + '.webm', i: i + 1, label: ITEMS[i].task, transcript: a.value || '' });
+      if (!up.ok) await MRAC.upload('placement', res.id, a.blob, { name: 'speaking_' + (i + 1) + '.webm', i: i + 1, label: ITEMS[i].task, transcript: a.value || '' }); }
+    if (window.MRAC.code()) MRAC.sync(true);
+  }
   async function notify(r) {
+    cloudSave(r).catch(() => { });
     const m = P.mod(r.ms.rec);
+    // ☁️ plataforma: el profe y administración reciben el resultado como notificación
+    if (cloud()) {
+      MRAC.examResult({ exam: 'placement', attempt: r.attemptLabel, listening: r.per.listening.score.toFixed(1), reading: r.per.reading.score.toFixed(1), writing: r.per.writing.score.toFixed(1), speaking: r.per.speaking.score.toFixed(1), final: r.fin.toFixed(1), passed: true, module: r.ms.rec, level: m.name + ' · ' + m.es })
+        .then(x => setN('n0', !!(x && x.ok), x && x.ok ? '✓ Tu profe y administración recibieron tu resultado en la plataforma' : '✗ No se pudo avisar en la plataforma (revisa tu conexión).'))
+        .catch(() => setN('n0', false, '✗ No se pudo avisar en la plataforma (sin conexión).'));
+    }
     const params = { subject: `Placement Test${r.attempt > 1 ? (r.attempt > CFG.ATTEMPTS ? ' – Additional Attempt' : ' – Attempt ' + r.attempt) : ''} – ${r.name} – Recommended: ${m.name} (${m.es})`,
       student_name: r.name, student_whatsapp: r.wa || '', student_whatsapp_link: waLink(r.wa), course_interest: COURSE[r.course] || '', module: 'Placement Test', level: m.es, recommended_module: m.name,
       result_label: 'Nivel recomendado', result_headline: m.name, result_detail: m.es, result_color: '#0B2A5B',
@@ -367,6 +415,7 @@
         <div class="actionbar" style="justify-content:center"><button class="btn w" id="hm">👤 Mi perfil</button><button class="btn k lg" id="sc">Activar mi segunda oportunidad</button></div></div>`);
       wireExit(); $('#hm').onclick = () => ctx.route('home'); $('#sc').onclick = secondChance; return;
     }
+    if (cloud()) return lockedCloud();
     const msg = encodeURIComponent(`Hola 👋 Soy ${name()}. Usé mis ${CFG.ATTEMPTS} intentos del examen de clasificación y quiero solicitar una oportunidad adicional.`);
     shell(`${top()}<div class="card center fx-form">${M.mascot('mascot', 'watch')}<h2>🔒 Sin intentos disponibles</h2>
       <p class="muted">Ya usaste tus ${ROUNDS} oportunidades (${maxAttempts()} intentos) del examen de clasificación. Para un intento adicional, <b>pide un código a administración</b>.</p>
@@ -378,6 +427,41 @@
       if (!v || !list.includes(hsh)) { $('#code').classList.add('wrong'); M.toast('Código incorrecto 🙏'); return; }
       if (ST.used.includes(hsh)) { M.toast('Ese código ya se usó en este dispositivo.'); return; }
       ST.used.push(hsh); ST.extra = (ST.extra || 0) + 1; ST.prog = null; persist(); sfx('win'); M.toast('✓ Intento adicional desbloqueado'); run(app, ctx); };
+  }
+  function rejectedNote() { // administración respondió que no a la última solicitud
+    if (!ST.reqPending || !window.MRAC || !MRAC.notifications) return null;
+    return MRAC.notifications().find(x => x.type === 'intento' && x.data && x.data.examKey === KEY && x.data.approved === false && Date.parse(x.date) >= ST.reqPending - 6 * 3600 * 1000) || null;
+  }
+  // con nube: después de las 2 oportunidades se pide un intento adicional a administración
+  function lockedCloud() {
+    shell(`${top()}<div class="card center fx-form ex-lock">${M.mascot('mascot', 'watch')}<h2>🔒 Sin intentos disponibles</h2>
+      <p class="muted">Ya usaste tus ${ROUNDS} oportunidades (${maxAttempts()} intentos) del examen de clasificación. Si necesitas otra, pídesela a <b>administración</b>: cuando la aprueben, el intento se habilita aquí mismo.</p>
+      <div id="ex-req"></div>
+      <div class="actionbar" style="justify-content:center"><button class="btn w" id="hm">👤 Mi perfil</button></div></div>`);
+    wireExit(); $('#hm').onclick = () => { stopPoll(); ctx.route('home'); };
+    renderReq();
+  }
+  function renderReq(msg) {
+    const box = $('#ex-req'); if (!box) return;
+    const rj = rejectedNote(); if (rj) { ST.reqPending = 0; persist(); msg = '❌ Administración no aprobó tu solicitud anterior por ahora.' + (rj.body ? ' ' + rj.body : ''); }
+    if (ST.reqPending) {
+      box.innerHTML = `<div class="ex-pend">⏳ Solicitud enviada: administración la revisará.${msg ? `<br><small>${esc(msg)}</small>` : ''}</div>
+        <p class="muted" style="font-size:13px">Cuando te habiliten el intento verás el aviso aquí (también te llegará un correo).</p><button class="btn w sm" id="ex-chk">🔄 Revisar ahora</button>`;
+      $('#ex-chk').onclick = async (e) => { const b = e.currentTarget; b.disabled = true; b.textContent = '⏳ Revisando…'; await MRAC.me(true).catch(() => null);
+        if (!document.body.contains(b)) return; if (!rejectedNote()) M.toast('Aún no hay respuesta de administración ⏳'); renderReq(); };
+      stopPoll(); pollIv = setInterval(() => { if (!$('#ex-req')) return stopPoll(); MRAC.me(true).then(() => { if ($('#ex-req') && rejectedNote()) renderReq(); }).catch(() => { }); }, 25000);
+      return;
+    }
+    stopPoll();
+    box.innerHTML = `${msg ? `<div class="ex-err">${esc(msg)}</div>` : ''}<label class="ex-why-l" for="ex-why">Motivo (opcional)</label><textarea class="inp" id="ex-why" rows="2" maxlength="500" placeholder="Ej: tuve problemas con el micrófono"></textarea>
+      <button class="btn k lg" id="ex-ask">🙋 Solicitar un intento adicional</button>`;
+    $('#ex-ask').onclick = async (e) => {
+      const b = e.currentTarget; b.disabled = true; b.textContent = '⏳ Enviando solicitud…';
+      let r = null; try { r = await MRAC.requestAttempt('placement', KEY, ($('#ex-why').value || '').trim()); } catch (er) { r = null; }
+      if (r && r.ok) { ST.reqPending = Date.now(); persist(); sfx('ok'); renderReq(); return; }
+      if (r && r.err === 'pending') { ST.reqPending = ST.reqPending || Date.now(); persist(); renderReq('Ya tenías una solicitud pendiente para este examen.'); return; }
+      renderReq('✗ No se pudo enviar la solicitud (revisa tu conexión) e inténtalo de nuevo.');
+    };
   }
   const status = () => { const s = load(); const round = Math.min(ROUNDS, s.round || 1); return { attempts: s.attempts || 0, max: CFG.ATTEMPTS * round + (s.extra || 0), round, rounds: ROUNDS, inProgress: !!(s.prog && s.prog.startedAt) }; };
   window.MRAPLACE = { run, status };

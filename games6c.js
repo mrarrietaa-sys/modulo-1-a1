@@ -103,7 +103,7 @@
       const r = R[k];
       const body = head(stage, { lbl: 'Game', title: '🥊 Duelo de contraargumentos', ins: 'Tu rival defiende una postura sobre la globalización. Elige el <b>mejor contraargumento</b>: responde a la idea, no a la persona. ⚡ ¡Si respondes rápido, el golpe es crítico!', count: `${k + 1} / ${R.length}` });
       const arena = h(`<div class="g6c-arena">
-        <div class="g6c-fighter me"><div class="g6c-av">🧑🏽‍💼</div><b>You</b><div class="g6c-hp"><i style="width:${me}%"></i></div><small>${me} HP</small></div>
+        <div class="g6c-fighter me"><div class="g6c-av">${window.M1.face(5,'m')}</div><b>You</b><div class="g6c-hp"><i style="width:${me}%"></i></div><small>${me} HP</small></div>
         <div class="g6c-vs">VS</div>
         <div class="g6c-fighter foe"><div class="g6c-av">🌐</div><b>Rival</b><div class="g6c-hp"><i style="width:${foe}%"></i></div><small>${foe} HP</small></div></div>`);
       body.appendChild(arena);

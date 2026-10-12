@@ -165,7 +165,7 @@
       const r = R[k];
       const body = head(stage, { lbl: 'Game', title: '🧞 La lámpara del genio', ins: 'Alguien frota la lámpara y se queja. 1️⃣ ¿Qué tipo de deseo es? 2️⃣ Formula el deseo <b>correctamente</b> para que el genio lo cumpla.', count: `Deseo ${k + 1} / ${R.length}` });
       const scene = h(`<div class="g5b-genie"><div class="g5b-lamps">${R.map((_, i) => `<i class="${i < k ? 'used' : ''}">🪔</i>`).join('')}</div>
-        <div class="g5b-comp"><span class="who">${['🙍🏽‍♀️', '🙍🏻‍♂️', '🧑🏾', '👩🏼', '👨🏽‍🦱', '👩🏻‍🦱', '🧔🏻', '👱🏾‍♀️'][k % 8]}</span><div class="bubble">“${esc(r.c)}”<small>${esc(r.es)}</small></div></div>
+        <div class="g5b-comp"><span class="who">${window.M1.face(k)}</span><div class="bubble">“${esc(r.c)}”<small>${esc(r.es)}</small></div></div>
         <div class="g5b-lamp"><span class="smoke"></span><span class="gen">🧞</span><span class="lp">🪔</span></div></div>`); body.appendChild(scene);
       center(body, rep(r.cau));
       play(r.cau);
@@ -303,7 +303,7 @@
   /* ====== t13p2 — RONDA DE INVERSIONISTAS ====== */
   async function investorPitch(stage, p) {
     const R = (G().pitch || []).slice(); let c = 0; const missed = [];
-    const INV = [['🧔🏽', 'Ray'], ['👩🏻‍💼', 'Lori'], ['👨🏿‍💼', 'Marcus']];
+    const INV = [[window.M1.face(2,'m'), 'Ray'], [window.M1.face(3,'f'), 'Lori'], [window.M1.face(4,'m'), 'Marcus']];
     for (let k = 0; k < R.length && live(stage); k++) {
       const r = R[k]; const pct = Math.round(c / R.length * 100);
       const body = head(stage, { lbl: 'Game', title: '🦈 Ronda de inversionistas', ins: 'Presentas tu startup <b>“FlowDesk”</b> ante 3 inversionistas. Elige el <b>conector</b> que hace tu argumento más convincente: añadir ➕, resultado ➡️, contraste ⚖️, conclusión 🎯.', count: `Slide ${k + 1} / ${R.length}` });

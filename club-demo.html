@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Clubs Premium · demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+<style>
+  .demo-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:#fff;border:3px solid #0B2A5B;border-radius:14px;padding:10px;margin-bottom:18px;font-size:14px}
+  .demo-bar select,.demo-bar input{font:inherit;padding:6px 8px;border:2px solid #0B2A5B;border-radius:8px;max-width:100%}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="demo-bar">
+    <b>DEMO (borrar luego):</b>
+    <label>Vista <select id="v"><option value="st">Estudiante Premium</option><option value="free">Estudiante sin Premium</option><option value="g">Guía del profe</option></select></label>
+    <label>Banda <select id="b"><option value="a">A1·A2</option><option value="b">B2·B2+</option></select></label>
+    <label>Club (guía) <select id="k"><option value="conv">Conversación</option><option value="fon">Fonética</option></select></label>
+    <label><input type="checkbox" id="lnk" checked> con enlace</label>
+  </div>
+  <div id="app"></div>
+</div>
+<script src="config.js"></script>
+<script src="clubdata_conv.js"></script>
+<script>document.write('<script src="clubdata_fon.js" onerror="this.remove()"><\/script>');</script>
+<script src="audio/clubconv.js"></script>
+<script src="clubs.js"></script>
+<script>
+  const $ = id => document.getElementById(id);
+  const q = new URLSearchParams(location.search);
+  if (q.get('v')) $('v').value = q.get('v'); if (q.get('b')) $('b').value = q.get('b'); if (q.get('k')) $('k').value = q.get('k');
+  function go() {
+    const band = $('b').value, link = $('lnk').checked;
+    const start = q.get('start') || '2026-09-28';
+    const clubs = [
+      { key: 'conv', day: band === 'a' ? 'Lunes' : 'Miércoles', time: '18:00', link: link ? 'https://meet.google.com/abc-defg-hij' : '', teacher: 'Laura', start },
+      { key: 'fon', day: band === 'a' ? 'Lunes' : 'Miércoles', time: '19:00', link: '', teacher: 'Andrés', start },
+    ];
+    const el = $('app');
+    if ($('v').value === 'g') MRCLUB.guide(el, { key: $('k').value, band, start });
+    else MRCLUB.render(el, { band, premium: $('v').value === 'st', clubs, name: 'John', back: () => alert('volver'), waLink: t => 'https://wa.me/573017810841?text=' + encodeURIComponent(t) });
+  }
+  ['v', 'b', 'k', 'lnk'].forEach(id => $(id).onchange = go);
+  go();
+</script>
+</body>
+</html>

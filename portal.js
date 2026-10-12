@@ -159,6 +159,7 @@
       <div id="pt-ann"></div>
       ${trial ? `<div class="pt-trialbar">${P.plan().expired ? `⏰ <div><b>Tu plan venció.</b> Tu progreso sigue guardado. Renuévalo para seguir con toda tu ruta. <a href="#pt-plan" id="tb-up">Renovar mi plan →</a></div>` : `🟢 <div><b>Estás en tu acceso gratuito.</b> Tienes el examen de clasificación y los <b>2 primeros temas</b> de tu módulo. ¿Te gustó? <a href="#pt-plan" id="tb-up">Desbloquea toda tu ruta →</a></div>`}</div>` : ''}
       ${main}
+      <a class="card pt-arcade pt-clubs" href="clubes.html"><span class="pa-ic">🎙️</span><div class="grow"><span class="lbl">Clubs en vivo · Premium</span><h2>Mis clubs de Conversación y Fonética</h2><p class="muted">Espacios distintos a tus clases: talk show en inglés y gimnasio de pronunciación, según tu nivel.</p></div><span class="btn k">Entrar →</span></a>
       <a class="card pt-arcade" href="juegos.html"><span class="pa-ic">🎮</span><div class="grow"><span class="lbl">Zona de juegos</span><h2>¡Juega y aprende inglés!</h2><p class="muted">Juegos rápidos y divertidos de tu nivel: suma monedas, rompe récords y aprende jugando.</p></div><span class="btn k">Jugar →</span></a>
       ${birthAsk()}
       ${planSection()}

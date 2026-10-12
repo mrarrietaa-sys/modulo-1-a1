@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mis clubs — mrarrieta.com</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css?v=58">
+<style>.cb-staff{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:#fff;border:3px solid #0B2A5B;border-radius:14px;padding:10px 12px;margin-bottom:16px;font-weight:700;color:#0B2A5B}.cb-staff button{border:2px solid #0B2A5B;background:#fff;color:#0B2A5B;border-radius:10px;padding:6px 10px;font:700 14px Inter,sans-serif;cursor:pointer}.cb-staff button.on{background:#0B2A5B;color:#fff}</style>
+</head>
+<body>
+<header class="topbar"><div class="brand"><a href="index.html"><span class="logo-pill"><img class="logo" src="mra-brand.png" alt="mrarrieta.com"></span></a></div><div class="sp"></div><button class="tb-back" type="button" onclick="location.href='index.html'" title="Mi perfil">← Mi perfil</button></header>
+<div class="wrap"><div id="cb-staff"></div><div id="app"></div></div>
+<script src="config.js?v=58"></script>
+<script src="profile.js?v=58"></script>
+<script src="idle.js?v=58"></script>
+<script src="clubdata_conv.js?v=58"></script>
+<script src="clubdata_fon.js?v=58"></script>
+<script src="clubs.js?v=58"></script>
+<script>
+(function () {
+  const P = window.MRAP, p = P && P.get(); if (!p) { location.replace('index.html'); return; }
+  const a = P.assigned && P.assigned(); const band = a && a.n >= 3 ? 'b' : 'a';
+  const pl = P.plan ? P.plan() : {}; const staff = p.type === 'staff';
+  const premium = staff || p.demo || pl.eff === 'premium' || pl.premium;
+  // horarios: los que guarda la nube (administración) o los de siempre
+  const DEF = { a: { fon: ['Lunes', '18:00'], conv: ['Miércoles', '18:00'] }, b: { fon: ['Lunes', '19:00'], conv: ['Miércoles', '19:00'] } };
+  const cfg = p.clubs || {};
+  const clubs = ['conv', 'fon'].map(k => { const c = cfg[k + '_' + band] || {}; return { key: k, day: c.day || DEF[band][k][0], time: c.time || DEF[band][k][1], link: c.link || '', teacher: c.teacher || '', start: cfg.start || '2026-10-12' }; });
+  const name = (p.look && p.look.nick) || p.first || '';
+  const el = document.getElementById('app');
+  const student = (b) => MRCLUB.render(el, { band: b || band, premium, clubs, name, waLink: t => 'https://wa.me/' + (window.M1CONFIG.WHATSAPP || '573017810841') + '?text=' + encodeURIComponent(t) });
+  if (staff) {
+    const bar = document.getElementById('cb-staff');
+    bar.innerHTML = '<div class="cb-staff">👨‍🏫 Vista del profe: <button data-v="st" class="on">Lo que ve el estudiante</button><button data-v="conv">Guía · Conversación</button><button data-v="fon">Guía · Fonética</button><span>Nivel:</span><button data-b="a" class="on">A1·A2</button><button data-b="b">B2·B2+</button></div>';
+    let v = 'st', b = 'a';
+    const go = () => { bar.querySelectorAll('[data-v]').forEach(x => x.classList.toggle('on', x.dataset.v === v)); bar.querySelectorAll('[data-b]').forEach(x => x.classList.toggle('on', x.dataset.b === b)); if (v === 'st') student(b); else MRCLUB.guide(el, { key: v, band: b, start: clubs[0].start }); };
+    bar.querySelectorAll('[data-v]').forEach(x => x.onclick = () => { v = x.dataset.v; go(); });
+    bar.querySelectorAll('[data-b]').forEach(x => x.onclick = () => { b = x.dataset.b; go(); });
+    go();
+  } else student();
+})();
+</script>
+</body>
+</html>

@@ -86,7 +86,7 @@
   const packs = {};
   function loadPack(name) {
     if (packs[name]) return packs[name];
-    return packs[name] = new Promise(res => { const s = document.createElement('script'); s.src = BASE + 'audio/' + name + '.js'; s.onload = res; s.onerror = () => { s.remove(); res(); }; document.head.appendChild(s); });
+    return packs[name] = new Promise(res => { const tryP = (paths) => { if (!paths.length) return res(); const s = document.createElement('script'); s.src = paths[0]; s.onload = res; s.onerror = () => { s.remove(); tryP(paths.slice(1)); }; document.head.appendChild(s); }; tryP([BASE + 'audio/' + name + '.js', BASE + name + '.js']); });
   }
   function ensureAudio(key) {
     const d = data(key); if (!d) return;

@@ -6,7 +6,7 @@ window.M1CONFIG = {
 
   // ☁️ NUBE: pega aquí la URL /exec de tu Apps Script (ver LEEME-NUBE.md).
   // Vacío = la plataforma funciona solo en este dispositivo (como antes).
-  CLOUD_URL: "",
+  CLOUD_URL: "https://script.google.com/macros/s/AKfycbzGXtwZH_eBIPz01faL6e8cMydhW-0u2H4UtzdHQYCr8CqMG62Tdp1dNDZ4MY4khE0N/exec",
 
   // PLANES (se muestran a los estudiantes)
   PLANS: {

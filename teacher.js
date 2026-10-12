@@ -72,14 +72,29 @@
       const r = await MR.call('tLogin', { tcode, pin });
       b.disabled = false; b.textContent = 'Entrar';
       if (!r.ok) { er.textContent = r.err === 'auth' ? 'Código o PIN incorrecto.' : errText(r.err); er.hidden = false; return; }
-      S = { tcode, pin }; ss.set(SKEY, S); D = r; tab = 'home'; ss.set(TABKEY, tab); shell();
+      S = { tcode, pin }; ss.set(SKEY, S); D = r; tab = 'home'; ss.set(TABKEY, tab); shell(); welcome();
     };
+  }
+  // saludo al entrar: voz "Welcome back, Nombre!" + recordatorio de la disponibilidad
+  function welcome() {
+    const t = D.teacher || {}; const first = String(t.name || '').split(/\s+/)[0];
+    const sl = first.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z]/g, '');
+    const hasWeek = Object.keys(t.weekly || {}).length > 0;
+    const m = modal(`<div style="text-align:center"><div style="font-size:52px">👋</div><h2>¡Welcome back, ${esc(first)}!</h2>
+      <p>${hasWeek ? 'Antes de empezar, revisa que tu <b>disponibilidad semanal</b> esté al día. Los estudiantes Premium solo pueden reservar clases VIP en los horarios que publiques.' : '<b>Aún no has escrito tu disponibilidad semanal.</b> Márcala ahora para que los estudiantes Premium puedan reservar tus clases VIP.'}</p>
+      <p class="muted">Lunes a sábado · domingos y festivos no hay clases.</p>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:12px"><button class="btn k" id="wl-av">📅 ${hasWeek ? 'Revisar' : 'Escribir'} mi disponibilidad</button><button class="btn w" data-x>Más tarde</button></div></div>`);
+    $('#wl-av', m).onclick = () => { m.remove(); tab = 'avail'; ss.set(TABKEY, tab); shell(); };
+    // voz pregrabada (misma de la plataforma)
+    const say = () => { const A = window.AUD || {}; const k = A['wb_' + sl] ? 'wb_' + sl : (A['wb_'] ? 'wb_' : ''); if (!k) return; try { new Audio('data:audio/mpeg;base64,' + A[k]).play().catch(() => { }); } catch (e) { } };
+    const tryLoad = (paths) => { if (!paths.length) return say(); const sc = document.createElement('script'); sc.src = paths[0]; sc.onload = say; sc.onerror = () => { sc.remove(); tryLoad(paths.slice(1)); }; document.head.appendChild(sc); };
+    tryLoad(['js/audio/wb_' + (sl[0] || 'x') + '.js', 'wb_' + (sl[0] || 'x') + '.js']);
   }
   function logout() { ss.del(SKEY); ss.del(TABKEY); S = null; D = null; loginView(); }
   async function reload() { const r = await api('tLogin'); if (r.ok) { D = r; shell(); } else if (r.err !== 'auth') toast(errText(r.err), true); return r.ok; }
 
   /* ---------- estructura principal ---------- */
-  const TABS = [['home', '🏠', 'Resumen'], ['avail', '🗓️', 'Mi disponibilidad'], ['classes', '🎓', 'Mis clases'], ['groups', '👥', 'Mis grupos']];
+  const TABS = [['home', '🏠', 'Resumen'], ['avail', '🗓️', 'Mi disponibilidad'], ['classes', '🎓', 'Mis clases']];
   function shell() {
     outBtn.classList.remove('hidden'); outBtn.onclick = () => { if (confirm('¿Cerrar sesión?')) logout(); };
     const t = D.teacher;

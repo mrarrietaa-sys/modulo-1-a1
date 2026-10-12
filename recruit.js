@@ -83,7 +83,7 @@
     shell(0, `<div class="card rc-hero">
       <div class="rc-hero-top">${M.mascot('rc-mascot', 'welcome')}<div><span class="lbl">Trabaja con nosotros</span>
         <h1 class="rc-h1">Proceso de selección de profesores</h1>
-        <p class="muted rc-lead">¡Gracias por tu interés en enseñar con nosotros! Buscamos <b>profesionales bilingües</b> capaces de enseñar de una forma distinta, cercana y dinámica, que ayuden a adultos hispanohablantes a <b>aprender inglés HABLANDO</b>.</p></div></div>
+        <p class="muted rc-lead">¡Gracias por tu interés en enseñar con nosotros! Buscamos <b>profesionales bilingües</b> capaces de enseñar de una forma distinta, cercana y dinámica, que ayuden a niños, jóvenes y adultos hispanohablantes a <b>aprender inglés HABLANDO</b>.</p></div></div>
       <div class="rc-grid3">
         <div class="rc-box"><span>1</span><b>Tus datos y hoja de vida</b><small>≈ 5 minutos</small></div>
         <div class="rc-box"><span>2</span><b>Prueba de inglés</b><small>${N} preguntas · Listening, Reading, Writing y Speaking · 60 minutos</small></div>

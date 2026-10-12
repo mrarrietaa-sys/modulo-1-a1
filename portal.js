@@ -27,6 +27,20 @@
     return home();
   }
 
+  /* ---------- bienvenida en voz: "Welcome / Welcome back, Nombre!" ---------- */
+  function sayHi(text) {
+    try {
+      if (!window.speechSynthesis) return; sessionStorage.setItem('mra_said', '1');
+      const go = () => { try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang = 'en-US'; u.rate = 0.95; u.pitch = 1.05;
+        const vs = speechSynthesis.getVoices().filter(v => /^en(-|_)US/i.test(v.lang)); const pref = vs.find(v => /Google US English|Samantha|Aria|Jenny|Natural/i.test(v.name)) || vs[0]; if (pref) u.voice = pref;
+        speechSynthesis.speak(u); } catch (e) { } };
+      // si el navegador aún no tiene las voces o no permite hablar sin un toque, espera un instante / el primer toque
+      if (navigator.userActivation && !navigator.userActivation.hasBeenActive) { const once = () => { removeEventListener('pointerdown', once, true); go(); }; addEventListener('pointerdown', once, true); return; }
+      if (!speechSynthesis.getVoices().length) { speechSynthesis.onvoiceschanged = () => { speechSynthesis.onvoiceschanged = null; go(); }; setTimeout(go, 700); } else setTimeout(go, 250);
+    } catch (e) { }
+  }
+  const hiName = () => { const p = P.get() || {}; return (p.look && p.look.nick) || p.first || ''; };
+  const greetVoice = (back) => { const n = hiName(); sayHi(n ? `${back ? 'Welcome back' : 'Welcome'}, ${n}!` : 'Welcome to your English platform!'); };
   /* ---------- ingreso con código ---------- */
   function codeType(code) {
     const hh = M.codeHash(code);
@@ -59,7 +73,7 @@
       if (window.MRAC && MRAC.on && !codeType(v)) {
         const b = $('#ok'); b.disabled = true; b.textContent = 'Entrando…';
         const r = await MRAC.login(v); b.disabled = false; b.textContent = 'Entrar →';
-        if (r.ok) { sfx('win'); M.confetti(1500); try { sessionStorage.removeItem('mra_back'); } catch (e) { } return route('home'); }
+        if (r.ok) { sfx('win'); M.confetti(1500); try { sessionStorage.removeItem('mra_back'); } catch (e) { } greetVoice(!!(P.get() || {}).lastSeen); return route('home'); }
         if (r.err === 'inactive') return bad('Tu acceso está inactivo. Escríbenos por WhatsApp 🙏');
         if (r.err === 'network' || r.err === 'offline') return bad('No hay conexión con la nube. Revisa tu internet e inténtalo de nuevo.');
         return bad();
@@ -68,7 +82,7 @@
       const r = codeType(v); if (!r) return bad();
       const old = P.get() || {};
       P.save(Object.assign({ created: Date.now() }, old, { type: r.type, codeHash: M.codeHash(i.value), module: r.module || old.module || null, assignedBy: r.module ? 'admin' : (old.assignedBy || null) }));
-      sfx('win'); M.confetti(1500); route('home'); };
+      sfx('win'); M.confetti(1500); greetVoice(!!(old.first && old.lastSeen)); route('home'); };
     $('#ok').onclick = go; i.onkeydown = e => { if (e.key === 'Enter') go(); };
   }
   function nameStep() {
@@ -93,7 +107,7 @@
       if (window.MRAC && MRAC.code()) { MRAC.saveProfile(Object.assign({ first: f, last: l }, extra)); MRAC.sync(true); }
       // el nombre también se usa dentro de los módulos
       P.MODS.forEach(m => { try { const s = JSON.parse(localStorage.getItem(m.key) || 'null'); if (s && !s.name) { s.name = f + ' ' + l; localStorage.setItem(m.key, JSON.stringify(s)); } } catch (e) { } });
-      route('home'); };
+      sayHi(`Welcome, ${f}! Nice to meet you.`); route('home'); };
   }
   function logout() {
     const m = M.modal(`<h3>¿Salir de tu perfil?</h3><p class="muted">Tu progreso queda guardado${window.MRAC && MRAC.code() ? ' en la nube: puedes continuar desde cualquier dispositivo' : ' en este dispositivo'}. Para volver a entrar necesitarás tu código.</p><div class="row"><button class="btn k" id="y">Sí, salir</button><button class="btn w" id="n">Cancelar</button></div>`, { x: true });
@@ -146,7 +160,7 @@
     wireBirth(); live(); birthdayParty();
     // bienvenida de regreso (una vez por sesión)
     try { if (P.isBirthday()) sessionStorage.setItem('mra_wb', '1'); // en su cumpleaños el saludo es la fiesta 🎂
-      if (back && !sessionStorage.getItem('mra_wb')) { sessionStorage.setItem('mra_wb', '1'); const pr = a && a.ready ? P.progress(a.id) : null;
+      if (back && !sessionStorage.getItem('mra_wb')) { sessionStorage.setItem('mra_wb', '1'); if (!sessionStorage.getItem('mra_said')) greetVoice(true); const pr = a && a.ready ? P.progress(a.id) : null;
       const wm = M.modal(`<div class="center wb">${P.pic() ? P.avHTML('pt-av big') : M.mascot('mascot bounce', 'wink')}<h2>Welcome back, ${esc(P.look().nick || p.first)}! 👋</h2><p style="font-size:17px">¡Qué bueno verte de nuevo! ${pr && pr.done ? `Llevas <b>${pr.done} clase(s)</b> en tu ruta. ¡Sigamos!` : 'Hoy es un gran día para avanzar en tu ruta de aprendizaje.'}</p>
         ${a && a.ready && !staff ? `<a class="btn k block lg" style="text-decoration:none" href="${a.url}">▶ Continuar mi ruta</a>` : ''}<button class="btn w block" id="wbx" style="margin-top:8px">Ir a mi perfil</button></div>`, { x: true });
       $('#wbx', wm).onclick = () => wm.remove(); M.confetti && M.confetti(900); } } catch (e) { }

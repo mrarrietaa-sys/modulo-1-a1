@@ -143,9 +143,12 @@
     const extra = form.hours.filter((h) => HOURS.indexOf(h) < 0);
     const slots = D.slots.filter((s) => s.status !== 'deleted' && s.date >= t0 && !(s.date === t0 && s.status === 'free' && s.time <= nowHM()));
     const byDate = {}; slots.forEach((s) => (byDate[s.date] = byDate[s.date] || []).push(s));
-    el.innerHTML = `<div class="tp-cols">
+    el.innerHTML = `<div class="card tp-card tp-week"><div class="tp-card-h"><h2>📅 Mi disponibilidad semanal</h2></div>
+        <p class="muted tp-small">Marca las horas en que puedes dictar cada semana. La plataforma crea automáticamente tus espacios de <b>1 hora</b> para las próximas <b>4 semanas</b> (y los renueva cada día). Los estudiantes Premium los verán para reservar sus clases VIP.</p>
+        <div id="tp-wg"></div><button class="btn k lg block" id="tp-wsave" style="margin-top:12px">Guardar mi disponibilidad semanal</button></div>
+      <div class="tp-cols">
       <div class="card tp-card tp-addcard">
-        <div class="tp-card-h"><h2>Agregar espacios para clases VIP</h2></div>
+        <div class="tp-card-h"><h2>Agregar un espacio extra (fecha específica)</h2></div>
         <p class="muted tp-small">Publica los horarios reales en los que puedes dictar. Los estudiantes Premium los verán y reservarán (mínimo 12 horas antes). Todo en <b>hora Colombia</b>.</p>
         <label class="tp-l" for="tp-date">1. Fecha</label>
         <input class="inp tp-inp" type="date" id="tp-date" min="${t0}" value="${form.date}">
@@ -168,6 +171,10 @@
               : `<span class="tp-st booked">Reservado</span><span class="tp-slot-who">👤 ${c ? esc(studentName(c.students[0] || '')) : 'Estudiante'}</span>`}</li>`; }).join('')}</ul></div>`).join('')
           : `<div class="tp-empty"><img src="mra-point.webp" alt="" width="110" height="110"><p>Aún no tienes espacios publicados. Agrega tus horarios con el formulario.</p></div>`}
       </div></div>`;
+    const WG = window.MRWG ? MRWG.render($('#tp-wg', el), (D.teacher && D.teacher.weekly) || {}) : null;
+    $('#tp-wsave', el).onclick = async () => { const b = $('#tp-wsave', el); b.disabled = true; b.textContent = 'Guardando…';
+      const r = await api('tWeekly', { weekly: WG ? WG.get() : {} }); b.disabled = false; b.textContent = 'Guardar mi disponibilidad semanal';
+      if (!r.ok) { if (r.err !== 'auth') toast(errText(r.err), true); return; } D = r; toast('✅ Disponibilidad semanal guardada. Tus espacios de las próximas 4 semanas ya están publicados.'); avail(el); };
     const prev = () => { const p = planned(), box = $('#tp-prev', el); const dates = [...new Set(p.map((x) => x.date))];
       box.innerHTML = p.length ? `Se crearán <b>${p.length}</b> espacio${p.length > 1 ? 's' : ''} de ${form.dur} min: ${dates.slice(0, 8).map((d) => dLabel(d)).join(', ')} · ${[...new Set(p.map((x) => x.time))].map(h12).join(', ')}` : '<span class="muted">Elige fecha y al menos una hora futura.</span>';
       $('#tp-save', el).disabled = !p.length; };

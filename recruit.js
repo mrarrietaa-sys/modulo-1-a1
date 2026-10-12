@@ -113,8 +113,7 @@
         <div class="rc-f"><label for="rc-city">Ciudad y país</label><input class="inp" id="rc-city" autocomplete="address-level2" value="${esc(f.city || '')}" placeholder="Ej: Miami, Estados Unidos"><small class="rc-err" data-for="city"></small></div>
       </div>
       <div class="rc-f"><label for="rc-exp">Años de experiencia enseñando inglés</label><select class="inp" id="rc-exp"><option value="">Selecciona…</option>${EXPERIENCE.map(v => `<option ${f.experience === v ? 'selected' : ''}>${esc(v)}</option>`).join('')}</select><small class="rc-err" data-for="experience"></small></div>
-      <div class="rc-f"><span class="rc-lab">Niveles que puedes enseñar</span><div class="rc-chks">${chk('levels', LEVELS, f.levels)}</div><small class="rc-err" data-for="levels"></small></div>
-      <div class="rc-f"><span class="rc-lab">Disponibilidad horaria</span><div class="rc-chks">${chk('availability', AVAIL, f.availability)}</div><small class="rc-err" data-for="availability"></small></div>
+      <div class="rc-f"><span class="rc-lab">Disponibilidad horaria</span><div id="rc-wg"></div><small class="rc-err" data-for="availability"></small></div>
       <div class="rc-f"><label for="rc-about">Cuéntanos sobre ti</label><textarea class="inp" id="rc-about" rows="4" maxlength="1500" placeholder="Tu formación, experiencia, certificaciones (TKT, CELTA, TESOL…) y por qué te gustaría enseñar con nosotros.">${esc(f.about || '')}</textarea><small class="rc-err" data-for="about"></small></div>
       <div class="rc-f"><span class="rc-lab">Hoja de vida</span>
         <label class="rc-file" for="rc-cv"><input type="file" id="rc-cv" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"><span class="rc-file-ic">📄</span><span class="rc-file-t" id="rc-cvname">${cv ? `<b>${esc(cv.name)}</b> · ${kb(cv.size)} <em>(toca para cambiarla)</em>` : '<b>Toca para adjuntar tu hoja de vida</b><br><em>PDF, DOC o DOCX · máximo 5 MB</em>'}</span></label>
@@ -122,14 +121,15 @@
       <label class="rc-consent"><input type="checkbox" id="rc-ok" ${f.consent ? 'checked' : ''}><span>Autorizo a <b>mrarrieta.com</b> el tratamiento de mis datos personales y de mi hoja de vida, conforme a la <b>Ley 1581 de 2012</b> (Colombia), con el fin de gestionar este proceso de selección y contactarme.</span></label>
       <small class="rc-err" data-for="consent"></small>
       <div class="actionbar"><button class="btn w" id="bk">← Atrás</button><button class="btn k lg" id="go">Continuar a la prueba →</button></div></div>`);
+    const WG = window.MRWG ? MRWG.render($('#rc-wg'), f.weekly || {}, { onChange: () => { setTimeout(() => { try { keep(); setErr('availability', ''); } catch (e) { } }, 0); } }) : null;
     let cvFile = cv;
     const read = () => ({ name: $('#rc-name').value.trim().replace(/\s+/g, ' '), email: $('#rc-email').value.trim(), whatsapp: $('#rc-wa').value.trim(), city: $('#rc-city').value.trim(), experience: $('#rc-exp').value,
-      levels: $$('input[name=levels]:checked').map(x => x.value), availability: $$('input[name=availability]:checked').map(x => x.value), about: $('#rc-about').value.trim(), consent: $('#rc-ok').checked });
+      levels: [], weekly: WG ? WG.get() : (f.weekly || {}), availability: WG ? (MRWG.summary(WG.get()) ? [MRWG.summary(WG.get())] : []) : (f.availability || []), about: $('#rc-about').value.trim(), consent: $('#rc-ok').checked });
     const keep = () => { ST.form = Object.assign(ST.form, read()); persist(); };
     $$('.rc-form input:not([type=file]), .rc-form select, .rc-form textarea').forEach(el => el.addEventListener('change', keep));
     const setErr = (k, msg) => { const e = $(`.rc-err[data-for="${k}"]`); if (e) e.textContent = msg || ''; const map = { name: '#rc-name', email: '#rc-email', whatsapp: '#rc-wa', city: '#rc-city', experience: '#rc-exp', about: '#rc-about' }; if (map[k]) $(map[k]).classList.toggle('rc-bad', !!msg); };
     const FIELD = { 'rc-name': 'name', 'rc-email': 'email', 'rc-wa': 'whatsapp', 'rc-city': 'city', 'rc-exp': 'experience', 'rc-about': 'about', 'rc-ok': 'consent' };
-    $$('.rc-form input, .rc-form select, .rc-form textarea').forEach(el => el.addEventListener('input', () => { const k = FIELD[el.id] || (el.name === 'levels' || el.name === 'availability' ? el.name : ''); if (k) setErr(k, ''); }));
+    $$('.rc-form input, .rc-form select, .rc-form textarea').forEach(el => el.addEventListener('input', () => { const k = FIELD[el.id] || ''; if (k) setErr(k, ''); }));
     $('#rc-cv').onchange = (e) => { const file = e.target.files && e.target.files[0]; if (!file) return; const er = cvError(file); setErr('cv', er);
       if (er) { e.target.value = ''; return; }
       cvFile = { blob: file, name: file.name, size: file.size, type: file.type || CV_MIME[extOf(file.name)] }; putFile('cv', cvFile);
@@ -142,8 +142,7 @@
       const digits = d.whatsapp.replace(/\D/g, ''); if (digits.length < 7 || digits.length > 15) errs.whatsapp = 'Escribe un número de WhatsApp válido, con indicativo de país.';
       if (d.city.length < 3) errs.city = 'Escribe tu ciudad y país.';
       if (!d.experience) errs.experience = 'Selecciona tus años de experiencia.';
-      if (!d.levels.length) errs.levels = 'Marca al menos un nivel.';
-      if (!d.availability.length) errs.availability = 'Marca al menos una franja horaria.';
+      if (!d.availability.length) errs.availability = 'Marca en la tabla al menos una hora disponible.';
       if (d.about.length < 30) errs.about = 'Cuéntanos un poco más (mínimo 30 caracteres).';
       const ce = cvError(cvFile); if (ce) errs.cv = ce;
       if (!d.consent) errs.consent = 'Debes autorizar el tratamiento de datos para continuar.';
@@ -334,7 +333,7 @@
   }
   function payload() {
     const f = ST.form, r = ST.result;
-    return { name: f.name, email: f.email, whatsapp: f.whatsapp, city: f.city, experience: f.experience, levels: (f.levels || []).join(', '), availability: (f.availability || []).join(', '), about: f.about,
+    return { name: f.name, email: f.email, whatsapp: f.whatsapp, city: f.city, experience: f.experience, levels: (f.levels || []).join(', '), availability: (f.availability || []).join(', '), weekly: JSON.stringify(f.weekly || {}), about: f.about,
       listening: r.per.listening, reading: r.per.reading, writing: r.per.writing, speaking: r.per.speaking, final: r.fin, passed: r.passed,
       speakingAnswers: SPK.map((i, k) => { const a = ST.answers[i] || {}; return { i: k + 1, task: ITEMS[i].task, transcript: a.skipped ? '(omitida — sin grabación)' : !a.answered ? '(sin responder)' : a.value || (a.neutral ? '(sin transcripción — escuchar audio · pendiente de revisión)' : '(sin transcripción)') }; }) };
   }
@@ -393,7 +392,7 @@
   const statusTxt = (r) => r.passed ? 'APROBADO' : 'NO APROBADO';
   function summaryText() {
     const f = ST.form, r = ST.result;
-    return `👩‍🏫 Proceso de selección de profesores — mrarrieta.com\n👤 ${f.name}\n📧 ${f.email}\n📱 ${f.whatsapp}\n📍 ${f.city}\n🧑‍🏫 Experiencia: ${f.experience}\n📚 Niveles: ${(f.levels || []).join(', ')}\n🕒 Disponibilidad: ${(f.availability || []).join(', ')}\n📅 ${new Date(r.date).toLocaleString('es-CO')}\n\n🎧 Listening: ${r.per.listening.toFixed(1)}\n📖 Reading: ${r.per.reading.toFixed(1)}\n✍️ Writing: ${r.per.writing.toFixed(1)}\n🎤 Speaking: ${r.per.speaking.toFixed(1)}${r.pending ? ' (pendiente de revisión)' : ''}\n\n✅ Resultado: ${statusTxt(r)}`;
+    return `👩‍🏫 Proceso de selección de profesores — mrarrieta.com\n👤 ${f.name}\n📧 ${f.email}\n📱 ${f.whatsapp}\n📍 ${f.city}\n🧑‍🏫 Experiencia: ${f.experience}\n🕒 Disponibilidad: ${(f.availability || []).join(', ')}\n📅 ${new Date(r.date).toLocaleString('es-CO')}\n\n🎧 Listening: ${r.per.listening.toFixed(1)}\n📖 Reading: ${r.per.reading.toFixed(1)}\n✍️ Writing: ${r.per.writing.toFixed(1)}\n🎤 Speaking: ${r.per.speaking.toFixed(1)}${r.pending ? ' (pendiente de revisión)' : ''}\n\n✅ Resultado: ${statusTxt(r)}`;
   }
   async function results() {
     const r = ST.result, f = ST.form, S = ST.send || {};

@@ -238,7 +238,7 @@
       const toks = it.en.replace(/[.?!]$/, '').split(' ');
       body.appendChild(h(`<div class="mainph" style="max-width:260px">${photo(it.img)}</div>`));
       body.appendChild(h(`<p class="center" style="margin-top:-6px"><span class="hint">${esc(it.es)}</span></p>`));
-      const line = h(`<div class="line"></div>`); const bank = h(`<div class="bank"></div>`); body.appendChild(line); body.appendChild(bank);
+      const line = h(`<div class="line"></div>`); const bank = h(`<div class="bank"></div>`); body.appendChild(line); body.appendChild(bank); if (punct) line.dataset.p = punct;
       let order = shuffle(toks.map((t, i) => ({ t, i }))); if (toks.length > 1 && order.every((o, k) => o.i === k)) order = order.reverse();
       const picked = [];
       order.forEach(o => {

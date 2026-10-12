@@ -111,7 +111,7 @@
   function topbar() {
     const tb = $('#topbar');
     tb.innerHTML = `<a class="brand" href="index.html" title="Mi perfil"><span class="logo-pill"><img class="logo" src="mra-brand.png" alt="mrarrieta.com"></span></a>
-      <a class="ar-back" href="index.html">← Mi perfil</a><div class="sp"></div>
+      <div class="sp"></div><a class="ar-back" href="index.html">← Mi perfil</a>
       <span class="tb-tag ar-hide-s">ZONA DE JUEGOS</span>
       <span class="pill y ar-tpts" title="Puntos de la Zona de juegos">🪙 <b id="ar-total">${fmt(S.total)}</b></span>
       <button class="iconbtn" id="ar-snd" title="Sonido" aria-label="Sonido">${S.sound ? '🔊' : '🔇'}</button>`;

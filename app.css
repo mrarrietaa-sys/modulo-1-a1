@@ -3600,3 +3600,5 @@ p.ce-revchip{margin:8px auto 0}
 .bb-wait{position:absolute;inset:0;display:grid;place-items:center;text-align:center;font-weight:800;color:#0B2A5B;padding:12px;cursor:pointer}
 .bb{position:absolute;bottom:-70px;min-width:76px;padding:14px 12px;border-radius:999px;border:3px solid #0B2A5B;background:radial-gradient(circle at 30% 30%,#fff,#bfe0ff);font:800 15px Poppins,sans-serif;color:#0B2A5B;cursor:pointer;animation:bbUp 6s linear forwards;box-shadow:0 4px 10px rgba(11,42,91,.25)}
 .bb.pop{animation:bbPop .3s forwards!important}@keyframes bbUp{to{transform:translateY(-330px)}}@keyframes bbPop{to{transform:scale(1.6);opacity:0}}
+
+.line[data-p]::after{content:attr(data-p);font:900 30px Poppins,sans-serif;color:#0B2A5B;align-self:center;margin-left:2px}

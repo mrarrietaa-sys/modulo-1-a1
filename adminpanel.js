@@ -57,7 +57,7 @@
   }
 
   /* ======================= ESTRUCTURA ======================= */
-  const TABS = [['home', '📊', 'Resumen'], ['students', '🎓', 'Estudiantes'], ['enroll', '📝', 'Inscripciones'], ['placement', '🧭', 'Placement'], ['recruit', '👩‍🏫', 'Reclutamiento'], ['teachers', '🧑‍🏫', 'Profesores'], ['classes', '📅', 'Clases'], ['groups', '👥', 'Grupos'], ['requests', '🔁', 'Solicitudes'], ['settings', '⚙️', 'Ajustes']];
+  const TABS = [['home', '📊', 'Resumen'], ['students', '🎓', 'Estudiantes'], ['enroll', '📝', 'Inscripciones'], ['placement', '🧭', 'Placement'], ['recruit', '👩‍🏫', 'Reclutamiento'], ['teachers', '🧑‍🏫', 'Profesores'], ['classes', '📅', 'Clases'], ['requests', '🔁', 'Solicitudes'], ['settings', '⚙️', 'Ajustes']];
   let TAB = 'home', STATS = null;
   async function boot() {
     const out = $('#ad-out'); if (out) { out.classList.remove('hidden'); out.onclick = () => { try { sessionStorage.removeItem(KK); } catch (e) { } login(); }; }
@@ -79,7 +79,7 @@
     const kpi = (n, l, sub, cls, t) => `<button class="ad-kpi ${cls || ''}" ${t ? `data-go="${t}"` : ''}><b>${n}</b><span>${l}</span>${sub ? `<em>${sub}</em>` : ''}</button>`;
     view().innerHTML = `<div class="ad-head"><h1>👋 Hola, administración</h1><p class="muted">${fD(s.today, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p></div>
       <div class="ad-kpis">${kpi(s.students, 'Estudiantes', `${s.active7} activos esta semana`, '', 'students')}${kpi(b.premium, '👑 Premium', '', 'prem', 'students:premium')}${kpi(b.membership, '⭐ Membership', '', 'memb', 'students:membership')}${kpi(b.free, '🟢 Acceso gratuito', '', 'free', 'students:free')}${kpi(b.expired, '⏰ Vencidos', 'por renovar', 'exp', 'students:expired')}${kpi(money(s.revenue), 'Ingreso mensual', 'planes activos (estimado)', 'rev')}</div>
-      <div class="ad-kpis sm">${kpi(s.enrollNew, 'Inscripciones nuevas', `${s.enrollTotal} en total`, s.enrollNew ? 'alert' : '', 'enroll')}${kpi(s.placementMonth, 'Placement este mes', `${s.placementTotal} en total`, '', 'placement')}${kpi(s.recruitNew, 'Candidatos nuevos', `${s.recruitTotal} en total`, s.recruitNew ? 'alert' : '', 'recruit')}${kpi(s.requestsPending, 'Solicitudes pendientes', 'cambio de horario', s.requestsPending ? 'alert' : '', 'requests')}${kpi(s.classesMonth, 'Clases dictadas', 'este mes', '', 'classes')}${kpi(s.classesUpcoming, 'Clases programadas', 'próximas', '', 'classes')}</div>
+      <div class="ad-kpis sm">${kpi(s.enrollNew, 'Inscripciones nuevas', `${s.enrollTotal} en total`, s.enrollNew ? 'alert' : '', 'enroll')}${kpi(s.placementMonth, 'Placement este mes', `${s.placementTotal} en total`, '', 'placement')}${kpi(s.recruitNew, 'Candidatos nuevos', `${s.recruitTotal} en total`, s.recruitNew ? 'alert' : '', 'recruit')}${kpi(s.requestsPending, 'Solicitudes pendientes', 'intentos extra', s.requestsPending ? 'alert' : '', 'requests')}${kpi(s.classesMonth, 'Clases dictadas', 'este mes', '', 'classes')}${kpi(s.classesUpcoming, 'Clases programadas', 'próximas', '', 'classes')}</div>
       <div class="ad-grid2">
         <div class="card"><h3>⏰ Planes por vencer (7 días)</h3>${s.expiring.length ? `<div class="ad-mini">${s.expiring.map(x => `<button class="ad-mrow" data-st="${esc(x.code)}"><b>${esc(x.name)}</b><span>${PLAN[x.plan] ? PLAN[x.plan].join(' ') : ''} · ${x.daysLeft === 0 ? 'vence hoy' : 'vence en ' + x.daysLeft + ' d'} (${fD(x.planEnd)})</span></button>`).join('')}</div>` : '<p class="muted">Ninguno 🎉</p>'}</div>
         <div class="card"><h3>🎂 Cumpleaños del mes</h3>${s.birthdays.length ? `<div class="ad-mini">${s.birthdays.map(x => `<button class="ad-mrow ${x.today ? 'hoy' : ''}" data-st="${esc(x.code)}"><b>${x.today ? '🎉 ' : ''}${esc(x.name)}</b><span>${fD(x.birth, { day: 'numeric', month: 'long' })}${x.today ? ' · ¡HOY! (correo automático enviado 8:00 a. m.)' : ''}</span></button>`).join('')}</div>` : '<p class="muted">Sin cumpleaños este mes.</p>'}</div>
@@ -145,7 +145,6 @@
       <label>Correo<input class="inp" name="email" type="email" value="${esc(s.email)}"></label><label>WhatsApp<input class="inp" name="whatsapp" inputmode="tel" value="${esc(s.whatsapp)}"></label>
       <label>Fecha de nacimiento<input class="inp" name="birth" type="date" value="${esc(s.birth)}"></label>
       <label>Módulo de su ruta<select class="inp" name="module"><option value="">Que tome el placement test</option>${[1, 2, 3, 4].map(n => `<option value="${n}" ${String(s.module) === String(n) ? 'selected' : ''}>Módulo ${n} · ${MODN[n]}</option>`).join('')}</select></label>
-      <label>Grupo (Premium)<select class="inp" name="groupId">${groupOpts(s.groupId)}</select></label>
       ${isNew ? `<label>Código <small>(vacío = automático)</small><input class="inp" name="code" placeholder="Ej: LAURA-2026" style="text-transform:uppercase"></label>` : `<label>Estado<select class="inp" name="status">${['activo', 'inactivo', 'archivado'].map(x => `<option ${s.status === x ? 'selected' : ''}>${x}</option>`).join('')}</select></label>`}
       <label class="full">Notas internas<textarea class="inp" name="notes" rows="2">${esc(s.notes)}</textarea></label></div>`;
   }
@@ -179,20 +178,20 @@
       <div class="card ad-dhead"><div class="ad-av lg">${esc(((s.first || '?')[0] + (s.last || '')[0]).toUpperCase())}</div><div class="grow"><h1>${esc(s.first)} ${esc(s.last)}</h1>
         <p>${chip(PLAN[k].join(' '), 'p-' + k)} <button class="ad-codebtn" id="d-code" title="Copiar">${esc(s.code)} 📋</button></p>
         <p class="muted">${s.email ? '📧 ' + esc(s.email) : ''} ${s.whatsapp ? ' · 📱 ' + esc(s.whatsapp) : ''} ${s.birth ? ' · 🎂 ' + fD(s.birth, { day: 'numeric', month: 'long', year: 'numeric' }) : ''}</p></div>
-        <div class="ad-dact">${s.whatsapp ? `<a class="btn ad-wa sm" target="_blank" rel="noopener" href="${waLink(s.whatsapp, 'Hola ' + s.first + ' 👋')}">💬 WhatsApp</a>` : ''}<button class="btn w sm" id="d-share">🔑 Enviar código</button></div></div>
+        <div class="ad-dact">${s.whatsapp ? `<a class="btn ad-wa sm" target="_blank" rel="noopener" href="${waLink(s.whatsapp, 'Hola ' + s.first + ' 👋')}">💬 WhatsApp</a>` : ''}<button class="btn w sm" id="d-share">🔑 Enviar código</button><button class="btn w sm ad-del" id="d-del">🗑️ Borrar</button></div></div>
       <div class="card ad-plan"><h3>💎 Plan</h3>
         <p>${st.eff === 'free' && !st.expired ? 'Acceso gratuito: examen de clasificación + los 2 primeros temas.' : `${PLAN[s.plan] ? PLAN[s.plan].join(' ') : ''} · desde ${fD(s.planStart)} hasta <b>${fD(s.planEnd)}</b> ${st.expired ? chip('VENCIDO', 'p-expired') : st.daysLeft !== null ? chip(st.daysLeft + ' días restantes', st.daysLeft <= 5 ? 'p-expired' : 'gray') : ''}`}</p>
         <div class="ad-planbtns"><button class="btn w" data-plan="membership">⭐ Activar Membership</button><button class="btn k" data-plan="premium">👑 Activar Premium</button>${s.plan !== 'free' ? `<button class="btn w" data-plan="${esc(s.plan)}" data-renew="1">🔁 Renovar ${esc(PLAN[s.plan][1])}</button><button class="btn w" data-plan="free">🟢 Pasar a gratuito</button>` : ''}</div>
-        ${st.eff === 'premium' && r.credits ? `<div class="ad-cred"><span>⭐ VIP: <b>${r.credits.vipUsed}/${r.credits.vipTotal}</b> usadas</span><span>👥 Grupales asistidas: <b>${r.credits.groupDone}/${r.credits.groupTotal}</b></span><span>Ciclo: ${fD(r.credits.cycleStart)} → ${fD(r.credits.cycleEnd)}</span></div>` : ''}
+        ${st.eff === 'premium' && r.credits ? `<div class="ad-cred"><span>⭐ VIP: <b>${r.credits.vipUsed}/${r.credits.vipTotal}</b> usadas</span><span>🎙️ Clubs asistidos: <b>${r.credits.groupDone}/${r.credits.groupTotal}</b></span><span>Ciclo: ${fD(r.credits.cycleStart)} → ${fD(r.credits.cycleEnd)}</span></div>` : ''}
         ${(r.plans || []).length ? `<details><summary>Historial de pagos/planes (${r.plans.length})</summary><div class="ad-mini">${r.plans.map(p => `<div class="ad-mrow"><b>${PLAN[p.plan] ? PLAN[p.plan].join(' ') : esc(p.plan)} · ${esc(p.months || 0)} mes(es) · ${money(p.amount)}</b><span>${fDT(p.date)} · ${fD(p.start)} → ${fD(p.end)}${p.note ? ' · ' + esc(p.note) : ''}</span></div>`).join('')}</div></details>` : ''}</div>
       <div class="card"><h3>🧭 Progreso en su ruta</h3><p class="muted">Módulo actual: <b>${s.module ? 'Módulo ' + s.module + ' · ' + MODN[s.module] : 'aún sin placement'}</b>${s.moduleBy ? ' (' + (s.moduleBy === 'admin' ? 'asignado por administración' : 'por examen de clasificación') + ')' : ''} · ✅ ${+s.classesDone || 0} clases · ⚡ ${+s.xp || 0} XP · 🕒 última conexión ${s.lastSeen ? fDT(s.lastSeen) : 'nunca'}</p>
         <div class="ad-mods">${['A1', 'A2', 'B2', 'B2+'].map(id => { const x = pr[id] || { done: 0, total: 0, pct: 0 }; return `<div class="ad-mod${x.passed ? ' ok' : ''}"><b>${id}</b>${bar(x.pct)}<span>${x.done}/${x.total || '—'} clases · ${x.pct || 0}%${x.passed ? ' · 🎓 aprobado' : ''}</span></div>`; }).join('')}</div>
         ${(r.placements || []).length ? `<h4>📝 Exámenes de clasificación</h4><div class="ad-mini">${r.placements.map(p => `<button class="ad-mrow" data-pl="${esc(p.id)}"><b>${esc(p.level || ('Módulo ' + p.module))} · nota ${esc(p.final)}</b><span>${fDT(p.date)} · ▶ ver y escuchar audios</span></button>`).join('')}</div>` : ''}</div>
-      <div class="card"><h3>👩‍🏫 Clases con profesores · ${r.classes.filter(c => c.attended).length} asistidas</h3>${r.classes.length ? `<div class="ad-mini">${r.classes.map(c => `<div class="ad-mrow"><b>${c.type === 'vip' ? '⭐ VIP' : '👥 Grupal'} · ${fD(c.date)} ${fT(c.time)} · ${esc(c.teacher)}</b><span>${c.status === 'done' ? (c.attended ? '✅ asistió' : '❌ no asistió') : c.status === 'scheduled' ? '📅 programada' : c.status === 'cancelled' ? 'cancelada' : '❌ no asistió'}</span></div>`).join('')}</div>` : '<p class="muted">Sin clases todavía.</p>'}
+      <div class="card"><h3>👩‍🏫 Clases con profesores · ${r.classes.filter(c => c.attended).length} asistidas</h3>${r.classes.length ? `<div class="ad-mini">${r.classes.map(c => `<div class="ad-mrow"><b>${c.type === 'vip' ? '⭐ VIP' : c.type === 'club' ? '🎙️ Club' : '👥 Grupal'} · ${fD(c.date)} ${fT(c.time)} · ${esc(c.teacher)}</b><span>${c.status === 'done' ? (c.attended ? '✅ asistió' : '❌ no asistió') : c.status === 'scheduled' ? '📅 programada' : c.status === 'cancelled' ? 'cancelada' : '❌ no asistió'}</span></div>`).join('')}</div>` : '<p class="muted">Sin clases todavía.</p>'}
         ${(r.requests || []).length ? `<h4>🔁 Solicitudes</h4><div class="ad-mini">${r.requests.map(q => `<div class="ad-mrow"><b>${esc(q.preferred)}</b><span>${fDT(q.date)} · ${esc(q.status)}</span></div>`).join('')}</div>` : ''}</div>
       <div class="card"><h3>✏️ Datos del estudiante</h3>${studentForm(s, false)}<button class="btn k" id="d-save">💾 Guardar cambios</button></div>`;
     wireBack(() => go('students'));
-    $('#d-code').onclick = () => copy(s.code); $('#d-share').onclick = () => shareCode(s);
+    $('#d-code').onclick = () => copy(s.code); $('#d-share').onclick = () => shareCode(s); $('#d-del').onclick = () => delAsk('Estudiantes', s.code, (s.first + ' ' + s.last).trim(), 'Se borra su código y sus datos. Ya no podrá entrar a la plataforma.', () => go('students'));
     $$('[data-pl]').forEach(x => x.onclick = () => placementDetail(x.dataset.pl, () => studentDetail(code)));
     $$('[data-plan]').forEach(b => b.onclick = () => planModal(s, b.dataset.plan, !!b.dataset.renew));
     $('#d-save').onclick = async () => { const d = formData($('.ad-form', view())); const b = $('#d-save'); b.disabled = true;
@@ -304,16 +303,21 @@
         <small>${esc(t.code)}</small><div class="ad-rowstats"><span>✅ ${s.taughtMonth || 0} dictadas este mes</span><span>📚 ${s.taughtTotal || 0} en total (⭐ ${s.vipTotal || 0} VIP · 👥 ${s.groupTotal || 0} grupales)</span><span>📅 ${s.upcoming || 0} programadas</span><span>🟢 ${s.freeSlots || 0} espacios libres</span></div></div></div>`; },
       open: (id) => teacherDetail(id), empty: 'Aún no hay profesores. Crea el primero.' });
   }
+  function delAsk(table, id, name, note, after) {
+    const m = modal(`<div class="center"><div style="font-size:44px">🗑️</div><h2>¿Borrar a ${esc(name)}?</h2><p class="muted">${note}</p><p><b>Esto no se puede deshacer.</b></p><div class="row" style="justify-content:center;margin-top:10px"><button class="btn w" id="dl-no">Cancelar</button><button class="btn k ad-del" id="dl-ok">🗑️ Sí, borrar</button></div></div>`);
+    $('#dl-no', m).onclick = () => m.remove();
+    $('#dl-ok', m).onclick = async () => { $('#dl-ok', m).disabled = true; const r = await api('aDelete', { table, id }); m.remove(); if (r.ok) { toast('🗑️ Borrado'); after && after(); } else toast('No se pudo borrar'); };
+  }
   function teacherEdit(t, after) {
     t = t || {};
     const m = modal(`<h2>${t.id ? '✏️ Editar profesor' : '＋ Nuevo profesor'}</h2><div class="ad-form">
       <label>Nombre<input class="inp" name="name" value="${esc(t.name)}"></label><label>Correo<input class="inp" name="email" type="email" value="${esc(t.email)}"></label>
       <label>WhatsApp<input class="inp" name="whatsapp" value="${esc(t.whatsapp)}"></label><label>Código de profe <small>(vacío = automático)</small><input class="inp" name="code" value="${esc(t.code)}" style="text-transform:uppercase"></label>
-      <label>PIN <small>(vacío = automático)</small><input class="inp" name="pin" inputmode="numeric" value="${esc(t.pin)}"></label><label class="full">Enlaces de clase (Meet/Zoom) <small>— uno por línea. Se rotan si tiene clases seguidas el mismo día.</small><textarea class="inp" name="meet" rows="3" placeholder="https://meet.google.com/aaa-bbbb-ccc&#10;https://meet.google.com/ddd-eeee-fff">${esc(t.meet)}</textarea></label>
+      <label>PIN <small>(vacío = automático)</small><input class="inp" name="pin" inputmode="numeric" value="${esc(t.pin)}"></label>${[0, 1, 2].map(i => `<label class="full">Enlace de clase ${i + 1} (Meet/Zoom)${i ? ' <small>— de respaldo</small>' : ''}<input class="inp" name="meet${i}" placeholder="https://meet.google.com/…" value="${esc(String(t.meet || '').split(/[\s,;]+/).filter(Boolean)[i] || '')}"></label>`).join('')}<p class="muted full" style="margin:0">Los 3 enlaces se rotan para que las clases seguidas no usen el mismo.</p>
       <label class="full">Presentación corta (la ven los estudiantes Premium)<input class="inp" name="bio" maxlength="140" value="${esc(t.bio)}"></label>
       <label>Activo<select class="inp" name="active"><option value="sí" ${t.active !== 'no' ? 'selected' : ''}>sí</option><option value="no" ${t.active === 'no' ? 'selected' : ''}>no</option></select></label></div>
       <button class="btn k block lg" id="te-ok">💾 Guardar</button>`);
-    $('#te-ok', m).onclick = async () => { const d = formData(m); if (!d.name) return toast('Escribe el nombre'); if (t.id) d.id = t.id; d.code = (d.code || '').toUpperCase();
+    $('#te-ok', m).onclick = async () => { const d = formData(m); if (!d.name) return toast('Escribe el nombre'); d.meet = [d.meet0, d.meet1, d.meet2].map(x => (x || '').trim()).filter(Boolean).join('\n'); delete d.meet0; delete d.meet1; delete d.meet2; if (t.id) d.id = t.id; d.code = (d.code || '').toUpperCase();
       $('#te-ok', m).disabled = true; const r = await api('aSave', { table: 'Profesores', row: d }); m.remove();
       if (!r.ok) return toast('No se pudo guardar'); await loadRef(); after && after(r.row);
       if (!t.id) modal(`<div class="center"><h2>✅ Profesor creado</h2><div class="ad-code">${esc(r.row.code)} · PIN ${esc(r.row.pin)}</div><p>${r.row.mailed ? '📧 Se le envió un correo automático de bienvenida a <b>' + esc(r.row.email) + '</b> con su código, PIN y el enlace al portal de profesores.' : (r.row.email ? '⚠️ No se pudo enviar el correo de bienvenida. Revisa el correo del profe.' : '⚠️ Agrega el correo del profe para enviarle la bienvenida automática.')}</p></div>`);
@@ -325,13 +329,13 @@
     const r = await api('aGet', { table: 'Profesores', id }); if (!r.ok) return; const t = r.row, s = r.stats || {};
     const slots = (r.slots || []).sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
     const byDate = {}; slots.forEach(x => (byDate[x.date] = byDate[x.date] || []).push(x));
-    view().innerHTML = `${back()}<div class="card ad-dhead"><div class="ad-av lg">${esc((t.name || '?')[0].toUpperCase())}</div><div class="grow"><h1>${esc(t.name)}</h1><p>${esc(t.code)} · PIN ${esc(t.pin)}</p><p class="muted">${esc(t.email)} ${t.whatsapp ? '· ' + esc(t.whatsapp) : ''}</p>${t.meet ? `<p class="muted">🎥 ${String(t.meet).split(/[\s,;]+/).filter(Boolean).map(esc).join('<br>🎥 ')}</p>` : ''}</div><div class="ad-dact"><button class="btn w sm" id="t-ed">✏️ Editar</button></div></div>
+    view().innerHTML = `${back()}<div class="card ad-dhead"><div class="ad-av lg">${esc((t.name || '?')[0].toUpperCase())}</div><div class="grow"><h1>${esc(t.name)}</h1><p>${esc(t.code)} · PIN ${esc(t.pin)}</p><p class="muted">${esc(t.email)} ${t.whatsapp ? '· ' + esc(t.whatsapp) : ''}</p>${t.meet ? `<p class="muted">🎥 ${String(t.meet).split(/[\s,;]+/).filter(Boolean).map(esc).join('<br>🎥 ')}</p>` : ''}</div><div class="ad-dact"><button class="btn w sm" id="t-ed">✏️ Editar</button><button class="btn w sm ad-del" id="t-del">🗑️ Borrar</button></div></div>
       <div class="ad-kpis sm"><div class="ad-kpi"><b>${s.taughtMonth || 0}</b><span>Dictadas este mes</span></div><div class="ad-kpi"><b>${s.taughtTotal || 0}</b><span>Dictadas en total</span><em>⭐ ${s.vipTotal || 0} VIP · 👥 ${s.groupTotal || 0} grupales</em></div><div class="ad-kpi"><b>${s.upcoming || 0}</b><span>Programadas</span></div><div class="ad-kpi"><b>${s.freeSlots || 0}</b><span>Espacios libres</span></div></div>
       <div class="card"><h3>🗓️ Disponibilidad (espacios para clases VIP)</h3><p class="muted">El profe la publica desde su portal; también puedes agregarla aquí.</p>
         <div class="ad-form"><label>Fecha<input class="inp" type="date" id="sl-d" min="${todayISO()}" value="${addDays(todayISO(), 1)}"></label><label>Horas <small>(separadas por coma)</small><input class="inp" id="sl-h" placeholder="07:00, 18:00, 19:00"></label><label>Repetir semanas<select class="inp" id="sl-w">${[1, 2, 3, 4, 6, 8].map(n => `<option>${n}</option>`).join('')}</select></label><label>Duración<select class="inp" id="sl-u"><option>60</option><option>45</option><option>30</option></select></label></div><button class="btn k" id="sl-add">＋ Agregar espacios</button>
         <div class="ad-slots">${Object.keys(byDate).length ? Object.keys(byDate).map(d => `<div class="ad-sday"><b>${fD(d, { weekday: 'short', day: 'numeric', month: 'short' })}</b><div>${byDate[d].map(x => `<span class="ad-slot ${x.status}">${fT(x.time)}${x.status === 'free' ? ` <button data-del="${esc(x.id)}" title="Borrar">✕</button>` : ' · reservado'}</span>`).join('')}</div></div>`).join('') : '<p class="muted">Sin espacios publicados.</p>'}</div></div>
-      <div class="card"><h3>📚 Clases</h3>${(r.classes || []).length ? `<div class="ad-mini">${r.classes.map(c => `<div class="ad-mrow"><b>${c.type === 'vip' ? '⭐ VIP' : '👥 Grupal'} · ${fD(c.date)} ${fT(c.time)}</b><span>${J(c.students, []).join(', ')} · ${c.status === 'done' ? '✅ dictada' : c.status === 'scheduled' ? '📅 programada' : c.status === 'cancelled' ? 'cancelada' : 'no asistió'}</span></div>`).join('')}</div>` : '<p class="muted">Sin clases.</p>'}</div>`;
-    wireBack(() => go('teachers')); $('#t-ed').onclick = () => teacherEdit(t);
+      <div class="card"><h3>📚 Clases</h3>${(r.classes || []).length ? `<div class="ad-mini">${r.classes.map(c => `<div class="ad-mrow"><b>${c.type === 'vip' ? '⭐ VIP' : c.type === 'club' ? '🎙️ Club' : '👥 Grupal'} · ${fD(c.date)} ${fT(c.time)}</b><span>${J(c.students, []).join(', ')} · ${c.status === 'done' ? '✅ dictada' : c.status === 'scheduled' ? '📅 programada' : c.status === 'cancelled' ? 'cancelada' : 'no asistió'}</span></div>`).join('')}</div>` : '<p class="muted">Sin clases.</p>'}</div>`;
+    wireBack(() => go('teachers')); $('#t-ed').onclick = () => teacherEdit(t); $('#t-del').onclick = () => delAsk('Profesores', t.id, t.name, 'Se borra su código y sus espacios libres. El historial de clases dictadas se conserva. Si tiene grupos o clubs asignados, asígnale otro profe.', async () => { await loadRef(); go('teachers'); });
     $('#sl-add').onclick = async () => { const d = $('#sl-d').value; const hs = $('#sl-h').value.split(/[,\s]+/).map(x => x.trim()).filter(Boolean).map(x => x.length === 4 ? '0' + x : x).filter(x => /^\d{2}:\d{2}$/.test(x)); if (!d || !hs.length) return toast('Escribe la fecha y las horas (ej: 18:00)');
       const w = +$('#sl-w').value, slots = []; for (let i = 0; i < w; i++) hs.forEach(h => slots.push({ date: addDays(d, i * 7), time: h, duration: $('#sl-u').value }));
       const res = await api('aSlot', { teacherId: t.id, slots }); if (res.ok) { toast(`✅ ${res.added} espacio(s) agregados`); teacherDetail(id); } };
@@ -340,10 +344,10 @@
 
   /* ======================= CLASES ======================= */
   function classes() {
-    list('classes', { title: '📅 Clases', sub: 'VIP (las reservan los estudiantes Premium) y grupales (se crean solas según los días del grupo)', desc: false,
-      filters: [{ k: 'status', opts: [['scheduled', '📅 Programadas'], ['done', '✅ Dictadas'], ['noshow', '❌ No asistió'], ['cancelled', 'Canceladas'], ['', 'Todas']] }, { k: 'type', opts: [['', 'VIP y grupales'], ['vip', '⭐ VIP'], ['group', '👥 Grupales']] }],
-      row: c => { const st = J(c.students, []); const att = J(c.attendance, {}); return `<div class="card ad-row ad-cl ${c.type}" data-open="${esc(c.id)}"><div class="ad-cdate"><b>${fD(c.date, { day: 'numeric' })}</b><small>${fD(c.date, { month: 'short' })}</small></div><div class="grow"><b>${c.type === 'vip' ? '⭐ VIP' : '👥 Grupal'} · ${fT(c.time)} · ${esc(tName(c.teacherId))}</b> ${chip({ scheduled: '📅 programada', done: '✅ dictada', noshow: '❌ no asistió', cancelled: 'cancelada' }[c.status] || esc(c.status), 'st-' + c.status)}
-        <small>${c.groupId ? esc(gName(c.groupId)) + ' · ' : ''}${st.length} estudiante(s)${c.status === 'done' ? ' · asistieron ' + Object.values(att).filter(Boolean).length : ''}${c.topic ? ' · ' + esc(c.topic) : ''}</small></div></div>`; },
+    list('classes', { title: '📅 Clases', sub: 'VIP (las reservan los estudiantes Premium) y clubs (se crean solos según el horario de Ajustes)', desc: false,
+      filters: [{ k: 'status', opts: [['scheduled', '📅 Programadas'], ['done', '✅ Dictadas'], ['noshow', '❌ No asistió'], ['cancelled', 'Canceladas'], ['', 'Todas']] }, { k: 'type', opts: [['', 'VIP y clubs'], ['vip', '⭐ VIP'], ['club', '🎙️ Clubs']] }],
+      row: c => { const st = J(c.students, []); const att = J(c.attendance, {}); return `<div class="card ad-row ad-cl ${c.type}" data-open="${esc(c.id)}"><div class="ad-cdate"><b>${fD(c.date, { day: 'numeric' })}</b><small>${fD(c.date, { month: 'short' })}</small></div><div class="grow"><b>${c.type === 'vip' ? '⭐ VIP' : c.type === 'club' ? '🎙️ Club' : '👥 Grupal'} · ${fT(c.time)} · ${esc(tName(c.teacherId))}</b> ${chip({ scheduled: '📅 programada', done: '✅ dictada', noshow: '❌ no asistió', cancelled: 'cancelada' }[c.status] || esc(c.status), 'st-' + c.status)}
+        <small>${st.length} estudiante(s)${c.status === 'done' ? ' · asistieron ' + Object.values(att).filter(Boolean).length : ''}${c.topic ? ' · ' + esc(c.topic) : ''}</small></div></div>`; },
       open: (id, c) => classMark(c), empty: 'No hay clases con este filtro.' });
   }
   function classMark(c) {
@@ -364,45 +368,18 @@
       const r = await api('aSave', { table: 'Clases', row: d }); m.remove(); if (r.ok) { toast('✅ Clase programada'); classes(); } };
   }
 
-  /* ======================= GRUPOS ======================= */
-  function groups() {
-    list('groups', { title: '👥 Grupos', sub: 'La escuela asigna nivel, grupo, profe y horario a los estudiantes Premium', add: '＋ Nuevo grupo', onAdd: () => groupEdit({}),
-      row: g => `<div class="card ad-row" data-open="${esc(g.id)}"><div class="ad-av">👥</div><div class="grow"><b>${esc(g.name)}</b> ${chip(esc(g.level || ''), 'p-membership')}${g.active === 'no' ? chip('inactivo', 'gray') : ''}<small>${esc(g.days || '')} · ${fT(g.time)} · ${esc(tName(g.teacherId))}</small></div></div>`,
-      open: (id) => groupDetail(id), empty: 'Aún no hay grupos.' });
-  }
-  function groupEdit(g, after) {
-    const m = modal(`<h2>${g.id ? '✏️ Editar grupo' : '＋ Nuevo grupo'}</h2><div class="ad-form"><label>Nombre<input class="inp" name="name" placeholder="B2 Noche" value="${esc(g.name)}"></label>
-      <label>Nivel<select class="inp" name="level">${['A1', 'A2', 'B2', 'B2+'].map(l => `<option ${g.level === l ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
-      <label>Profe<select class="inp" name="teacherId">${teacherOpts(g.teacherId)}</select></label><label>Días<input class="inp" name="days" placeholder="lun, mié" title="lun, mar, mié, jue, vie, sáb" value="${esc(g.days)}"></label>
-      <label>Hora (Colombia)<input class="inp" type="time" name="time" value="${esc(g.time || '19:00')}"></label><label>Duración (min)<input class="inp" name="duration" inputmode="numeric" value="${esc(g.duration || '60')}"></label>
-      <label class="full">Enlace fijo (Meet/Zoom)<input class="inp" name="meet" value="${esc(g.meet)}"></label><label>Activo<select class="inp" name="active"><option value="sí">sí</option><option value="no" ${g.active === 'no' ? 'selected' : ''}>no</option></select></label></div>
-      <button class="btn k block lg" id="ge-ok">💾 Guardar</button>`);
-    $('#ge-ok', m).onclick = async () => { const d = formData(m); if (!d.name) return toast('Escribe el nombre'); if (g.id) d.id = g.id; const r = await api('aSave', { table: 'Grupos', row: d }); m.remove(); if (r.ok) { toast('✅ Guardado'); await loadRef(); after ? after() : g.id ? groupDetail(g.id) : groups(); } };
-  }
-  async function groupDetail(id) {
-    view().innerHTML = '<div class="ad-loading">⏳ Cargando…</div>';
-    const r = await api('aGet', { table: 'Grupos', id }); if (!r.ok) return; const g = r.row;
-    view().innerHTML = `${back()}<div class="card ad-dhead"><div class="ad-av lg">👥</div><div class="grow"><h1>${esc(g.name)}</h1><p>${esc(g.level)} · ${esc(g.days)} · ${fT(g.time)} · ${esc(tName(g.teacherId))}</p><p class="muted">${g.meet ? '🎥 ' + esc(g.meet) : 'Sin enlace fijo'}</p></div><div class="ad-dact"><button class="btn w sm" id="g-ed">✏️ Editar</button></div></div>
-      <div class="card"><h3>Estudiantes (${r.students.length})</h3>${r.students.length ? `<div class="ad-mini">${r.students.map(s => `<button class="ad-mrow" data-st="${esc(s.code)}"><b>${esc(s.name)}</b><span>${esc(s.code)} · ${PLAN[s.plan] ? PLAN[s.plan].join(' ') : ''}${s.plan !== 'premium' ? ' · ⚠️ no es Premium' : ''}</span></button>`).join('')}</div>` : '<p class="muted">Sin estudiantes.</p>'}
-        <div class="row"><input class="inp" id="g-add" placeholder="Código del estudiante" style="text-transform:uppercase;max-width:240px"><button class="btn w" id="g-addb">＋ Agregar al grupo</button></div></div>
-      <div class="card"><h3>📅 Clases automáticas</h3><p class="muted">Las clases de este grupo se crean solas para las próximas 2 semanas según sus <b>días</b> y <b>hora</b> (nunca domingos ni festivos). Los estudiantes Premium confirman hasta 3 horas antes; al profe le llega la notificación y el correo. Si nadie confirma, se le avisa en su perfil que no necesita conectarse.</p></div>`;
-    wireBack(() => go('groups')); $('#g-ed').onclick = () => groupEdit(g);
-    $$('[data-st]').forEach(x => x.onclick = () => studentDetail(x.dataset.st));
-    $('#g-addb').onclick = async () => { const c = $('#g-add').value.trim().toUpperCase(); if (!c) return; const res = await api('aSave', { table: 'Estudiantes', row: { code: c, groupId: g.id } }); if (res.ok) { toast('✅ Agregado'); groupDetail(id); } else toast('No se encontró ese código'); };
-  }
-
   /* ======================= SOLICITUDES ======================= */
   function requests() {
-    list('requests', { title: '🔁 Solicitudes de cambio de horario', sub: 'Los estudiantes Premium piden cambio de grupo; tú lo apruebas',
+    list('requests', { title: '🔁 Solicitudes', sub: 'Intentos extra de exámenes que piden los estudiantes',
       filters: [{ k: 'status', opts: [['pendiente', '⏳ Pendientes'], ['aprobada', '✅ Aprobadas'], ['rechazada', '❌ Rechazadas'], ['', 'Todas']] }],
       row: q => `<div class="card ad-row" data-open="${esc(q.id)}"><div class="ad-av">🔁</div><div class="grow"><b>${esc(q.name)}</b> ${chip(esc(q.status), 'st-' + q.status)}<small>${fDT(q.date)} · actual: ${esc(q.currentGroup || 'sin grupo')}</small><div class="ad-rowstats"><span>Prefiere: <b>${esc(q.preferred)}</b></span>${q.reason ? `<span>Motivo: ${esc(q.reason)}</span>` : ''}</div></div></div>`,
       open: (id, q) => reqModal(q), empty: 'No hay solicitudes. 🎉' });
   }
   function reqModal(q) {
     const m = modal(`<h2>🔁 ${esc(q.name)}</h2><p class="muted">${esc(q.code)} · ${fDT(q.date)}</p><div class="ad-kv"><span>Grupo actual</span><b>${esc(q.currentGroup || '—')}</b><span>Horario preferido</span><b>${esc(q.preferred)}</b><span>Motivo</span><b>${esc(q.reason || '—')}</b></div>
-      ${q.status === 'pendiente' ? `<label class="ad-lab">Nuevo grupo (si apruebas)</label><select class="inp" id="rq-g">${groupOpts()}</select><label class="ad-lab">Mensaje para el estudiante</label><textarea class="inp" id="rq-n" rows="2"></textarea>
+      ${q.status === 'pendiente' ? `<label class="ad-lab">Mensaje para el estudiante</label><textarea class="inp" id="rq-n" rows="2"></textarea>
       <div class="ad-planbtns"><button class="btn k" id="rq-y">✅ Aprobar</button><button class="btn w" id="rq-n2">❌ Rechazar</button></div>` : `<p>Estado: <b>${esc(q.status)}</b> ${q.note ? '· ' + esc(q.note) : ''}</p>`}`);
-    const res = async (status) => { const r = await api('aReq', { id: q.id, status, groupId: status === 'aprobada' ? $('#rq-g', m).value : '', note: $('#rq-n', m).value }); m.remove(); if (r.ok) { toast(status === 'aprobada' ? '✅ Aprobada · se le avisó por correo' : 'Solicitud rechazada'); requests(); } };
+    const res = async (status) => { const r = await api('aReq', { id: q.id, status, note: $('#rq-n', m).value }); m.remove(); if (r.ok) { toast(status === 'aprobada' ? '✅ Aprobada · se le avisó por correo' : 'Solicitud rechazada'); requests(); } };
     if ($('#rq-y', m)) { $('#rq-y', m).onclick = () => res('aprobada'); $('#rq-n2', m).onclick = () => res('rechazada'); }
   }
 
@@ -416,13 +393,12 @@
       <div class="card"><h3>📣 Anuncio para todos los estudiantes</h3><p class="muted">Aparece en el perfil de cada estudiante. Déjalo vacío para ocultarlo.</p><textarea class="inp" data-k="announcement" rows="2">${esc(conf.announcement)}</textarea></div>
       <div class="card"><h3>🎙️ Horarios de los clubs (Premium)</h3><p class="muted">Cámbialos cuando un profe se enferme o haya un cambio de último momento. Los estudiantes los ven en su perfil según su nivel. Nunca domingos ni festivos.</p>
         ${[['conv', '🗣️ Conversación'], ['fon', '🔤 Fonética']].map(([k, n]) => [['a', 'A1 · A2'], ['b', 'B2 · B2+']].map(([b, lv]) => { const c = 'club_' + k + '_' + b + '_'; return `<div class="ad-club"><h4>${n} · Niveles ${lv}</h4><div class="ad-form"><label>Día<select class="inp" data-k="${c}day">${['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'].map(d => `<option ${conf[c + 'day'] === d ? 'selected' : ''}>${d}</option>`).join('')}</select></label><label>Hora<input class="inp" type="time" data-k="${c}time" value="${esc(conf[c + 'time'])}"></label><label>Profe<select class="inp" data-k="${c}teacher"><option value="">—</option>${(REF.teachers || []).map(t => `<option value="${esc(t.id)}" ${conf[c + 'teacher'] === t.id ? 'selected' : ''}>${esc(t.name)}</option>`).join('')}</select></label><label class="full">Enlace (Meet/Zoom)<input class="inp" data-k="${c}link" value="${esc(conf[c + 'link'])}" placeholder="https://meet.google.com/…"></label></div></div>`; }).join('')).join('')}</div>
-      <div class="card"><h3>👥 Texto para estudiantes Premium sin grupo</h3><textarea class="inp" data-k="group_info" rows="2">${esc(conf.group_info)}</textarea></div>
       <button class="btn k lg" id="cf-sv">💾 Guardar ajustes</button>
-      <div class="card" style="margin-top:16px"><h3>🧰 Otras herramientas</h3><p class="muted">Precios, créditos VIP (2/mes), clases grupales (4/mes) y horas para cancelar (24 h) se cambian en <b>Code.gs → CONFIG</b>. Los planes se cobran por transferencia/WhatsApp y se activan desde la ficha del estudiante.</p><a class="btn w" href="admin.html">🔑 Generador de códigos antiguo (sin nube / profe-revisión)</a> <a class="btn w" href="https://docs.google.com/spreadsheets/" target="_blank" rel="noopener">📊 Abrir Google Sheets</a></div>`;
+      <div class="card" style="margin-top:16px"><h3>🧰 Otras herramientas</h3><p class="muted">Precios, créditos VIP (2/mes), clubs (4/mes) y horas para cancelar (24 h) se cambian en <b>Code.gs → CONFIG</b>. Los planes se cobran por transferencia/WhatsApp y se activan desde la ficha del estudiante.</p><a class="btn w" href="admin.html">🔑 Generador de códigos antiguo (sin nube / profe-revisión)</a> <a class="btn w" href="https://docs.google.com/spreadsheets/" target="_blank" rel="noopener">📊 Abrir Google Sheets</a></div>`;
     $$('[data-cp]').forEach(b => b.onclick = () => copy(b.dataset.cp));
-    $('#cf-sv').onclick = async () => { const b = $('#cf-sv'); b.disabled = true; for (const i of $$('[data-k]')) { if ((conf[i.dataset.k] || '') !== i.value.trim()) await api('aSave', { table: 'Config', row: { key: i.dataset.k, value: i.value.trim() } }); } b.disabled = false; toast('✅ Ajustes guardados'); settings(); };
+    $('#cf-sv').onclick = async () => { const b = $('#cf-sv'); b.disabled = true; let clubCh = false; for (const i of $$('[data-k]')) { if ((conf[i.dataset.k] || '') !== i.value.trim()) { await api('aSave', { table: 'Config', row: { key: i.dataset.k, value: i.value.trim() } }); if (/^club_/.test(i.dataset.k)) clubCh = true; } } if (clubCh) await api('aClubSync'); b.disabled = false; toast(clubCh ? '✅ Guardado · se actualizaron las sesiones de los clubs y se avisó a los estudiantes que ya habían confirmado' : '✅ Ajustes guardados'); settings(); };
   }
 
-  const VIEWS = { home, students, enroll, placement, recruit, teachers, classes, groups, requests, settings };
+  const VIEWS = { home, students, enroll, placement, recruit, teachers, classes, requests, settings };
   key() && MRAC.on ? boot() : login();
 })();

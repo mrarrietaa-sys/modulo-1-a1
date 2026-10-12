@@ -40,9 +40,9 @@
   const studentName = (code) => { const s = D && D.students[String(code).toUpperCase()]; return s ? s.name || s.code : code; };
   const groupOf = (id) => (D.groups || []).find((g) => g.id === id);
   const meetOf = (c) => c.meet || (c.groupId && groupOf(c.groupId) ? groupOf(c.groupId).meet : '') || (D.teacher && String(D.teacher.meet || '').split(/[\s,;]+/).filter(Boolean)[0]) || '';
-  const typeBadge = (c) => c.type === 'vip' ? '<span class="tp-badge vip">VIP</span>' : '<span class="tp-badge grp">Grupal</span>';
+  const typeBadge = (c) => c.type === 'vip' ? '<span class="tp-badge vip">VIP</span>' : (c.type === 'club' ? '<span class="tp-badge grp">Club</span>' : '<span class="tp-badge grp">Grupal</span>');
   const statusBadge = (c) => ({ done: '<span class="tp-st done">Dictada ✓</span>', noshow: '<span class="tp-st noshow">No asistió</span>', cancelled: '<span class="tp-st canc">Cancelada</span>' }[c.status] || (c.date <= today() ? '<span class="tp-st pend">Por marcar</span>' : '<span class="tp-st sch">Programada</span>'));
-  const whoOf = (c) => c.type === 'vip' ? esc(studentName(c.students[0] || '')) : esc((groupOf(c.groupId) || {}).name || 'Grupo') + ` · ${c.students.length} estudiante${c.students.length === 1 ? '' : 's'}`;
+  const whoOf = (c) => c.type === 'vip' ? esc(studentName(c.students[0] || '')) : esc(c.type === 'club' ? (c.topic || 'Club') : ((groupOf(c.groupId) || {}).name || 'Grupo')) + ` · ${c.students.length} estudiante${c.students.length === 1 ? '' : 's'}`;
 
   /* ---------- entrada ---------- */
   function loginView(msg) {
@@ -98,9 +98,9 @@
     const r = rel(c.date), link = meetOf(c), canMark = c.status === 'scheduled' && c.date <= today();
     return `<li class="tp-cls${r === 'Hoy' ? ' today' : r === 'Mañana' ? ' tomorrow' : ''}">
       <div class="tp-cls-when"><b>${r || dLabel(c.date)}</b><span>${r ? dLabel(c.date) + ' · ' : ''}${h12(c.time)} – ${h12(endHM(c.time, c.duration))}</span></div>
-      <div class="tp-cls-what">${typeBadge(c)} ${statusBadge(c)}<div class="tp-cls-who">${whoOf(c)}</div>${c.topic ? `<small class="muted">Tema: ${esc(c.topic)}</small>` : ''}
+      <div class="tp-cls-what">${typeBadge(c)} ${statusBadge(c)}<div class="tp-cls-who">${whoOf(c)}</div>${c.topic && c.type !== 'club' ? `<small class="muted">Tema: ${esc(c.topic)}</small>` : ''}
         ${c.status === 'done' ? `<small class="muted">Asistencia: ${c.students.filter((x) => (c.attendance || {})[String(x).toUpperCase()] === true || (c.attendance || {})[x] === true).length}/${c.students.length}</small>` : ''}
-        ${c.type === 'group' && c.status === 'scheduled' ? `<small class="muted">✅ ${+c.confirmed || 0} confirmado(s)${c.flags === 'cutoff' ? '' : ' · se cierra 3 h antes'}</small>` : ''}${c.status === 'sin-asistentes' ? '<small class="tp-note">🙌 Nadie confirmó: no necesitas conectarte.</small>' : ''}
+        ${(c.type === 'group' || c.type === 'club') && c.status === 'scheduled' ? `<small class="muted">✅ ${+c.confirmed || 0} confirmado(s)${c.flags === 'cutoff' ? '' : ' · se cierra 3 h antes'}</small>` : ''}${c.status === 'sin-asistentes' ? '<small class="tp-note">🙌 Nadie confirmó: no necesitas conectarte.</small>' : ''}
         ${c.notes && opt && opt.notes ? `<small class="tp-note">📝 ${esc(c.notes)}</small>` : ''}</div>
       <div class="tp-cls-act">
         ${c.status === 'scheduled' && c.date >= today() ? (link ? `<a class="btn k sm" href="${esc(link)}" target="_blank" rel="noopener">🎥 Entrar a la clase</a>` : '<small class="muted">Sin enlace de clase</small>') : ''}

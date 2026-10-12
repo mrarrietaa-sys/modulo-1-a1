@@ -31,7 +31,7 @@
   }
   function menu() {
     const m = M.modal(`<div class="mhead"><h3>☰ Menú</h3><button class="mclose" data-a="close" title="Cerrar">✕</button></div><div class="menu-stats"><span class="pill y">⚡ ${S.xp} puntos</span><span class="pill">🔥 ${S.streak.n || 0} días</span></div><p class="muted ce-ptsline">${esc(M.PTS_TIP)}</p><div style="display:grid;gap:10px;margin-top:10px">
-      ${window.MRAP && MRAP.get() ? '<a class="btn w block" style="text-decoration:none" href="index.html">👤 Mi perfil y mis módulos</a>' : ''}
+      ${window.MRAP && MRAP.get() ? '<a class="btn w block" style="text-decoration:none" href="index.html">👤 Mi perfil y mis módulos</a><a class="btn w block" style="text-decoration:none;margin-top:8px" href="juegos.html">🎮 Zona de juegos</a>' : ''}
       <button class="btn w block" data-a="home">🏠 Inicio</button>
       <button class="btn w block" data-a="progress">📊 Mi progreso</button>
       <button class="btn w block" data-a="chat">💬 Chat con mi profe</button>
@@ -399,6 +399,7 @@
     { k: 'hero', p: '🦸', mood: 'point', fx: '⚡', say: 'Super English!' },
   ];
   const SEC_IC = { Goal: '🎯', Speaking: '🗣️', Reading: '📖', Review: '🔁', Explanation: '💡', 'Listen & practice': '🎧', Practice: '🎮', 'Oral task': '🎤', Music: '🎵', Homework: '📝' };
+  const ITL_ON = false; // transiciones: se activan cuando lleguen las imágenes de Mr. Arrieta en cada escena
   let sceneN = Math.floor(Math.random() * SCENES.length);
   function interlude(next) {
     return new Promise(res => {
@@ -409,6 +410,30 @@
       document.body.appendChild(ov); try { sfx('win'); } catch (e) { }
       let done = false; const end = () => { if (done) return; done = true; ov.classList.add('out'); setTimeout(() => { ov.remove(); res(); }, 250); };
       ov.onclick = end; setTimeout(end, 2400);
+    });
+  }
+  /* ---------- volver atrás: ver lo que respondió y corregir ---------- */
+  let curRun = null, snaps_ = {};
+  function snapHTML(stage) {
+    try {
+      stage.querySelectorAll('input,textarea,select').forEach(el => {
+        if (el.type === 'checkbox' || el.type === 'radio') { if (el.checked) el.setAttribute('checked', ''); else el.removeAttribute('checked'); }
+        else if (el.tagName === 'TEXTAREA') el.textContent = el.value;
+        else if (el.tagName === 'SELECT') [...el.options].forEach(o => o.selected ? o.setAttribute('selected', '') : o.removeAttribute('selected'));
+        else el.setAttribute('value', el.value);
+      });
+      return stage.innerHTML;
+    } catch (e) { return ''; }
+  }
+  function showSnap(stage, i, s) {
+    return new Promise(res => {
+      const R = curRun && curRun.res && curRun.res[i];
+      stage.innerHTML = `<div class="snap-bar">👀 <div><b>Así respondiste esta parte</b><small>${esc(s.sec)}${R && R.t ? ` · ${R.c} de ${R.t} correctas` : ''}</small></div></div>
+        <div class="snap">${snaps_[i] || ''}</div>
+        ${R && R.missed && R.missed.length ? `<div class="lesson snap-miss"><h3>🔁 Para repasar</h3>${R.missed.slice(0, 8).map(m => `<div class="row" style="gap:8px;align-items:center;margin:4px 0">${m.au ? `<button class="btn w sm" data-au="${esc(m.au)}">🔊</button>` : ''}<span>${esc(m.en || '')}</span></div>`).join('')}</div>` : ''}
+        <div class="actionbar"><button class="btn w" id="sn-redo">✏️ Corregir (hacerlo de nuevo)</button><button class="btn k lg" id="sn-next">Continuar →</button></div>`;
+      stage.querySelectorAll('[data-au]').forEach(b => b.onclick = () => play(b.dataset.au));
+      $('#sn-redo', stage).onclick = () => res('redo'); $('#sn-next', stage).onclick = () => res('next');
     });
   }
   async function runClass(id) {
@@ -445,7 +470,7 @@
     const vis = () => { if (document.hidden) hiddenAt = Date.now(); else if (hiddenAt && Date.now() - hiddenAt > 90 * 1000) { hiddenAt = 0; where(); lastAct = Date.now(); } };
     ['pointerdown', 'keydown'].forEach(ev => document.addEventListener(ev, act, true)); document.addEventListener('visibilitychange', vis);
     const cleanup = () => { ['pointerdown', 'keydown'].forEach(ev => document.removeEventListener(ev, act, true)); document.removeEventListener('visibilitychange', vis); };
-    let i = startAt;
+    let i = startAt; const snaps = {}; let revisit = false; curRun = run; snaps_ = snaps;
     while (i < steps.length) {
       const s = steps[i];
       rec.step = i; rec.run = run; save();
@@ -460,13 +485,20 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
       const back = new Promise(res => { navBack = () => res('__back'); navJump = () => res('__jump'); });
       let r;
-      try { r = await Promise.race([(STEP[s.k] || ((st2, pp) => A[s.k](st2, pp)))(stage, p), back]); } catch (e) { console.error(s.k, e); r = null; }
+      const runIt = () => Promise.race([(STEP[s.k] || ((st2, pp) => A[s.k](st2, pp)))(stage, p), back]);
+      try {
+        if (revisit && snaps[i]) { // volvió atrás: mostrar lo que respondió para que pueda corregir
+          const ch = await Promise.race([showSnap(stage, i, s), back]);
+          if (ch === 'redo') { stage.innerHTML = ''; r = await runIt(); } else r = ch;
+        } else r = await runIt();
+      } catch (e) { console.error(s.k, e); r = null; }
       navBack = null; navJump = null;
       if (!app.contains(player)) { cleanup(); return; } // user left
       if (r === '__jump') { stop(); const sh0 = $('#sheet'); if (sh0) sh0.remove(); i = run.max; continue; }
       const sh = $('#sheet'); if (sh) sh.remove();
+      if (r === 'next') { save(); i++; revisit = i < run.max; continue; }
       if (r === '__back') {
-        stop();
+        stop(); revisit = true;
         // volver a revisar: el resultado anterior se conserva (solo se reemplaza si vuelve a hacer el ejercicio)
         i = Math.max(0, i - 1);
         continue;
@@ -476,9 +508,10 @@
         run.res[i] = { k: s.k, sec: s.sec, ...r, missed: (r.missed || []).map(x => ({ en: x.en || x.w || x.full || x.s, au: x.au })) };
         M.addSkill(r.skill, r.c, r.t); const gain = r.c * 10; run.xp += gain; S.xp += gain; if (gain) M.xpFly(gain); topbar();
       }
+      snaps[i] = snapHTML(stage); revisit = false;
       save();
       i++;
-      if (i < steps.length && steps[i].sec !== s.sec && app.contains(player)) await interlude(steps[i].sec);
+      if (ITL_ON && i < steps.length && steps[i].sec !== s.sec && app.contains(player)) await interlude(steps[i].sec);
     }
     $('.prog i', app).style.width = '100%'; cleanup();
     results(p, run);
@@ -657,9 +690,9 @@
     const msg = $('.yt-msg', host);
     const showLink = () => { msg.innerHTML = `<a class="btn w sm" href="https://www.youtube.com/watch?v=${esc(ids[0])}" target="_blank" rel="noopener" style="text-decoration:none">▶ Ver la canción en YouTube</a>`; msg.classList.remove('hidden'); };
     loadYT().then(() => {
-      if (!(window.YT && YT.Player)) { $('.ytwrap', host).innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${esc(ids[0])}?rel=0&playsinline=1&cc_load_policy=1&cc_lang_pref=en&hl=en" allow="autoplay; encrypted-media" allowfullscreen></iframe>`; showLink(); return; }
-      const player = new YT.Player($('.ytp', host), { videoId: ids[0], width: '100%', height: '100%', playerVars: { rel: 0, modestbranding: 1, playsinline: 1, cc_load_policy: 1, cc_lang_pref: 'en', hl: 'en', enablejsapi: 1 },
-        events: { onStateChange: (e) => host.dispatchEvent(new CustomEvent('ytstate', { detail: e.data })), onReady: () => { try { player.loadModule('captions'); player.setOption('captions', 'track', { languageCode: 'en' }); } catch (e) { } }, onError: () => { k++; if (k < ids.length) player.loadVideoById(ids[k]); else { $('.ytwrap', host).classList.add('hidden'); showLink(); } } } });
+      if (!(window.YT && YT.Player)) { $('.ytwrap', host).innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${esc(ids[0])}?rel=0&playsinline=1&hl=en" allow="autoplay; encrypted-media" allowfullscreen></iframe>`; showLink(); return; }
+      const player = new YT.Player($('.ytp', host), { videoId: ids[0], width: '100%', height: '100%', playerVars: { rel: 0, modestbranding: 1, playsinline: 1, hl: 'en', enablejsapi: 1 },
+        events: { onStateChange: (e) => host.dispatchEvent(new CustomEvent('ytstate', { detail: e.data })), onReady: () => { }, onError: () => { k++; if (k < ids.length) player.loadVideoById(ids[k]); else { $('.ytwrap', host).classList.add('hidden'); showLink(); } } } });
     });
   }
   async function playLearn(stage, p) {
@@ -682,15 +715,9 @@
     }
     // 2) Escuchar la canción
     {
-      const body = A.head(stage, { lbl, title: '🎧 Listen to the song', ins: 'Escucha la canción completa y <b>sigue la letra en los subtítulos</b> del video: se van mostrando a medida que suena. ¡Si quieres, canta! Cuando termines, continúa con los retos.' });
-      body.appendChild(h(`<p class="ce-cc"><b>CC</b> La letra aparece en los subtítulos del video, sincronizada con la canción. Si no la ves, toca <b>CC</b> en el video.</p>`));
+      const body = A.head(stage, { lbl, title: '🎧 Listen to the song', ins: 'Escucha la canción completa. ¡Si quieres, canta! Cuando termines, continúa con los retos.' });
       const yh = h('<div></div>'); body.appendChild(yh); ytBox(sg, yh);
-      const dz = h(`<div class="dance"><div class="dance-floor"><span class="dn n1">🎵</span><span class="dn n2">🎶</span><span class="dn n3">🎵</span><div class="dance-mra">${M.mascot('dance-img', 'celebrate')}</div></div><small class="muted">▶ Dale play al video y Mr. Arrieta baila contigo 🕺</small></div>`); body.appendChild(dz);
-      const moods = ['celebrate', 'wink', 'thumbs', 'wow', 'smile', 'point']; let mi = 0, iv = null;
-      const setPlay = (on) => { dz.classList.toggle('on', on); clearInterval(iv); if (on) iv = setInterval(() => { const im = $('.dance-img', dz); if (im) im.src = im.src.replace(/mra-[a-z]+\.webp/, 'mra-' + moods[++mi % moods.length] + '.webp'); }, 1000); };
-      yh.addEventListener('ytstate', e => setPlay(e.detail === 1));
-      $('.dance-mra', dz).onclick = () => setPlay(!dz.classList.contains('on'));
-      await A.waitNext(stage, 'Ya la escuché, ¡a jugar! 🎮'); setPlay(false);
+      await A.waitNext(stage, 'Ya la escuché, ¡a jugar! 🎮');
     }
     // 3) Listen & choose / order (frases inspiradas en la canción)
     const lc = sample(sg.lc.filter(x => x.type === 'blank'), 3);

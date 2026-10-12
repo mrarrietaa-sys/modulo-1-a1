@@ -12,7 +12,7 @@
   function topbar() {
     const p = P.get();
     $('#topbar').innerHTML = `<div class="brand" id="go-home"><span class="logo-pill"><img class="logo" src="mra-brand.png" alt="mrarrieta.com"></span></div><div class="sp"></div><span class="tb-tag">MI PERFIL</span>
-      ${p ? `<span class="pill hide-s">${window.MRPLANS ? MRPLANS.badge() : p.type === 'staff' ? '👨‍🏫 Profe' : p.type === 'trial' ? '🟢 Acceso gratis' : '🎓 Estudiante'}</span>${p.type === 'staff' && window.MRANN && MRANN.isHidden() ? '<button class="iconbtn" id="ann-b" title="Mostrar la barra del profesor">✏️</button>' : ''}${p.first ? `<button class="tb-avbtn" id="me-b" title="Personaliza tu perfil">${P.avHTML('tb-av')}</button>` : ''}<button class="iconbtn" id="snd-b" title="Activar / quitar la voz de bienvenida">${voiceOn() ? '🔊' : '🔇'}</button><button class="iconbtn" id="out" title="Salir">⏻</button>` : ''}`;
+      ${p ? `<span class="pill hide-s">${window.MRPLANS ? MRPLANS.badge() : p.type === 'staff' ? '👨‍🏫 Profe' : p.type === 'trial' ? '🟢 Acceso gratis' : '🎓 Estudiante'}</span>${p.type === 'staff' && window.MRANN && MRANN.isHidden() ? '<button class="iconbtn" id="ann-b" title="Mostrar la barra del profesor">✏️</button>' : ''}${p.first ? `<button class="tb-avbtn" id="me-b" title="Personaliza tu perfil">${P.avHTML('tb-av')}</button>` : ''}<a class="iconbtn" href="juegos.html" title="Zona de juegos">🎮</a><button class="iconbtn" id="snd-b" title="Activar / quitar la voz de bienvenida">${voiceOn() ? '🔊' : '🔇'}</button><button class="iconbtn" id="out" title="Salir">⏻</button>` : ''}`;
     $('#go-home').onclick = () => route('home');
     if ($('#me-b')) $('#me-b').onclick = () => route('me');
     if ($('#ann-b')) $('#ann-b').onclick = () => { MRANN.show(); topbar(); };
@@ -155,6 +155,7 @@
       <div id="pt-ann"></div>
       ${trial ? `<div class="pt-trialbar">${P.plan().expired ? `⏰ <div><b>Tu plan venció.</b> Tu progreso sigue guardado. Renuévalo para seguir con toda tu ruta. <a href="#pt-plan" id="tb-up">Renovar mi plan →</a></div>` : `🟢 <div><b>Estás en tu acceso gratuito.</b> Tienes el examen de clasificación y los <b>2 primeros temas</b> de tu módulo. ¿Te gustó? <a href="#pt-plan" id="tb-up">Desbloquea toda tu ruta →</a></div>`}</div>` : ''}
       ${main}
+      <a class="card pt-arcade" href="juegos.html"><span class="pa-ic">🎮</span><div class="grow"><span class="lbl">Nuevo · Zona de juegos</span><h2>¡Juega y aprende inglés!</h2><p class="muted">Juegos rápidos y divertidos de tu nivel: suma monedas, rompe récords y aprende jugando.</p></div><span class="btn k">Jugar →</span></a>
       ${birthAsk()}
       ${planSection()}
       <div id="pt-live"></div>

@@ -3579,3 +3579,8 @@ p.ce-revchip{margin:8px auto 0}
 @media (prefers-reduced-motion:reduce){.dance.on .dance-img,.dance.on .dn,.dance.on .dance-floor{animation:none}}
 
 .tb-back{border:2px solid #0B2A5B;background:#fff;color:#0B2A5B;font:800 15px Poppins,sans-serif;border-radius:12px;padding:7px 12px;margin-right:10px;cursor:pointer;white-space:nowrap}.tb-back:hover{background:#0B2A5B;color:#fff}@media(max-width:420px){.tb-back{padding:6px 9px;font-size:13px;margin-right:6px}}
+
+.pt-arcade{display:flex;gap:14px;align-items:center;text-decoration:none;color:inherit;background:linear-gradient(120deg,#fff 55%,#ffe9ea);border-color:#E3242B}.pt-arcade .pa-ic{font-size:54px;animation:paB 1.4s ease-in-out infinite}.pt-arcade h2{margin:4px 0}.pt-arcade p{margin:0}@keyframes paB{50%{transform:translateY(-6px) rotate(-6deg)}}@media(max-width:560px){.pt-arcade{flex-wrap:wrap}.pt-arcade .btn{width:100%;text-align:center}}
+
+.snap-bar{display:flex;gap:10px;align-items:center;background:#0B2A5B;color:#fff;border-radius:14px;padding:10px 14px;margin-bottom:10px;font-size:22px}.snap-bar b{display:block;font-size:16px}.snap-bar small{font-size:13px;opacity:.85}
+.snap{pointer-events:none;border:3px dashed #0B2A5B;border-radius:16px;padding:8px;opacity:.97;max-height:none}.snap .actionbar,.snap .mic{display:none}.snap-miss{margin-top:10px}

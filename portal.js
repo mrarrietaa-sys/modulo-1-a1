@@ -12,16 +12,17 @@
   function topbar() {
     const p = P.get();
     $('#topbar').innerHTML = `<div class="brand" id="go-home"><span class="logo-pill"><img class="logo" src="mra-brand.png" alt="mrarrieta.com"></span></div><div class="sp"></div><span class="tb-tag">MI PERFIL</span>
-      ${p ? `<span class="pill hide-s">${window.MRPLANS ? MRPLANS.badge() : p.type === 'staff' ? '👨‍🏫 Profe' : p.type === 'trial' ? '🟢 Acceso gratis' : '🎓 Estudiante'}</span>${p.type === 'staff' && window.MRANN && MRANN.isHidden() ? '<button class="iconbtn" id="ann-b" title="Mostrar la barra del profesor">✏️</button>' : ''}${p.first ? `<button class="tb-avbtn" id="me-b" title="Personaliza tu perfil">${P.avHTML('tb-av')}</button>` : ''}<button class="iconbtn" id="out" title="Salir">⏻</button>` : ''}`;
+      ${p ? `<span class="pill hide-s">${window.MRPLANS ? MRPLANS.badge() : p.type === 'staff' ? '👨‍🏫 Profe' : p.type === 'trial' ? '🟢 Acceso gratis' : '🎓 Estudiante'}</span>${p.type === 'staff' && window.MRANN && MRANN.isHidden() ? '<button class="iconbtn" id="ann-b" title="Mostrar la barra del profesor">✏️</button>' : ''}${p.first ? `<button class="tb-avbtn" id="me-b" title="Personaliza tu perfil">${P.avHTML('tb-av')}</button>` : ''}<button class="iconbtn" id="snd-b" title="Activar / quitar la voz de bienvenida">${voiceOn() ? '🔊' : '🔇'}</button><button class="iconbtn" id="out" title="Salir">⏻</button>` : ''}`;
     $('#go-home').onclick = () => route('home');
     if ($('#me-b')) $('#me-b').onclick = () => route('me');
     if ($('#ann-b')) $('#ann-b').onclick = () => { MRANN.show(); topbar(); };
     if (window.MRANN) MRANN.sync();
     if ($('#out')) $('#out').onclick = logout;
+    if ($('#snd-b')) $('#snd-b').onclick = () => { const on = !voiceOn(); try { localStorage.setItem(VKEY, on ? '0' : '1'); } catch (e) { } if (!on) M.stop(); $('#snd-b').textContent = on ? '🔊' : '🔇'; M.toast(on ? '🔊 Voz de bienvenida activada' : '🔇 Voz de bienvenida desactivada'); };
   }
   function route(r) { M.stop && M.stop(); window.scrollTo(0, 0); topbar(); const p = P.get();
     if (!p) return login();
-    if (!p.first || (p.cloud && p.type !== 'staff' && !p.birth)) return nameStep(); // nombre + fecha de nacimiento obligatorios
+    if (!p.first || (p.cloud && p.type === 'student' && !p.birth)) return nameStep(); // nombre + fecha de nacimiento obligatorios
     if (r === 'placement') return placement();
     if (r === 'me' || r === 'me-photo' || r === 'me-av' || r === 'me-plat') return personalize(r === 'me' ? 'av' : r.slice(3));
     return home();
@@ -41,12 +42,22 @@
     } catch (e) { }
   }
   const hiName = () => { const p = P.get() || {}; const lu = P.lastUser() || {}; return (p.look && p.look.nick) || p.first || lu.first || ''; };
-  const greetVoice = (back) => { const n = hiName(); sayHi(n ? `${back ? 'Welcome back' : 'Welcome'}, ${n}!` : 'Welcome to your English platform!'); };
+  // saludo en voz natural (voz masculina americana pregrabada): "Good morning / afternoon / evening, Nombre!"
+  const VKEY = 'mra_voice_off';
+  const voiceOn = () => { try { return localStorage.getItem(VKEY) !== '1'; } catch (e) { return true; } };
+  const slugN = (n) => String(n || '').split(/\s+/)[0].normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z]/g, '');
+  const greetVoice = () => {
+    if (!voiceOn()) return; try { sessionStorage.setItem('mra_said', '1'); } catch (e) { }
+    const hr = new Date().getHours(), t = hr < 12 ? 'm' : hr < 18 ? 'a' : 'e', sl = slugN(hiName());
+    const go = () => M.loadAudio(['gr' + t + '_' + (sl[0] || 'x')]).then(() => { if (!voiceOn()) return; const k = window.AUD && window.AUD['gr' + t + '_' + sl] ? 'gr' + t + '_' + sl : 'gr' + t + '_'; M.play(k); });
+    if (navigator.userActivation && !navigator.userActivation.hasBeenActive) { const once = () => { removeEventListener('pointerdown', once, true); go(); }; addEventListener('pointerdown', once, true); return; }
+    go();
+  };
   /* ---------- ingreso con código ---------- */
   function codeType(code) {
     const hh = M.codeHash(code);
     if ((C.REVIEW_CODES || []).includes(hh)) return { type: 'staff' };
-    const st = (C.STUDENT_CODES || []).find(x => x.hash === hh); if (st) return { type: 'student', module: st.module || null };
+    const st = (C.STUDENT_CODES || []).find(x => x.hash === hh); if (st) return { type: 'student', module: st.module || null, demo: !!st.all };
     const tr = (C.TRIAL_CODES || []).find(x => x.hash === hh); if (tr) return { type: 'trial', module: tr.module || null };
     const old = (C.ACCESS_CODES || []).find(x => x.hash === hh); if (old) return { type: 'student', module: null };
     return null;
@@ -82,7 +93,7 @@
       // 2) códigos guardados en config.js (modo sin nube / profes)
       const r = codeType(v); if (!r) return bad();
       const old = P.get() || {};
-      P.save(Object.assign({ created: Date.now() }, old, { type: r.type, codeHash: M.codeHash(i.value), module: r.module || old.module || null, assignedBy: r.module ? 'admin' : (old.assignedBy || null) }));
+      P.save(Object.assign({ created: Date.now() }, old, { type: r.type, demo: !!r.demo, codeHash: M.codeHash(i.value), module: r.module || old.module || null, assignedBy: r.module ? 'admin' : (old.assignedBy || null) }));
       sfx('win'); M.confetti(1500); greetVoice(!!((old.first && old.lastSeen) || (P.lastUser() || {}).first)); route('home'); };
     $('#ok').onclick = go; i.onkeydown = e => { if (e.key === 'Enter') go(); };
   }
@@ -92,23 +103,23 @@
       <h1>${p.first ? 'Completa tu perfil' : '¿Cómo te llamas?'}</h1><p class="muted">Así aparecerá tu nombre en tu perfil, tus reportes y tus certificados.</p>
       <label class="pt-lab">Nombre</label><input class="inp" id="f" value="${esc(s1.split(' ')[0] || '')}" autocomplete="given-name">
       <label class="pt-lab">Apellido</label><input class="inp" id="l" value="${esc(s1.split(' ').slice(1).join(' ') || p.last || '')}" autocomplete="family-name">
-      ${p.type === 'staff' ? '' : `<label class="pt-lab">🎂 Fecha de nacimiento</label><input class="inp" id="bd" type="date" max="${P.todayISO()}" min="1930-01-01" value="${esc(p.birth || '')}">
-      <small class="pt-hint">¡Queremos celebrar tu cumpleaños contigo! 🎉</small>
+      ${p.type === 'staff' ? '' : `${p.type === 'student' && !p.demo ? `<label class="pt-lab">🎂 Fecha de nacimiento</label><input class="inp" id="bd" type="date" max="${P.todayISO()}" min="1930-01-01" value="${esc(p.birth || '')}">
+      <small class="pt-hint">¡Queremos celebrar tu cumpleaños contigo! 🎉</small>` : ''}
       <label class="pt-lab">Correo electrónico</label><input class="inp" id="em" type="email" inputmode="email" autocomplete="email" placeholder="tucorreo@gmail.com" value="${esc(p.email || '')}">
       <small class="pt-hint">Aquí te llegan tus resultados, avisos de tus clases y tu saludo de cumpleaños.</small>`}
       <button class="btn k block lg" id="ok" style="margin-top:14px">Continuar →</button></div></div>`;
     if ($('#f').value === '' && p.first) $('#f').value = p.first;
     $('#ok').onclick = () => { const f = $('#f').value.trim(), l = $('#l').value.trim(); if (!f) return $('#f').classList.add('wrong'); if (!l) return $('#l').classList.add('wrong');
       const extra = {};
-      if (p.type !== 'staff') { const bd = $('#bd').value, em = $('#em').value.trim();
-        if (!bd || bd > P.todayISO() || bd < '1930-01-01') { $('#bd').classList.add('wrong'); return M.toast('Escribe tu fecha de nacimiento 🎂'); }
+      if (p.type !== 'staff') { const bd = $('#bd') ? $('#bd').value : '', em = $('#em').value.trim();
+        if ($('#bd') && (!bd || bd > P.todayISO() || bd < '1930-01-01')) { $('#bd').classList.add('wrong'); return M.toast('Escribe tu fecha de nacimiento 🎂'); }
         if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) { $('#em').classList.add('wrong'); return M.toast('Escribe un correo válido 📧'); }
-        extra.birth = bd; extra.email = em; }
+        if (bd) extra.birth = bd; extra.email = em; }
       P.save(Object.assign(p, { first: f, last: l, name: f + ' ' + l }, extra));
       if (window.MRAC && MRAC.code()) { MRAC.saveProfile(Object.assign({ first: f, last: l }, extra)); MRAC.sync(true); }
       // el nombre también se usa dentro de los módulos
       P.MODS.forEach(m => { try { const s = JSON.parse(localStorage.getItem(m.key) || 'null'); if (s && !s.name) { s.name = f + ' ' + l; localStorage.setItem(m.key, JSON.stringify(s)); } } catch (e) { } });
-      sayHi(`Welcome, ${f}! Nice to meet you.`); route('home'); };
+      greetVoice(); route('home'); };
   }
   function logout() {
     const m = M.modal(`<h3>¿Salir de tu perfil?</h3><p class="muted">Tu progreso queda guardado${window.MRAC && MRAC.code() ? ' en la nube: puedes continuar desde cualquier dispositivo' : ' en este dispositivo'}. Para volver a entrar necesitarás tu código.</p><div class="row"><button class="btn k" id="y">Sí, salir</button><button class="btn w" id="n">Cancelar</button></div>`, { x: true });
@@ -196,7 +207,7 @@
     if ($('#cl', mm)) $('#cl', mm).onclick = () => mm.remove();
   }
   const courseState = () => { try { return JSON.parse(localStorage.getItem('mra_final_progress_v1') || '{}'); } catch (e) { return {}; } };
-  const courseOpen = () => { const p = P.get(); return !!p && (p.type === 'staff' || ['A1', 'A2', 'B2', 'B2+'].every(id => P.passed(id))); };
+  const courseOpen = () => { const p = P.get(); return !!p && (p.type === 'staff' || p.demo || ['A1', 'A2', 'B2', 'B2+'].every(id => P.passed(id))); };
   function courseCard() {
     const p = P.get(); if (!p || P.isTrial()) return '';
     const open = courseOpen(), st = courseState(), passed = !!(st.final && st.final.passed);
@@ -471,7 +482,7 @@
     const b = $('#bd-again'); if (b) b.onclick = () => birthdayParty(true);
   }
   // perfiles antiguos sin fecha de nacimiento: la pedimos una vez
-  function birthAsk() { const p = P.get(); if (!p || p.type === 'staff' || p.birth || !p.first) return ''; return `<div class="card pt-bask"><span class="bd-cake">🎂</span><div class="grow"><b>¿Cuándo es tu cumpleaños?</b><small>Queremos felicitarte ese día 🎉</small><div class="row"><input class="inp" id="bq-d" type="date" max="${P.todayISO()}" min="1930-01-01">${p.email ? '' : '<input class="inp" id="bq-e" type="email" placeholder="tu correo">'}<button class="btn k" id="bq-ok">Guardar</button></div></div></div>`; }
+  function birthAsk() { const p = P.get(); if (!p || p.type !== 'student' || p.demo || p.birth || !p.first) return ''; return `<div class="card pt-bask"><span class="bd-cake">🎂</span><div class="grow"><b>¿Cuándo es tu cumpleaños?</b><small>Queremos felicitarte ese día 🎉</small><div class="row"><input class="inp" id="bq-d" type="date" max="${P.todayISO()}" min="1930-01-01">${p.email ? '' : '<input class="inp" id="bq-e" type="email" placeholder="tu correo">'}<button class="btn k" id="bq-ok">Guardar</button></div></div></div>`; }
   function wireBirth() {
     const ok = $('#bq-ok'); if (!ok) return;
     ok.onclick = () => { const d = $('#bq-d').value; const e = $('#bq-e') ? $('#bq-e').value.trim() : ''; if (!d) return $('#bq-d').classList.add('wrong');

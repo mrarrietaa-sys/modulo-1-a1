@@ -55,6 +55,7 @@
     if (!m.ready) return 'soon';
     if (!p) return 'locked';
     if (p.type === 'staff') return 'review';
+    if (p.demo) return 'current'; // estudiante de revisión: todo abierto
     if (isTrial()) { const t = trialMod(); return t && t.id === m.id ? 'current' : 'locked'; }
     const a = assigned(); if (!a) return 'locked';
     if (m.n === a.n) return 'current';

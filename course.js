@@ -19,7 +19,7 @@
   function boot() {
     topbar();
     const p = P.get(); if (!p) { location.href = 'index.html'; return; }
-    const open = p.type === 'staff' || REQ.every(id => P.passed(id));
+    const open = p.type === 'staff' || p.demo || REQ.every(id => P.passed(id));
     if (!open) return lockedView();
     if (location.hash === '#cert' && M.S.final && M.S.final.passed) return window.M1FINAL.certificate(app, { route });
     window.M1FINAL.run(app, { route, after: () => { } });

@@ -42,7 +42,8 @@ window.M1CONFIG = {
   //   module: 1-4 (opcional) = asignarle el módulo directamente sin examen de clasificación.
   // Código de ejemplo incluido: ESTUDIANTE-DEMO  (crea los tuyos en admin.html)
   STUDENT_CODES: [
-    { hash: "h7kthe217u", note: "Estudiante de ejemplo (ESTUDIANTE-DEMO)" }
+    { hash: "h7kthe217u", note: "Estudiante de ejemplo (ESTUDIANTE-DEMO)" },
+    { hash: "h1ckadok1j3", module: 4, all: true, note: "Estudiante de REVISIÓN con todo habilitado (REVISION-TOTAL)" }
   ],
   // Códigos de ACCESO GRATUITO ("Empieza gratis"): clasificación + solo los 2 primeros temas.
   // Código de ejemplo incluido: GRATIS-DEMO

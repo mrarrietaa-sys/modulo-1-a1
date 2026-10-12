@@ -46,7 +46,7 @@
   // ACCESO (código pagado) + PROGRESO (los temas se abren en orden)
   const PF = window.MRAP; const MID = C.MODULE_ID || 'A1';
   const hasProfile = () => !!(PF && PF.get());
-  const review = () => !!(C.UNLOCK_ALL || S.review || (PF && PF.isStaff()));
+  const review = () => !!(C.UNLOCK_ALL || S.review || (PF && (PF.isStaff() || !!(PF.get() || {}).demo)));
   const partDone = (id) => !!(S.parts[id] && S.parts[id].done);
   function hasAccess(n) { return review() || S.all || (C.FREE_TOPICS || []).includes(n) || S.unlocked.includes(n); }
   function progressOpen(n) { if (review() || n <= 1) return true; return D.topics.filter(t => t.n < n).every(t => t.parts.every(p => partDone(p.id))); }

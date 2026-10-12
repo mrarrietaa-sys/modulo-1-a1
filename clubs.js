@@ -57,7 +57,11 @@
     now = now || Date.now(); const I = info(club.start, now);
     let t = sessionAt(I.weekStart, club);
     while (t + LEN <= now) t += WEEK;
-    return { t, live: now >= t && now < t + LEN };
+    // domingos y festivos de Colombia: no hay club → se pasa a la semana siguiente
+    const dIso = ms => { const d = new Date(ms + TZ * H); return d.getUTCFullYear() + '-' + String(d.getUTCMonth() + 1).padStart(2, '0') + '-' + String(d.getUTCDate()).padStart(2, '0'); };
+    let skipped = null, k = 0;
+    while (window.MRFEST && MRFEST.isOff(dIso(t)) && k++ < 8) { if (!skipped) skipped = { t, why: MRFEST.why(dIso(t)) }; t += WEEK; }
+    return { t, live: now >= t && now < t + LEN, skipped };
   }
   function fmtDate(ms, withDow = true) { const d = new Date(ms + TZ * H); return (withDow ? DAYN[d.getUTCDay()] + ' ' : '') + d.getUTCDate() + ' de ' + MON[d.getUTCMonth()]; }
   function fmtTime(t) { const ms = parseTime(t); let h = Math.floor(ms / H), m = Math.round(ms % H / 60e3); const ap = h >= 12 ? 'pm' : 'am'; h = h % 12 || 12; return h + ':' + String(m).padStart(2, '0') + ' ' + ap; }
@@ -210,7 +214,7 @@
       root.querySelectorAll('[data-cd]').forEach(n => {
         const c = JSON.parse(n.dataset.cd); const ns = nextSession(c);
         n.classList.toggle('live', ns.live);
-        n.innerHTML = ns.live ? '<span class="cl-dot"></span> ¡EN VIVO AHORA! Entra ya' : '⏳ Próxima sesión en <b>' + fmtLeft(ns.t - Date.now()) + '</b> · ' + fmtDate(ns.t);
+        n.innerHTML = ns.live ? '<span class="cl-dot"></span> ¡EN VIVO AHORA! Entra ya' : (ns.skipped ? '🎉 El ' + fmtDate(ns.skipped.t) + ' no hay club: es ' + esc(ns.skipped.why) + '.<br>' : '') + '⏳ Próxima sesión en <b>' + fmtLeft(ns.t - Date.now()) + '</b> · ' + fmtDate(ns.t);
       });
     };
     upd(); timer = setInterval(upd, 30e3);

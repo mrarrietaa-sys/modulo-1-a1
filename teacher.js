@@ -135,7 +135,7 @@
   function planned() {
     if (!form.date || !form.hours.length) return [];
     const n = form.repeat ? Math.min(8, Math.max(1, +form.weeks || 1)) : 1, out = [], t0 = today(), hm = nowHM();
-    for (let w = 0; w < n; w++) { const d = addDays(form.date, 7 * w); form.hours.slice().sort().forEach((h) => { if (d > t0 || (d === t0 && h > hm)) out.push({ date: d, time: h, duration: form.dur }); }); }
+    for (let w = 0; w < n; w++) { const d = addDays(form.date, 7 * w); form.hours.slice().sort().forEach((h) => { if ((d > t0 || (d === t0 && h > hm)) && !(window.MRFEST && MRFEST.isOff(d))) out.push({ date: d, time: h, duration: form.dur }); }); }
     return out;
   }
   function avail(el) {
@@ -178,6 +178,7 @@
     const prev = () => { const p = planned(), box = $('#tp-prev', el); const dates = [...new Set(p.map((x) => x.date))];
       box.innerHTML = p.length ? `Se crearán <b>${p.length}</b> espacio${p.length > 1 ? 's' : ''} de ${form.dur} min: ${dates.slice(0, 8).map((d) => dLabel(d)).join(', ')} · ${[...new Set(p.map((x) => x.time))].map(h12).join(', ')}` : '<span class="muted">Elige fecha y al menos una hora futura.</span>';
       $('#tp-save', el).disabled = !p.length; };
+    $('#tp-date', el).oninput = (e) => { const v = e.target.value; if (window.MRFEST && MRFEST.isOff(v)) toast('🚫 El ' + v + ' es ' + MRFEST.why(v) + ': no se dictan clases. Elige otro día.', true); };
     $('#tp-date', el).onchange = (e) => { form.date = e.target.value < t0 ? t0 : e.target.value; avail(el); };
     $$('.tp-hour', el).forEach((b) => b.onclick = () => { const h = b.dataset.h, i = form.hours.indexOf(h); i >= 0 ? form.hours.splice(i, 1) : form.hours.push(h); b.classList.toggle('on', i < 0); b.setAttribute('aria-pressed', i < 0); prev(); });
     $('#tp-addh', el).onclick = () => { const v = $('#tp-time', el).value; if (!/^\d{2}:\d{2}$/.test(v)) { toast('Elige una hora válida.', true); return; } if (form.hours.indexOf(v) < 0) form.hours.push(v); avail(el); };

@@ -449,7 +449,7 @@
       $('#vb-ok', b).onclick = async () => { const ok = $('#vb-ok', b); ok.disabled = true; ok.textContent = 'Reservando…';
         const res = await MRAC.call('vipBook', { code: MRAC.code(), slotId: S.id, topic: $('#vb-topic', b).value.trim() });
         if (res.ok) { m.remove(); sfx('win'); M.confetti(1800); M.modal(`<div class="center">${M.mascot('mascot bounce', 'celebrate')}<h3>¡Clase VIP reservada! 🎉</h3><p style="font-size:17px">${esc(T.name)} · <b>${fmtD(S.date, { weekday: 'long', day: 'numeric', month: 'long' })}</b> · ${fmtT(S.time)} (hora Colombia)</p><p class="muted">Te enviamos la confirmación a tu correo. El enlace de la clase aparece en “Mis próximas clases”.</p></div>`, { x: true }); await MRAC.me(true); live(); }
-        else { M.toast({ taken: 'Ese espacio acaba de ser reservado. Elige otro 🙏', no_credits: 'Ya usaste tus créditos VIP de este mes.', too_late: 'Ese espacio ya no se puede reservar (muy pronto).' }[res.err] || 'No se pudo reservar. Inténtalo de nuevo.');
+        else { M.toast({ taken: 'Ese espacio acaba de ser reservado. Elige otro 🙏', no_credits: 'Ya usaste tus créditos VIP de este mes.', holiday: 'Ese día es domingo o festivo en Colombia: no hay clases. Elige otro día 🙏', too_late: 'Ese espacio ya no se puede reservar (muy pronto).' }[res.err] || 'No se pudo reservar. Inténtalo de nuevo.');
           if (res.err === 'taken') { const rr = await MRAC.call('vipOptions', { code: MRAC.code() }); if (rr.ok) { r.teachers = rr.teachers; T = r.teachers.find(t => t.id === T.id) || null; S = null; D = null; } step(); } else { ok.disabled = false; ok.textContent = 'Reintentar'; } } };
     };
     step();

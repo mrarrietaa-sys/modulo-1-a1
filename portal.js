@@ -80,7 +80,7 @@
         <p class="muted">Realiza nuestro examen de clasificación y explora los primeros temas de tu módulo.</p>
         <a class="btn block lg pt-wa" target="_blank" rel="noopener" href="${WA('¡Hola! 👋 Quiero EMPEZAR GRATIS en la plataforma de mrarrieta.com y descubrir mi ruta de aprendizaje. ¿Me envían mi código de acceso gratuito? 🟢')}">EMPEZAR GRATIS →</a>
         <a class="btn w block pt-insc" href="inscripcion.html">📝 Formulario de inscripción</a></div></div>
-      <p class="center pt-links"><a href="reclutamiento.html">👩‍🏫 Trabaja con nosotros</a> · <a href="profesores.html">🧑‍🏫 Soy profesor</a></p></div>`;
+      <p class="center pt-links"><a href="reclutamiento.html">👩‍🏫 Trabaja con nosotros</a> · <a href="profesores.html">🧑‍🏫 Soy profesor</a> · <a href="administracion.html">🔐 Administración</a></p></div>`;
     const i = $('#cd'); setTimeout(() => i.focus(), 200);
     const bad = (msg) => { i.classList.add('wrong'); sfx('bad'); setTimeout(() => i.classList.remove('wrong'), 500); M.toast(msg || 'Código no válido 😕'); };
     const go = async () => { try { if (window.speechSynthesis) { const w = new SpeechSynthesisUtterance(' '); w.volume = 0; speechSynthesis.speak(w); } } catch (e) { } // desbloquea la voz en iPhone

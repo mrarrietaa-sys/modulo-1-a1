@@ -14,7 +14,8 @@
     $('#topbar').innerHTML = `<div class="brand" id="go-home"><span class="logo-pill"><img class="logo" src="mra-brand.png" alt="mrarrieta.com"></span></div><div class="sp"></div><button class="tb-back" type="button" id="tb-back" title="Regresar">← Atrás</button><span class="tb-tag">MI PERFIL</span>
       ${p ? `<span class="pill hide-s">${window.MRPLANS ? MRPLANS.badge() : p.type === 'staff' ? '👨‍🏫 Profe' : p.type === 'trial' ? '🟢 Acceso gratis' : '🎓 Estudiante'}</span>${p.type === 'staff' && window.MRANN && MRANN.isHidden() ? '<button class="iconbtn" id="ann-b" title="Mostrar la barra del profesor">✏️</button>' : ''}${p.first ? `<button class="tb-avbtn" id="me-b" title="Personaliza tu perfil">${P.avHTML('tb-av')}</button>` : ''}<a class="iconbtn" href="juegos.html" title="Zona de juegos">🎮</a><button class="iconbtn" id="snd-b" title="Activar / quitar la voz de bienvenida">${voiceOn() ? '🔊' : '🔇'}</button><button class="iconbtn" id="out" title="Salir" aria-label="Salir"><svg class="pw-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 3v8"/><path d="M6.3 6.8a8 8 0 1 0 11.4 0"/></svg></button>` : ''}`;
     $('#go-home').onclick = () => route('home');
-    $('#tb-back').onclick = () => { if (curRoute && curRoute !== 'home') route('home'); else if (history.length > 1) history.back(); else route('home'); };
+    if (!P.get() && $('#tb-back')) $('#tb-back').remove(); // en la pantalla de ingreso no hay a dónde regresar
+    if ($('#tb-back')) $('#tb-back').onclick = () => { if (curRoute && curRoute !== 'home') route('home'); else if (history.length > 1) history.back(); else route('home'); };
     if ($('#me-b')) $('#me-b').onclick = () => route('me');
     if ($('#ann-b')) $('#ann-b').onclick = () => { MRANN.show(); topbar(); };
     if (window.MRANN) MRANN.sync();

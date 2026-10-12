@@ -3209,7 +3209,7 @@ p.ce-revchip{margin:8px auto 0}
 .ar-back{flex:none;display:inline-flex;align-items:center;gap:4px;background:#fff;color:var(--k);border:2px solid var(--k);border-radius:11px;padding:7px 11px;font:800 14px var(--fh);text-decoration:none;box-shadow:2px 2px 0 var(--k);white-space:nowrap}
 .ar-back:active{transform:translate(2px,2px);box-shadow:none}
 .ar-tpts b{font-variant-numeric:tabular-nums}
-@media (max-width:420px){.topbar .logo-pill .logo{height:26px}.ar-back{padding:6px 9px;font-size:13px}.ar-tpts{padding:4px 9px;font-size:13px}}
+@media (max-width:420px){.ar-back{padding:6px 9px;font-size:13px}.ar-tpts{padding:4px 9px;font-size:13px}}
 @media (max-width:700px){.ar-hide-s{display:none}}
 .ar-wrap{padding-top:16px}
 .ar-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:12px}
@@ -3602,3 +3602,7 @@ p.ce-revchip{margin:8px auto 0}
 .bb.pop{animation:bbPop .3s forwards!important}@keyframes bbUp{to{transform:translateY(-330px)}}@keyframes bbPop{to{transform:scale(1.6);opacity:0}}
 
 .line[data-p]::after{content:attr(data-p);font:900 30px Poppins,sans-serif;color:#0B2A5B;align-self:center;margin-left:2px}
+/* logo siempre visible y grande; en celular los botones se compactan */
+@media (max-width:600px){.topbar .brand .logo{height:42px!important}.tb-back{font-size:0!important;padding:0!important;margin:0 4px!important;width:40px;height:40px;display:grid;place-items:center;border-width:3px}.tb-back::before{content:"←";font-size:22px;font-weight:900;line-height:1}.topbar .iconbtn{width:40px;height:40px;font-size:18px}}
+@media (max-width:380px){.topbar .brand .logo{height:36px!important}.topbar .iconbtn{width:36px;height:36px}}
+.pw-ic{width:20px;height:20px;display:block}

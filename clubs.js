@@ -251,7 +251,7 @@
     root.innerHTML =
       (opts.back ? '<button type="button" class="btn sm w cl-back" data-back>← Volver</button>' : '') +
       '<header class="cl-hero"><span class="cl-onair"><span class="cl-dot"></span> ON AIR</span>' +
-      '<h1>Tus clubs en vivo</h1><p>Hola' + (opts.name ? ', <b>' + esc(opts.name) + '</b>' : '') + ' 👋 Aquí no hay clase: hay <b>show</b>. Cada semana te espera una sesión en vivo diferente con el profe del club. Tu banda: <span class="cl-band">' + BAND[band] + '</span></p></header>' +
+      '<h1>Tus clubs en vivo</h1><p>Hola' + (opts.name ? ', <b>' + esc(opts.name) + '</b>' : '') + ' 👋 Aquí no hay clase: hay <b>show</b>. Cada semana te espera una sesión en vivo diferente con el profe del club. Tus niveles: <span class="cl-band">' + BAND[band] + '</span></p></header>' +
       '<div class="cl-grid">' + cards + '</div>' +
       '<section class="cl-how"><h3>¿Cómo se vive un club?</h3><ol>' +
       '<li><b>🎧 Antes:</b> abre tu kit y escucha las frases del episodio. Repítelas con 🎤.</li>' +
@@ -273,7 +273,7 @@
       '<header class="cl-stage cl-c-' + key + '"><div class="cl-stage-in">' +
       '<span class="cl-onair"><span class="cl-dot"></span> ' + (key === 'conv' ? 'LIVE SHOW' : 'LIVE LAB') + '</span>' +
       '<h1>' + esc(d.brand) + '</h1><p class="cl-tag">' + esc(d.tagline && d.tagline.es || '') + '</p>' +
-      '<div class="cl-season">' + esc(B.season ? B.season.en : '') + ' · Banda ' + BAND[band] + (I.season > 1 ? ' · vuelta ' + I.season : '') + '</div>' +
+      '<div class="cl-season">' + esc(B.season ? B.season.en : '') + ' · Niveles ' + BAND[band] + (I.season > 1 ? ' · vuelta ' + I.season : '') + '</div>' +
       '<div class="cl-when inv">📅 <b>' + esc(c.day) + ' · ' + fmtTime(c.time) + '</b> (hora Colombia)' + (c.teacher ? ' · Profe ' + esc(c.teacher) : '') + '</div>' +
       '<div class="cl-count" data-cd="' + cdAttr(c) + '"></div>' + enterBtn(c, true) +
       (I.before ? '<div class="cl-before">🚀 La temporada empieza el ' + fmtDate(I.s0) + '. ¡Ve calentando con el kit del episodio 1!</div>' : '') +
@@ -393,7 +393,7 @@
     root.innerHTML =
       (opts.back ? '<button type="button" class="btn sm w cl-back" data-back>← Volver</button>' : '') +
       '<header class="cl-hero lock"><span class="cl-onair lock">🔒 EXCLUSIVO PREMIUM</span><h1>Clubs en vivo: inglés en modo show</h1>' +
-      '<p>Dos espacios en vivo cada semana, <b>diferentes a tus clases</b>: talk show, juegos, retos, sellos y premios de temporada. Banda ' + BAND[band] + '.</p></header>' +
+      '<p>Dos espacios en vivo cada semana, <b>diferentes a tus clases</b>: talk show, juegos, retos, sellos y premios de temporada. Niveles ' + BAND[band] + '.</p></header>' +
       '<div class="cl-grid">' + posters + '</div>' +
       '<section class="cl-plan"><h3>💎 Plan Premium · $349.000/mes</h3><ul>' +
       '<li>✅ Toda la plataforma (todos los módulos)</li><li>✅ 4 clases grupales al mes + 2 clases VIP</li>' +
@@ -414,7 +414,7 @@
     const units = B.units || [];
     root.innerHTML =
       '<header class="cl-stage cl-c-' + key + '"><div class="cl-stage-in"><span class="cl-onair">🎬 GUÍA DEL PROFESOR</span><h1>' + esc(d.brand) + '</h1>' +
-      '<p class="cl-tag">' + esc(m.name) + ' · Banda ' + BAND[band] + ' · ' + esc(B.season ? B.season.es : '') + '</p>' +
+      '<p class="cl-tag">' + esc(m.name) + ' · Niveles ' + BAND[band] + ' · ' + esc(B.season ? B.season.es : '') + '</p>' +
       '<div class="cl-season">Esta semana: ' + m.ep + ' ' + I.n + ' de 24' + (I.before ? ' (la temporada empieza el ' + fmtDate(I.s0) + ')' : '') + '</div>' +
       '<div class="row"><button type="button" class="btn sm w" data-goto>⬇ Ir a esta semana</button><button type="button" class="btn sm w" data-print>🖨️ Imprimir</button><button type="button" class="btn sm w" data-openall>Abrir todo</button></div></div></header>' +
       '<section class="cl-how"><h3>Formato del show (60 min)</h3><p class="muted">Cada sesión es un "episodio" con estaciones cortas y dinámicas. Nada de tablero ni explicaciones largas: el profe es <b>presentador</b>, los estudiantes son los <b>invitados</b>. Usa salas pequeñas, cronómetro visible, marcador de puntos y giros sorpresa.</p>' +

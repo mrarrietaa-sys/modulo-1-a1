@@ -673,6 +673,47 @@
     .forEach(k => { STEP[k] = (stage, p) => A[k](stage, p); });
 
   /* ---------- MUSIC · PLAY & LEARN (una canción A1 por clase) ---------- */
+  /* ---------- juegos durante la canción: BINGO (A1/A2) y BURBUJAS (B2/B2+) ---------- */
+  function songTraps(sg, n) {
+    const SG = window.M1SONGS || { songs: {} }; const mine = new Set((sg.kw || []).map(k => k.en.toLowerCase()));
+    const pool = []; Object.values(SG.songs).forEach(x => (x.kw || []).forEach(k => { if (!mine.has(k.en.toLowerCase()) && !pool.some(p => p.en.toLowerCase() === k.en.toLowerCase())) pool.push(k); }));
+    return sample(pool, n);
+  }
+  function songBingo(el, sg, yh) {
+    const reals = sample(sg.kw || [], Math.min(6, (sg.kw || []).length)); const cells = shuffle(reals.map(k => ({ ...k, ok: true })).concat(songTraps(sg, 9 - reals.length).map(k => ({ ...k, ok: false }))));
+    el.innerHTML = `<div class="sb"><div class="sb-h"><b>🎯 BINGO MUSICAL</b><span>Toca las palabras que <b>escuches en la canción</b>. ¡Cuidado con las trampas!</span></div>
+      <div class="sb-grid">${cells.map((k, i) => `<button class="sb-c" data-i="${i}">${esc(k.en)}</button>`).join('')}</div><div class="sb-st"><span id="sb-n">0 / ${reals.length} encontradas</span><span id="sb-l">❤️❤️❤️</span></div></div>`;
+    let found = 0, lives = 3, bingo = false, wrong = 0; const marked = new Set();
+    const lines = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
+    el.querySelectorAll('.sb-c').forEach(b => b.onclick = () => {
+      const i = +b.dataset.i, k = cells[i]; if (marked.has(i) || lives <= 0) return; marked.add(i);
+      if (k.ok) { found++; b.classList.add('ok'); sfx('ok'); el.querySelector('#sb-n').textContent = `${found} / ${reals.length} encontradas`;
+        if (!bingo && lines.some(L => L.every(j => marked.has(j) && cells[j].ok))) { bingo = true; const bb = h('<div class="sb-bingo">BINGO! 🎉</div>'); el.querySelector('.sb').appendChild(bb); M.confetti(2200); sfx('win'); setTimeout(() => bb.remove(), 2200); }
+        if (found === reals.length) { M.toast('🏆 ¡Encontraste todas las palabras de la canción!'); if (!bingo) { M.confetti(1500); sfx('win'); } } }
+      else { wrong++; lives--; b.classList.add('bad'); sfx('bad'); el.querySelector('#sb-l').textContent = '❤️'.repeat(lives) + '🖤'.repeat(3 - lives); M.toast(`❌ “${k.en}” no suena en esta canción`); if (lives <= 0) M.toast('Sin vidas 🙈 Escucha bien y sigue con los retos.'); }
+    });
+    return { stop() { el.querySelectorAll('.sb-c').forEach((b, i) => { b.disabled = true; if (cells[i].ok && !marked.has(i)) b.classList.add('miss'); }); return { c: Math.max(0, Math.round(3 * (found - wrong) / Math.max(1, reals.length))), t: 3 }; } };
+  }
+  function songBubbles(el, sg, yh) {
+    const reals = (sg.kw || []).slice(); const traps = songTraps(sg, Math.max(4, reals.length));
+    el.innerHTML = `<div class="sb"><div class="sb-h"><b>🫧 BURBUJAS MUSICALES</b><span>Dale play y revienta las burbujas con palabras que <b>suenan en la canción</b>. Evita las trampas.</span></div>
+      <div class="bb-area"><div class="bb-wait">▶ Dale play al video para que salgan las burbujas</div></div><div class="sb-st"><span id="bb-p">⭐ 0</span><span id="bb-c"></span><span id="bb-l">❤️❤️❤️</span></div></div>`;
+    const area = el.querySelector('.bb-area'); let playing = false, pts = 0, combo = 0, lives = 3, good = 0, bad = 0, n = 0, iv = null, alive = true;
+    const spawn = () => {
+      if (!playing || lives <= 0 || !alive || !area.isConnected) return; const isReal = Math.random() < 0.55; const k = isReal ? reals[n++ % reals.length] : traps[Math.floor(Math.random() * traps.length)]; if (!k) return;
+      const b = h(`<button class="bb">${esc(k.en)}</button>`); b.style.left = (5 + Math.random() * 62) + '%'; b.style.animationDuration = (5 + Math.random() * 2.5) + 's'; area.appendChild(b);
+      b.onclick = () => { if (b.classList.contains('pop')) return; b.classList.add('pop'); setTimeout(() => b.remove(), 300);
+        if (isReal) { good++; combo++; pts += 10 * Math.min(combo, 5); sfx('ok'); el.querySelector('#bb-c').textContent = combo > 1 ? `🔥 Combo x${Math.min(combo, 5)}` : ''; }
+        else { bad++; combo = 0; lives--; sfx('bad'); el.querySelector('#bb-c').textContent = `❌ “${k.en}” no suena`; el.querySelector('#bb-l').textContent = '❤️'.repeat(Math.max(0, lives)) + '🖤'.repeat(3 - Math.max(0, lives)); if (lives <= 0) { el.querySelector('#bb-c').textContent = '🙈 Sin vidas — ¡buen intento!'; } }
+        el.querySelector('#bb-p').textContent = '⭐ ' + pts; };
+      b.addEventListener('animationend', () => b.remove());
+    };
+    const setPlay = (on) => { playing = on; const w = area.querySelector('.bb-wait'); if (w) w.style.display = on ? 'none' : ''; clearInterval(iv); if (on) iv = setInterval(spawn, 1300); };
+    yh.addEventListener('ytstate', e => setPlay(e.detail === 1));
+    // si el video no se puede reproducir aquí, el estudiante puede iniciar las burbujas tocando el aviso
+    area.querySelector('.bb-wait').onclick = () => setPlay(true);
+    return { stop() { alive = false; clearInterval(iv); area.querySelectorAll('.bb').forEach(b => b.remove()); return good + bad ? { c: Math.max(0, Math.round(3 * good / (good + bad * 2))), t: 3 } : null; } };
+  }
   function songFor(p) { const SG = window.M1SONGS; if (!SG) return null; const id = SG.map[p.id]; return id ? SG.songs[id] : null; }
   // video con respaldo: si YouTube no permite verlo aquí, prueba automáticamente el siguiente video
   let ytApi = null;
@@ -712,7 +753,10 @@
     {
       const body = A.head(stage, { lbl, title: '🎧 Listen to the song', ins: 'Escucha la canción completa. ¡Si quieres, canta! Cuando termines, continúa con los retos.' });
       const yh = h('<div></div>'); body.appendChild(yh); ytBox(sg, yh);
+      const gm = h('<div></div>'); body.appendChild(gm);
+      const g = (['A1', 'A2'].includes(M.MOD.id) ? songBingo : songBubbles)(gm, sg, yh);
       await A.waitNext(stage, 'Ya la escuché, ¡a jugar! 🎮');
+      const sc = g.stop(); if (sc && sc.t) { t += sc.t; c += sc.c; }
     }
     // 3) Listen & choose / order (frases inspiradas en la canción)
     const lc = sample(sg.lc.filter(x => x.type === 'blank'), 3);

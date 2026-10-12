@@ -3585,3 +3585,18 @@ p.ce-revchip{margin:8px auto 0}
 
 .snap-bar{display:flex;gap:10px;align-items:center;background:#0B2A5B;color:#fff;border-radius:14px;padding:10px 14px;margin-bottom:10px;font-size:22px}.snap-bar b{display:block;font-size:16px}.snap-bar small{font-size:13px;opacity:.85}
 .snap{pointer-events:none;border:3px dashed #0B2A5B;border-radius:16px;padding:8px;opacity:.97;max-height:none}.snap .actionbar,.snap .mic{display:none}.snap-miss{margin-top:10px}
+
+/* juegos durante la canción */
+.sb{margin-top:14px;border:3px solid #0B2A5B;border-radius:18px;padding:12px;background:#fff;position:relative;overflow:hidden}
+.sb-h>b{display:block;font:900 18px Poppins,sans-serif;color:#E3242B}.sb-h span{font-size:14px;color:#0B2A5B}
+.sb-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}
+.sb-c{min-height:58px;border:3px solid #0B2A5B;border-radius:14px;background:#f3f6fb;font:800 16px Poppins,sans-serif;color:#0B2A5B;cursor:pointer;word-break:break-word;padding:4px;position:relative}
+.sb-c.ok{background:#16A34A;border-color:#0f7a37;color:#fff;transform:scale(.97)}.sb-c.ok::after{content:"●";position:absolute;top:2px;right:6px;color:#E3242B;font-size:18px}
+.sb-c.bad{background:#fde2e2;border-color:#E3242B;color:#E3242B;animation:sbShake .35s}.sb-c.miss{border-style:dashed;border-color:#16A34A}
+@keyframes sbShake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.sb-st{display:flex;justify-content:space-between;gap:8px;font-weight:800;color:#0B2A5B;font-size:14px;flex-wrap:wrap}
+.sb-bingo{position:absolute;inset:0;display:grid;place-items:center;background:rgba(11,42,91,.85);color:#ffd43b;font:900 clamp(40px,12vw,72px) Poppins,sans-serif;animation:itlPopN .4s both;pointer-events:none}
+.bb-area{position:relative;height:240px;border-radius:14px;background:linear-gradient(#e8f1ff,#cfe2ff);overflow:hidden;margin:10px 0}
+.bb-wait{position:absolute;inset:0;display:grid;place-items:center;text-align:center;font-weight:800;color:#0B2A5B;padding:12px;cursor:pointer}
+.bb{position:absolute;bottom:-70px;min-width:76px;padding:14px 12px;border-radius:999px;border:3px solid #0B2A5B;background:radial-gradient(circle at 30% 30%,#fff,#bfe0ff);font:800 15px Poppins,sans-serif;color:#0B2A5B;cursor:pointer;animation:bbUp 6s linear forwards;box-shadow:0 4px 10px rgba(11,42,91,.25)}
+.bb.pop{animation:bbPop .3s forwards!important}@keyframes bbUp{to{transform:translateY(-330px)}}@keyframes bbPop{to{transform:scale(1.6);opacity:0}}

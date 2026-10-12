@@ -150,7 +150,8 @@
     if (busy) return; busy = true; stopAudio();
     const ms = Math.min(9000, 2600 + words(text).length * 420);
     let stream = null, rec = null; const chunks = [];
-    try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); rec = new MediaRecorder(stream); rec.ondataavailable = e => e.data && e.data.size && chunks.push(e.data); rec.start(); }
+    try { if ((typeof SR !== 'undefined' && SR) && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) throw 0; // en celular el micrófono no se puede compartir: se prioriza el reconocimiento de voz
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true }); rec = new MediaRecorder(stream); rec.ondataavailable = e => e.data && e.data.size && chunks.push(e.data); rec.start(); }
     catch (e) { if (!SR) { box.innerHTML = '<div class="cl-fb bad">🎙️ No pudimos usar tu micrófono. Revisa el permiso del navegador e inténtalo otra vez.</div>'; busy = false; return; } }
     btn.classList.add('rec'); btn.innerHTML = '<span class="cl-dot"></span> Habla ahora…';
     box.innerHTML = '<div class="cl-fb">🎙️ Di en voz alta: <b>' + esc(text) + '</b><div class="cl-bar"><i style="animation-duration:' + ms + 'ms"></i></div></div>';

@@ -53,6 +53,7 @@
   window.addEventListener('m1-dict-toggle', () => { if ($('#topbar')) topbar(); });
   function route(name, arg) {
     stop(); window.scrollTo(0, 0); topbar();
+    try { const pf = window.MRAP && MRAP.get(); if (pf && pf.first) { const nm = ((pf.first || '') + ' ' + (pf.last || '')).trim(); if (S.name !== nm) { S.name = nm; save(); } } } catch (e) { } // el nombre siempre es el del perfil
     if (!S.name) return onboarding();
     if (name === 'home') return home();
     if (name === 'progress') return progress();

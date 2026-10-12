@@ -122,7 +122,7 @@
       P.save(Object.assign(p, { first: f, last: l, name: f + ' ' + l }, extra));
       if (window.MRAC && MRAC.code()) { MRAC.saveProfile(Object.assign({ first: f, last: l }, extra)); MRAC.sync(true); }
       // el nombre también se usa dentro de los módulos
-      P.MODS.forEach(m => { try { const s = JSON.parse(localStorage.getItem(m.key) || 'null'); if (s && !s.name) { s.name = f + ' ' + l; localStorage.setItem(m.key, JSON.stringify(s)); } } catch (e) { } });
+      P.MODS.forEach(m => { try { const s = JSON.parse(localStorage.getItem(m.key) || 'null'); if (s) { s.name = f + ' ' + l; localStorage.setItem(m.key, JSON.stringify(s)); } } catch (e) { } });
       route('home'); };
   }
   function logout() {

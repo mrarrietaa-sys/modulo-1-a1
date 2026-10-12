@@ -231,7 +231,8 @@
   // devuelve { url, alts, score }  (score = null si el navegador no puede evaluar)
   async function recordScore(target, ms, onTick, scorer) {
     let rec = null, stream = null; const chunks = [];
-    try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); rec = new MediaRecorder(stream); rec.ondataavailable = e => chunks.push(e.data); rec.start(); }
+    try { if ((typeof SR !== 'undefined' && SR) && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) throw 0; // en celular el micrófono no se puede compartir: se prioriza el reconocimiento de voz
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true }); rec = new MediaRecorder(stream); rec.ondataavailable = e => chunks.push(e.data); rec.start(); }
     catch (e) { if (!SR) throw e; }
     const t0 = Date.now(); const iv = setInterval(() => onTick && onTick(Math.min(1, (Date.now() - t0) / ms)), 100);
     let r = { alts: [] };

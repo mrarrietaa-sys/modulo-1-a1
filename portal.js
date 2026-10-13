@@ -192,7 +192,7 @@
       const wm = M.modal(`<div class="center wb">${P.pic() ? P.avHTML('pt-av big') : M.mascot('mascot bounce', 'wink')}<h2>Welcome, ${esc(P.look().nick || p.first)}! 👋</h2><p style="font-size:17px">¡Qué bueno verte de nuevo! ${pr && pr.done ? `Llevas <b>${pr.done} clase(s)</b> en tu ruta. ¡Sigamos!` : 'Hoy es un gran día para avanzar en tu ruta de aprendizaje.'}</p>
         ${a && a.ready && !staff ? `<a class="btn k block lg" style="text-decoration:none" href="${a.url}">▶ Continuar mi ruta</a>` : ''}<button class="btn w block" id="wbx" style="margin-top:8px">Ir a mi perfil</button></div>`, { x: true });
       $('#wbx', wm).onclick = () => wm.remove(); M.confetti && M.confetti(900); } } catch (e) { }
-    if (!p.tourDone && !tourSeen()) setTimeout(portalTour, 900);
+    if (!tourSeenK(tourKind())) setTimeout(portalTour, 900);
     $('#me-av').onclick = () => route('me'); if ($('#me-go')) $('#me-go').onclick = () => route('me');
     if ($('#pt2')) $('#pt2').onclick = () => { if (staff) return route('placement'); const m = M.modal(`<h3>¿Repetir la prueba de clasificación?</h3><p>¿No te sentiste a gusto con tu resultado? Puedes repetirla: <b>tu ruta de aprendizaje se actualizará con el nuevo resultado</b>.</p><p class="muted">Tienes ${pst.rounds || 1} oportunidades de 2 intentos cada una. Llevas ${pst.attempts} intento(s)${pst.attempts >= pst.max && (pst.round || 1) < (pst.rounds || 1) ? ' — se activará tu <b>segunda oportunidad</b>' : ''}.</p><div class="row"><button class="btn k" id="y">Sí, repetir</button><button class="btn w" id="n">Cancelar</button></div>`, { x: true }); $('#n', m).onclick = () => m.remove(); $('#y', m).onclick = () => { m.remove(); route('placement'); }; };
     $$('.pt-mod').forEach(el => el.onclick = () => openMod(el.dataset.id));
@@ -240,28 +240,39 @@
   // el tour sale solo UNA vez por código (queda marcado en este dispositivo y en la nube)
   const TOURK = () => { const p = P.get() || {}; return 'mra_tourseen_' + ((window.MRAC && MRAC.code && MRAC.code()) || p.codeHash || p.first || 'x'); };
   function tourSeen() { try { return !!localStorage.getItem(TOURK()); } catch (e) { return false; } }
+  // 2 tours, cada uno UNA sola vez: 'start' (recién llega: prueba, acceso gratuito, planes) y 'profile' (ya tiene su ruta)
+  const tourKind = () => { const p = P.get() || {}; return !p.module && p.type !== 'staff' ? 'start' : 'profile'; };
+  function tourSeenK(kind) { const p = P.get() || {}; if (p.tourDone) return true; /* tour antiguo: ya lo vio */ if (kind === 'start' ? p.tour1 : p.tour2) return true; try { return !!localStorage.getItem(TOURK() + '_' + kind); } catch (e) { return false; } }
   function portalTour(force) {
-    if ($('#tour')) return; const p = P.get(); if (!p || ((p.tourDone || tourSeen()) && !force)) return;
+    const kind = tourKind();
+    if ($('#tour')) return; const p = P.get(); if (!p || (tourSeenK(kind) && !force)) return;
     if ($('.modal')) return setTimeout(() => portalTour(force), 800); // espera a que cierre el saludo
-    try { localStorage.setItem(TOURK(), '1'); } catch (e) { } if (!p.tourDone) { p.tourDone = true; P.save(p); try { window.MRAC && MRAC.code() && MRAC.sync(true); } catch (e) { } } // marcado desde que empieza
-    const fn = esc(P.look().nick || p.first || ''); const a = P.assigned();
-    const all = [
-      { mood: 'welcome', t: `¡Hola, ${fn}! 👋`, d: 'Soy Mr. Arrieta, tu profe. Te muestro en 1 minuto cómo funciona tu plataforma.' },
-      { sel: '.pt-avwrap', mood: 'point', t: 'Tu perfil', d: 'Toca tu foto para <b>personalizar tu perfil</b>: tómate una foto o crea <b>tu propio Mr. Arrieta</b>.' },
-      { sel: '.pt-step', mood: 'idea', t: 'Primer paso: tu prueba de clasificación', d: 'Unos 10 minutos: Listening, Reading, Writing y Speaking, adaptada a tu nivel. Con tu resultado se crea <b>tu ruta de aprendizaje</b>.' },
-      { sel: '.pt-mymod', mood: 'pointside', t: 'Tu ruta de aprendizaje', d: 'Aquí ves <b>en qué punto de tu ruta estás</b> y entras a tus clases.' },
-      { sel: '.pt-trialbar', mood: 'present', t: 'Tu acceso gratuito', d: 'Puedes tomar la prueba de clasificación y explorar los <b>2 primeros temas</b> de tu ruta. ¡Disfrútalo!' },
-      { sel: '#pt-plan', mood: 'idea', t: 'Tu plan', d: P.plan().premium ? 'Tienes <b>Premium</b>: toda la plataforma + clases grupales, clases VIP y el Club de conversación.' : P.plan().paid ? 'Tienes <b>Membership</b>: toda la plataforma y tu ruta completa. Si quieres acompañamiento de profes, pásate a Premium.' : 'Aquí ves los planes: <b>Membership</b> desbloquea toda la plataforma y <b>Premium</b> suma clases con profes.' },
-      { sel: '.lv-wrap', mood: 'present', t: 'Tus clases con profes', d: 'Aquí ves tu <b>grupo</b>, reservas tus <b>clases VIP</b> con tus créditos y entras al <b>Club de conversación</b>.' },
-      { sel: '.pt-routebar', mood: 'present', t: 'Tu camino', d: 'Tu ruta va de A1 a B2+. Cada etapa se abre cuando <b>apruebas el examen final</b> de la anterior.' },
-      { sel: '.pt-perso', mood: 'wink', t: 'Hazla tuya', d: 'Viste a tu Mr. Arrieta, ponle sombrero, elige colores y fondo. ¡Tu plataforma, a tu estilo!' },
-      { sel: '#out', mood: 'watch', t: 'Salir', d: 'Con este botón cierras tu sesión. Tu progreso queda guardado.' },
-      { mood: 'thumbs', t: '¡Listo! 🚀', d: p.module ? '¡Vamos a tu ruta de aprendizaje!' : 'Empieza con tu prueba de clasificación para crear tu ruta.', last: true },
+    try { localStorage.setItem(TOURK() + '_' + kind, '1'); } catch (e) { } const fk = kind === 'start' ? 'tour1' : 'tour2';
+    if (!p[fk]) { p[fk] = true; P.save(p); try { window.MRAC && MRAC.code() && MRAC.sync(true); } catch (e) { } } // marcado desde que empieza
+    const fn = esc(P.look().nick || p.first || ''); const a = P.assigned(); const pl = P.plan();
+    const all = kind === 'start' ? [
+      { mood: 'welcome', t: `¡Welcome, ${fn}! 👋`, d: 'Soy Mr. Arrieta, tu profe. Te muestro en 30 segundos cómo empezar en <b>mrarrieta.com</b>.' },
+      { sel: '.pt-step', mood: 'idea', t: '1️⃣ Tu primer paso', d: 'Haz tu <b>prueba de clasificación</b>: solo 10 minutos. Se adapta a tu nivel y evalúa tu Listening, Reading, Writing y Speaking. Al terminar, la plataforma te ubica en tu módulo y <b>empiezas tu ruta de inmediato</b>.' },
+      { sel: '.pt-trial, .pt-trialbar', mood: 'present', t: '🎁 Tu acceso gratuito', d: 'Tienes la prueba de clasificación y los <b>2 primeros temas</b> de tu módulo para que conozcas la plataforma.' },
+      { sel: '#pt-plans', mood: 'pointside', t: '💳 Los planes', d: '<b>Membership</b>: toda la plataforma y tu ruta completa A1 → B2+.<br><b>Premium</b>: además, <b>clases VIP</b> 1 a 1 con profes y <b>clubs de conversación y fonética</b> en vivo. Toca aquí cuando quieras verlos.' },
+      { sel: '.pt-avwrap', mood: 'point', t: '😎 Tu perfil', d: 'Toca tu foto para personalizarlo: tómate una foto o crea <b>tu propio Mr. Arrieta</b>.' },
+      { sel: '#pt-tour', mood: 'wink', t: '🧭 ¿Lo quieres ver otra vez?', d: 'Con este botón puedes repetir este recorrido cuando quieras.' },
+      { mood: 'thumbs', t: '¡Vamos! 🚀', d: 'Empieza ahora con tu prueba de clasificación.', last: true },
+    ] : [
+      { mood: 'welcome', t: `¡Muy bien, ${fn}! 🎉`, d: 'Ya tienes tu ruta de aprendizaje. Te muestro tu perfil en 1 minuto.' },
+      { sel: '.pt-mymod', mood: 'pointside', t: '📍 Tu ruta', d: 'Aquí ves <b>en qué módulo estás</b>, tu avance y el botón para <b>continuar tu clase</b>.' },
+      { sel: '.lv-wrap', mood: 'present', t: '👩‍🏫 Clases con profes', d: 'Reserva tus <b>clases VIP</b> (mínimo 4 horas antes) y confirma los <b>clubs</b> de tu nivel (mínimo 3 horas antes).' },
+      { sel: '.pt-clubs', mood: 'idea', t: '🎙️ Tus clubs', d: 'Conversación y fonética en vivo con estudiantes de tu nivel.' },
+      { sel: '.pt-routebar', mood: 'present', t: '🧭 Tu camino', d: 'Tu ruta va de A1 a B2+. Cada módulo se abre cuando <b>apruebas el examen final</b> del anterior.' },
+      { sel: '.pt-arcade:not(.pt-clubs)', mood: 'wink', t: '🎮 Zona de juegos', d: 'Juegos rápidos de tu nivel para repasar jugando.' },
+      { sel: '#pt-plans', mood: 'idea', t: '💳 Tu plan', d: pl.premium ? 'Tienes <b>Premium</b>: toda la plataforma + clases VIP y clubs.' : pl.paid ? 'Tienes <b>Membership</b>: toda la plataforma. Si quieres clases con profes, pásate a Premium.' : 'Aquí ves los planes para <b>desbloquear toda tu ruta</b>.' },
+      { sel: '#out', mood: 'watch', t: '⏻ Salir', d: 'Con este botón cierras tu sesión. Tu progreso queda guardado en la nube.' },
+      { mood: 'thumbs', t: '¡Listo! 🚀', d: '¡Vamos a tu ruta de aprendizaje!', last: true },
     ];
     const steps = all.filter(x => !x.sel || $(x.sel));
     const ov = h(`<div id="tour"><div class="tour-hole"></div><div class="tour-card"></div></div>`); document.body.appendChild(ov);
     const hole = $('.tour-hole', ov), card = $('.tour-card', ov); let i = 0;
-    const end = (go) => { ov.remove(); window.removeEventListener('resize', place); window.removeEventListener('scroll', place); const q = P.get(); try { localStorage.setItem(TOURK(), '1'); } catch (e) { } if (q) { q.tourDone = true; P.save(q); try { window.MRAC && MRAC.code() && MRAC.sync(true); } catch (e) { } }
+    const end = (go) => { ov.remove(); window.removeEventListener('resize', place); window.removeEventListener('scroll', place); const q = P.get();
       if (go) { M.confetti && M.confetti(1500); if (!q.module && q.type !== 'staff') route('placement'); else if (a && a.ready) location.href = a.url; } };
     function place() {
       const st = steps[i]; const el = st.sel && $(st.sel);

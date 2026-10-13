@@ -54,7 +54,7 @@
     if (!voiceOn()) return; try { sessionStorage.setItem('mra_said', '1'); } catch (e) { }
     const p = P.get() || {}, lu = P.lastUser() || {}; const nm = (p.look && p.look.nick) || p.first || lu.first || '';
     const sl = slugN(nm); const known = !!p.first; // si aún no tiene nombre verá "Nice to meet you!" → la voz dice lo mismo
-    const go = () => M.loadAudio([known ? 'wb_' + (sl[0] || 'x') : 'wb_x']).then(() => { if (!voiceOn()) return; const k = !known ? 'wnew_' : (window.AUD && window.AUD['wb_' + sl] ? 'wb_' + sl : 'wb_'); M.play(k); });
+    const go = () => M.loadAudio(['wb_' + (sl[0] || 'x')]).then(() => { if (!voiceOn()) return; const k = known && window.AUD && window.AUD['wb_' + sl] ? 'wb_' + sl : 'wb_'; M.play(k); }); // siempre: "Welcome, Nombre!" (o "Welcome!")
     go();
   };
   /* ---------- ingreso con código ---------- */
@@ -69,7 +69,7 @@
   function login() {
     app.innerHTML = `<div class="wrap pt-wrap"><div class="card pt-login">
       
-      ${(() => { const lu = P.lastUser(); return lu && lu.first ? `<div class="pt-hello">${lu.pic ? `<span class="pt-av big pt-lu has"><img src="${lu.pic}" alt=""></span>` : M.mascot('pt-mra', 'wink')}<div class="bubble">Welcome back, ${esc(lu.first)}! 👋</div></div>`
+      ${(() => { const lu = P.lastUser(); return lu && lu.first ? `<div class="pt-hello">${lu.pic ? `<span class="pt-av big pt-lu has"><img src="${lu.pic}" alt=""></span>` : M.mascot('pt-mra', 'wink')}<div class="bubble">Welcome, ${esc(lu.first)}! 👋</div></div>`
         : `<div class="pt-hello">${M.mascot('pt-mra', 'welcome')}<div class="bubble">Welcome, my friend! 👋<small>Bienvenido(a) a tu plataforma de inglés</small></div></div>`; })()}
       <h1>Ingresa a tu perfil</h1><p class="muted">Escribe el código que te entregó administración.</p>
       <input class="inp" id="cd" placeholder="Ej: ABC-123" autocapitalize="characters" autocomplete="off">
@@ -144,10 +144,11 @@
     const pst = window.MRAPLACE ? MRAPLACE.status() : { attempts: 0, max: 2 };
     const pl = p.placement;
     const hr = new Date().getHours(); const back = P.isBack(); const greet = back ? 'Welcome back' : hr < 12 ? 'Good morning' : hr < 18 ? 'Good afternoon' : 'Good evening';
+    const newbie = !p.module && !staff; // estudiante nuevo: solo la prueba de clasificación
     let main = '';
     if (!p.module && !staff) {
       main = `<div class="card pt-step"><div class="pt-stepn">1</div><div><span class="lbl">Primer paso</span><h2>Toma tu prueba de clasificación</h2>
-        <p>Es una prueba <b>corta e inteligente</b> (unos 10 minutos) que evalúa tu Listening, Reading, Writing y Speaking y se adapta a tu nivel. Al terminar, la plataforma te <b>ubica automáticamente</b> en el módulo que te corresponde: A1, A2, B2 o B2+.</p>
+        <p>Solo <b>10 minutos</b>. Se adapta a tu nivel y al terminar empiezas de una vez tu ruta de aprendizaje.</p>
         <p class="muted">⏱ Unos 10 minutos · ${pst.rounds || 1} oportunidades de 2 intentos${pst.attempts ? ` · Ya usaste ${pst.attempts}` : ''}${pst.inProgress ? ' · <b>Tienes una prueba en progreso</b>' : ''}</p>
         <button class="btn k lg" id="pt">📝 ${pst.inProgress ? 'Continuar' : 'Tomar'} mi prueba de clasificación</button></div></div>`;
     } else if (a || staff) {
@@ -164,32 +165,34 @@
         <p class="muted">${staff ? '👨‍🏫 Perfil de profesor — puedes revisar todo.' : trial ? '🟢 Acceso gratuito — descubre tu ruta de aprendizaje.' : '🎓 Estudiante de mrarrieta.com'}</p></div>${M.mascot('pt-headmra', 'welcome')}</section>
       ${birthdayBanner()}
       <div id="pt-ann"></div>
-      ${trial ? `<div class="pt-trialbar">${P.plan().expired ? `⏰ <div><b>Tu plan venció.</b> Tu progreso sigue guardado. Renuévalo para seguir con toda tu ruta. <a href="#pt-plan" id="tb-up">Renovar mi plan →</a></div>` : `🟢 <div><b>Estás en tu acceso gratuito.</b> Tienes la prueba de clasificación y los <b>2 primeros temas</b> de tu módulo. ¿Te gustó? <a href="#pt-plan" id="tb-up">Desbloquea toda tu ruta →</a></div>`}</div>` : ''}
+      ${trial && (P.plan().expired || !(window.MRAC && MRAC.code())) ? `<div class="pt-trialbar">${P.plan().expired ? `⏰ <div><b>Tu plan venció.</b> Tu progreso sigue guardado. Renuévalo para seguir con toda tu ruta. <a href="#" class="tb-up">Ver planes →</a></div>` : `🟢 <div><b>Acceso gratuito:</b> la prueba de clasificación y los <b>2 primeros temas</b> de tu módulo. <a href="#" class="tb-up">Ver planes →</a></div>`}</div>` : ''}
       ${main}
-      <a class="card pt-arcade pt-clubs" href="clubes.html"><span class="pa-ic">🎙️</span><div class="grow"><span class="lbl">Clubs en vivo · Premium</span><h2>Mis clubs de Conversación y Fonética</h2><p class="muted">Espacios distintos a tus clases: talk show en inglés y gimnasio de pronunciación, según tu nivel.</p></div><span class="btn k">Entrar →</span></a>
-      <a class="card pt-arcade" href="juegos.html"><span class="pa-ic">🎮</span><div class="grow"><span class="lbl">Zona de juegos</span><h2>¡Juega y aprende inglés!</h2><p class="muted">Juegos rápidos y divertidos de tu nivel: suma monedas, rompe récords y aprende jugando.</p></div><span class="btn k">Jugar →</span></a>
-      ${birthAsk()}
-      ${planSection()}
+      ${newbie ? '' : `
       <div id="pt-live"></div>
-      ${P.look().pic ? '' : `<div class="card pt-perso"><div class="pt-perso-img">${M.mascot('', 'wink')}</div><div><h2>Personaliza tu perfil</h2><p class="muted">Tómate una foto o crea <b>tu propio Mr. Arrieta</b>: vístelo, ponle sombrero y elige su fondo. ¡Haz tu plataforma más tuya!</p><button class="btn k" id="me-go">🎨 Personalizar ahora</button></div></div>`}
+      ${staff || ['membership', 'premium'].includes(P.plan().eff) ? `<a class="card pt-arcade pt-clubs" href="clubes.html"><span class="pa-ic">🎙️</span><div class="grow"><span class="lbl">Clubs en vivo · Premium</span><h2>Mis clubs de Conversación y Fonética</h2><p class="muted">Espacios distintos a tus clases: talk show en inglés y gimnasio de pronunciación, según tu nivel.</p></div><span class="btn k">Entrar →</span></a>` : ''}
       <div class="sect-title"><h2>🧭 Mi ruta de aprendizaje</h2></div>
       ${routeBar()}
       <div class="pt-mods-grid pt-route">${P.MODS.map(m => modCard(m)).join('')}</div>
       ${courseCard()}
-      ${pl ? `<div class="sect-title"><h2>📝 Mi prueba de clasificación</h2></div><div class="card pt-plres"><div><b>Resultado:</b> ${esc(P.mod(pl.module).name)} · ${esc(P.mod(pl.module).es)}<br><span class="muted">${new Date(pl.date).toLocaleDateString('es-CO')}${pl.mods ? ' · ' + [1, 2, 3, 4].map(k => `${P.mod(k).id}: ${pl.mods[k]}%`).join(' · ') : ''}</span></div>${(pst.attempts < pst.max || (pst.round || 1) < (pst.rounds || 1)) ? '<button class="btn w sm" id="pt2">🔁 Repetir examen</button>' : ''}</div>` : ''}
-      ${staff ? `<div class="sect-title"><h2>📝 Prueba de clasificación</h2></div><div class="card pt-plres"><div>Puedes presentar o revisar la prueba de clasificación como lo verá el estudiante.</div><button class="btn w sm" id="pt2">📝 Abrir examen</button></div>` : ''}
-      ${certs()}
+      <a class="card pt-arcade" href="juegos.html"><span class="pa-ic">🎮</span><div class="grow"><span class="lbl">Zona de juegos</span><h2>¡Juega y aprende inglés!</h2><p class="muted">Juegos rápidos y divertidos de tu nivel: suma monedas, rompe récords y aprende jugando.</p></div><span class="btn k">Jugar →</span></a>
+      ${birthAsk()}
+      ${P.look().pic || !(a && a.ready && P.progress(a.id).done) ? '' : `<div class="card pt-perso"><div class="pt-perso-img">${M.mascot('', 'wink')}</div><div><h2>Personaliza tu perfil</h2><p class="muted">Tómate una foto o crea <b>tu propio Mr. Arrieta</b>: vístelo, ponle sombrero y elige su fondo. ¡Haz tu plataforma más tuya!</p><button class="btn k" id="me-go">🎨 Personalizar ahora</button></div></div>`}
+      ${pl ? `<div class="sect-title"><h2>📝 Mi prueba de clasificación</h2></div><div class="card pt-plres"><div><b>Resultado:</b> ${esc(P.mod(pl.module).name)} · ${esc(P.mod(pl.module).es)}<br><span class="muted">${new Date(pl.date).toLocaleDateString('es-CO')}${pl.mods ? ' · ' + [1, 2, 3, 4].map(k => `${P.mod(k).id}: ${pl.mods[k]}%`).join(' · ') : ''}</span></div>${(pst.attempts < pst.max || (pst.round || 1) < (pst.rounds || 1)) ? '<button class="btn w sm" id="pt2">🔁 Repetir prueba</button>' : ''}</div>` : ''}
+      ${staff ? `<div class="sect-title"><h2>📝 Prueba de clasificación</h2></div><div class="card pt-plres"><div>Puedes presentar o revisar la prueba de clasificación como lo verá el estudiante.</div><button class="btn w sm" id="pt2">📝 Abrir prueba</button></div>` : ''}
+      ${certs()}`}
+      ${staff ? '' : `<div class="center" style="margin-top:14px"><button class="btn w" id="pt-plans">💳 Ver planes${P.plan().eff !== 'free' ? ' · mi plan' : ''}</button></div>`}
       <p class="center fx-foot" style="margin-top:22px;font-size:13.5px;font-weight:600">mrarrieta.com · ¡Aprende inglés HABLANDO! · WhatsApp ${esc(C.WHATSAPP.replace(/^57/, ''))}</p></div>`;
     if ($('#pt')) $('#pt').onclick = () => route('placement');
-    if ($('#tb-up')) $('#tb-up').onclick = (e) => { e.preventDefault(); const t = $('#pt-plan'); if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+    const plans = (e) => { if (e) e.preventDefault(); M.modal(`<div class="pt-plmodal">${planSection()}</div>`, { x: true }); };
+    $$('.tb-up').forEach(x => x.onclick = plans); if ($('#pt-plans')) $('#pt-plans').onclick = plans;
     wireBirth(); live(); birthdayParty();
     // bienvenida de regreso (una vez por sesión)
     try { if (P.isBirthday()) sessionStorage.setItem('mra_wb', '1'); // en su cumpleaños el saludo es la fiesta 🎂
       if (back && !sessionStorage.getItem('mra_wb')) { sessionStorage.setItem('mra_wb', '1'); const pr = a && a.ready ? P.progress(a.id) : null;
-      const wm = M.modal(`<div class="center wb">${P.pic() ? P.avHTML('pt-av big') : M.mascot('mascot bounce', 'wink')}<h2>Welcome back, ${esc(P.look().nick || p.first)}! 👋</h2><p style="font-size:17px">¡Qué bueno verte de nuevo! ${pr && pr.done ? `Llevas <b>${pr.done} clase(s)</b> en tu ruta. ¡Sigamos!` : 'Hoy es un gran día para avanzar en tu ruta de aprendizaje.'}</p>
+      const wm = M.modal(`<div class="center wb">${P.pic() ? P.avHTML('pt-av big') : M.mascot('mascot bounce', 'wink')}<h2>Welcome, ${esc(P.look().nick || p.first)}! 👋</h2><p style="font-size:17px">¡Qué bueno verte de nuevo! ${pr && pr.done ? `Llevas <b>${pr.done} clase(s)</b> en tu ruta. ¡Sigamos!` : 'Hoy es un gran día para avanzar en tu ruta de aprendizaje.'}</p>
         ${a && a.ready && !staff ? `<a class="btn k block lg" style="text-decoration:none" href="${a.url}">▶ Continuar mi ruta</a>` : ''}<button class="btn w block" id="wbx" style="margin-top:8px">Ir a mi perfil</button></div>`, { x: true });
       $('#wbx', wm).onclick = () => wm.remove(); M.confetti && M.confetti(900); } } catch (e) { }
-    if (!p.tourDone) setTimeout(portalTour, 900);
+    if (!p.tourDone && !newbie) setTimeout(portalTour, 900);
     $('#me-av').onclick = () => route('me'); if ($('#me-go')) $('#me-go').onclick = () => route('me');
     if ($('#pt2')) $('#pt2').onclick = () => { if (staff) return route('placement'); const m = M.modal(`<h3>¿Repetir la prueba de clasificación?</h3><p>¿No te sentiste a gusto con tu resultado? Puedes repetirla: <b>tu ruta de aprendizaje se actualizará con el nuevo resultado</b>.</p><p class="muted">Tienes ${pst.rounds || 1} oportunidades de 2 intentos cada una. Llevas ${pst.attempts} intento(s)${pst.attempts >= pst.max && (pst.round || 1) < (pst.rounds || 1) ? ' — se activará tu <b>segunda oportunidad</b>' : ''}.</p><div class="row"><button class="btn k" id="y">Sí, repetir</button><button class="btn w" id="n">Cancelar</button></div>`, { x: true }); $('#n', m).onclick = () => m.remove(); $('#y', m).onclick = () => { m.remove(); route('placement'); }; };
     $$('.pt-mod').forEach(el => el.onclick = () => openMod(el.dataset.id));
@@ -396,14 +399,14 @@
     if (!window.MRAC || !MRAC.code()) return;
     const box = $('#pt-live'); const sig = () => { const q = P.get() || {}; return [q.plan, q.planEnd, q.type, q.module, q.expired].map(x => String(x == null ? '' : x)).join('|'); }; const before = sig();
     if (box && P.plan().premium) box.innerHTML = '<div class="sect-title"><h2>👩‍🏫 Mis clases con profes</h2></div><div class="card lv-load">⏳ Cargando tus clases…</div>';
-    const r = await MRAC.me(); if (!r || !document.body.contains(box)) return;
+    const r = await MRAC.me(); if (!r || (box && !document.body.contains(box)) || !$('#pt-ann')) return;
     if (r.ok === false && r.err === 'trial_over') { const c = MRAC.code(); P.clear(); try { sessionStorage.removeItem('mra_me_cache'); } catch (e) { } route('home'); return trialOver(c); }
     if (r.ok === false && (r.err === 'notfound' || r.err === 'inactive')) { M.toast('Tu acceso ya no está activo. Escríbenos por WhatsApp.'); return; }
     if (before !== sig()) { topbar(); return home(); } // el plan cambió en la nube → actualizar perfil
     const ann = r.conf && r.conf.announcement; if (ann && $('#pt-ann')) $('#pt-ann').innerHTML = `<div class="pt-ann">📣 ${esc(ann)}</div>`;
     if (r.trialLeft != null && r.trialLeft > 0 && $('#pt-ann')) $('#pt-ann').insertAdjacentHTML('afterbegin', `<div class="pt-ann pt-trial">🎁 ${r.trialLeft === 1 ? '<b>Hoy es tu último día</b> de acceso gratuito.' : 'Te quedan <b>' + r.trialLeft + ' días</b> de acceso gratuito.'} <a class="btn k sm" target="_blank" rel="noopener" href="${WA('¡Hola! Soy ' + (P.get().first || '') + ' (código ' + MRAC.code() + ') y quiero inscribirme en mrarrieta.com 🚀')}">💬 Quiero inscribirme</a></div>`);
     if (!r.premium) { if (box) box.innerHTML = ''; return; }
-    renderLive(box, r);
+    if (box) renderLive(box, r);
   }
   function renderLive(box, r) {
     const pr = r.premium, cr = pr.credits, g = pr.group;

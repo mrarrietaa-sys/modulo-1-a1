@@ -352,6 +352,8 @@
     ctx.after && ctx.after(last_);
     results(); notify(last_);
   }
+  // a dónde va al terminar: directo a su módulo (o al módulo de su acceso gratuito)
+  function firstUrl() { const a = P.assigned(); if (a && a.ready) return a.url; const t = P.isTrial() && P.trialMod && P.trialMod(); return t && t.url ? t.url : ''; }
   function results() {
     const r = last_; const m = P.mod(r.ms.rec); const left = maxAttempts() - ST.attempts; const trial = P.isTrial();
     const waMsg = encodeURIComponent(`Hola, soy ${r.name}. Acabo de hacer el Placement Test en mrarrieta.com y me ubicó en el ${m.name} (${m.es}). Me interesa: ${COURSE[r.course] || 'un curso'}. Quiero más información 😊`);
@@ -364,13 +366,13 @@
       ${(() => { const asg = P.assigned(); return asg && asg.n > m.n ? `<div class="pt-trial">🎓 <b>Ojo:</b> en este dispositivo ya aprobaste el examen final del ${esc(P.mod(asg.n - 1).name)}, por eso hoy tu ruta está en el <b>${esc(asg.name)} (${esc(asg.es)})</b>.</div>` : ''; })()}
       ${trial ? `<div class="pt-trial">🟢 <b>Acceso gratuito:</b> ya puedes explorar los <b>2 primeros temas</b> del ${esc((P.trialMod() || m).name)}.</div>` : ''}
       <div class="fx-notify">${cloud() ? '<div id="n0" class="pending">⏳ Avisando a tu profe y a administración…</div>' : ''}<div id="n1" class="pending">⏳ Guardando resultados…</div><div id="n2" class="pending">⏳ Enviando correo con tu resultado…</div><div id="n3" class="pending">⏳ Enviando copia a administración…</div></div>
-      <div class="row" style="justify-content:center;margin-top:14px"><button class="btn k lg" id="prof">👤 Ir a mi perfil y empezar →</button>
+      <div class="row" style="justify-content:center;margin-top:14px"><button class="btn k lg" id="prof">${firstUrl() ? "▶ Empezar mi primera clase" : "👤 Ir a mi perfil y empezar →"}</button>
         <button class="btn w" id="pdf">📄 Descargar reporte PDF</button><button class="btn w" id="cp">📋 Copiar resumen</button>
         <a class="btn" style="text-decoration:none;background:#25D366;color:#fff" target="_blank" rel="noopener" href="https://wa.me/${C.WHATSAPP}?text=${waMsg}">💬 ${trial ? 'Quiero inscribirme' : 'Escribir a mrarrieta.com'}</a>
         ${left > 0 ? `<button class="btn w" id="again">🔁 Intentar de nuevo (te queda${left > 1 ? 'n' : ''} ${left})</button>` : (ST.round || 1) < ROUNDS ? `<button class="btn w" id="again2">🔁 Usar mi segunda oportunidad (${CFG.ATTEMPTS} intentos)</button>` : cloud() ? '<button class="btn w" id="extra">🙋 Solicitar un intento adicional</button>' : ''}</div>
       <p class="muted center" style="font-size:14px;margin-top:10px">¿No te sientes a gusto con tu resultado? Puedes repetir la prueba: <b>tu ruta de aprendizaje se actualiza con el nuevo resultado</b>.</p></div>`);
     wireExit(); sfx('win'); M.confetti(3500);
-    $('#prof').onclick = () => ctx.route('home'); $('#pdf').onclick = reportPDF; $('#cp').onclick = copySummary;
+    $('#prof').onclick = () => { const u = firstUrl(); if (u) location.href = u; else ctx.route('home'); }; $('#pdf').onclick = reportPDF; $('#cp').onclick = copySummary;
     if ($('#again')) $('#again').onclick = () => run(app, ctx);
     if ($('#again2')) $('#again2').onclick = secondChance;
     if ($('#extra')) $('#extra').onclick = locked;

@@ -80,7 +80,7 @@
     const t = D.teacher || {}; const first = String(t.name || '').split(/\s+/)[0];
     const sl = first.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z]/g, '');
     const hasWeek = Object.keys(t.weekly || {}).length > 0;
-    const m = modal(`<div style="text-align:center"><div style="font-size:52px">👋</div><h2>¡Welcome back, ${esc(first)}!</h2>
+    const m = modal(`<div style="text-align:center"><div style="font-size:52px">👋</div><h2>¡Welcome, ${esc(first)}!</h2>
       <p>${hasWeek ? 'Antes de empezar, revisa que tu <b>disponibilidad semanal</b> esté al día. Los estudiantes Premium solo pueden reservar clases VIP en los horarios que publiques.' : '<b>Aún no has escrito tu disponibilidad semanal.</b> Márcala ahora para que los estudiantes Premium puedan reservar tus clases VIP.'}</p>
       <p class="muted">Lunes a sábado · domingos y festivos no hay clases.</p>
       <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:12px"><button class="btn k" id="wl-av">📅 ${hasWeek ? 'Revisar' : 'Escribir'} mi disponibilidad</button><button class="btn w" data-x>Más tarde</button></div></div>`);

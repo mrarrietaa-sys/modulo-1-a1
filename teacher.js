@@ -72,8 +72,40 @@
       const r = await MR.call('tLogin', { tcode, pin });
       b.disabled = false; b.textContent = 'Entrar';
       if (!r.ok) { er.textContent = r.err === 'auth' ? 'Código o PIN incorrecto.' : errText(r.err); er.hidden = false; return; }
-      S = { tcode, pin }; ss.set(SKEY, S); D = r; tab = 'home'; ss.set(TABKEY, tab); shell(); welcome();
+      S = { tcode, pin }; ss.set(SKEY, S); D = r; tab = 'home'; ss.set(TABKEY, tab); shell(); firstTour() ? tour() : welcome();
     };
+  }
+  // 🧭 tour de Mr. Arrieta: la primera vez que el profe entra (por código, en este dispositivo y en la nube)
+  const TKEY = () => 'mra_ttour_' + String((D && D.teacher && D.teacher.code) || '').toUpperCase();
+  function firstTour() { try { return !localStorage.getItem(TKEY()); } catch (e) { return false; } }
+  function tour() {
+    const first = esc(String((D.teacher || {}).name || '').split(/\s+/)[0]);
+    const steps = [
+      ['welcome', `¡Welcome, ${first}! 👋`, 'Soy Mr. Arrieta. Te muestro en 1 minuto cómo funciona tu portal de profesor.', null],
+      ['point', '🏠 Resumen', 'Aquí ves tus <b>notificaciones</b> (clases VIP reservadas, confirmaciones de clubs y mensajes de tus estudiantes), tus próximas clases y tus estadísticas.', 'home'],
+      ['idea', '🗓️ Mi disponibilidad', 'Marca las horas en que puedes dar clases <b>de lunes a sábado</b>. Los estudiantes Premium solo pueden reservar clases VIP en esos horarios. Domingos y festivos no hay clases.', 'avail'],
+      ['present', '🎓 Mis clases', 'Aquí entras a cada clase con tu enlace de Meet y, al terminar, la marcas como <b>dictada</b> o <b>no asistió</b>.', 'classes'],
+      ['pointside', '💬 Chat con estudiantes', 'Con el botón <b>Chat con estudiantes</b> respondes las dudas y tareas de tus estudiantes.', null],
+      ['watch', '🔔 Correos diarios', 'Cada mañana te llega un correo con tu resumen del día. Si nadie confirma un club, te avisamos 3 horas antes para que no tengas que conectarte.', null],
+      ['thumbs', '¡Listo! 🚀', 'Para empezar, escribe tu <b>disponibilidad semanal</b>.', 'avail'],
+    ];
+    let i = 0;
+    const m = document.createElement('div'); m.className = 'tp-modal'; document.body.appendChild(m);
+    const end = (go) => { m.remove(); try { localStorage.setItem(TKEY(), '1'); } catch (e) { } if (go) { tab = 'avail'; ss.set(TABKEY, tab); shell(); } };
+    const draw = () => {
+      const [mood, t, d, tb] = steps[i]; const last = i === steps.length - 1;
+      if (tb && tab !== tb && !last) { tab = tb; ss.set(TABKEY, tab); shell(); document.body.appendChild(m); }
+      m.innerHTML = `<div class="tp-modal-card card" style="text-align:center"><img src="mra-${mood}.webp" alt="Mr. Arrieta" style="height:150px;margin:0 auto 6px;display:block"><h2>${t}</h2><p>${d}</p>
+        <p class="muted" style="font-size:13px">${i + 1} / ${steps.length}</p><div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">${i ? '<button class="btn w" data-b>← Atrás</button>' : '<button class="btn w" data-s>Saltar</button>'}<button class="btn k" data-n>${last ? '📅 Escribir mi disponibilidad' : 'Siguiente →'}</button></div></div>`;
+      m.querySelector('[data-n]').onclick = () => { if (last) return end(true); i++; draw(); };
+      const b = m.querySelector('[data-b]'); if (b) b.onclick = () => { i--; draw(); };
+      const sk = m.querySelector('[data-s]'); if (sk) sk.onclick = () => { end(false); tab = 'home'; ss.set(TABKEY, tab); shell(); welcome(); };
+    };
+    draw();
+    // voz de bienvenida también en el tour
+    const sl = String((D.teacher || {}).name || '').split(/\s+/)[0].normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z]/g, '');
+    const say = () => { const A = window.AUD || {}; const k = A['wb_' + sl] ? 'wb_' + sl : (A['wb_'] ? 'wb_' : ''); if (k) try { new Audio('data:audio/mpeg;base64,' + A[k]).play().catch(() => { }); } catch (e) { } };
+    const sc = document.createElement('script'); sc.src = 'js/audio/wb_' + (sl[0] || 'x') + '.js'; sc.onload = say; sc.onerror = () => { const s2 = document.createElement('script'); s2.src = 'wb_' + (sl[0] || 'x') + '.js'; s2.onload = say; document.head.appendChild(s2); }; document.head.appendChild(sc);
   }
   // saludo al entrar: voz "Welcome back, Nombre!" + recordatorio de la disponibilidad
   function welcome() {

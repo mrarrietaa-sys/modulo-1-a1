@@ -41,7 +41,7 @@
   const groupOf = (id) => (D.groups || []).find((g) => g.id === id);
   const meetOf = (c) => c.meet || (c.groupId && groupOf(c.groupId) ? groupOf(c.groupId).meet : '') || (D.teacher && String(D.teacher.meet || '').split(/[\s,;]+/).filter(Boolean)[0]) || '';
   const typeBadge = (c) => c.type === 'vip' ? '<span class="tp-badge vip">VIP</span>' : (c.type === 'club' ? '<span class="tp-badge grp">Club</span>' : '<span class="tp-badge grp">Grupal</span>');
-  const statusBadge = (c) => ({ done: '<span class="tp-st done">Dictada ✓</span>', noshow: '<span class="tp-st noshow">No asistió</span>', cancelled: '<span class="tp-st canc">Cancelada</span>' }[c.status] || (c.date <= today() ? '<span class="tp-st pend">Por marcar</span>' : '<span class="tp-st sch">Programada</span>'));
+  const statusBadge = (c) => ({ done: '<span class="tp-st done">Dictada ✓</span>', noshow: '<span class="tp-st noshow">No asistió</span>', cancelled: '<span class="tp-st canc">Cancelada</span>', latecancel: '<span class="tp-st canc">Cancelada tarde</span>' }[c.status] || (c.date <= today() ? '<span class="tp-st pend">Por marcar</span>' : '<span class="tp-st sch">Programada</span>'));
   const whoOf = (c) => c.type === 'vip' ? esc(studentName(c.students[0] || '')) : esc(c.type === 'club' ? (c.topic || 'Club') : ((groupOf(c.groupId) || {}).name || 'Grupo')) + ` · ${c.students.length} estudiante${c.students.length === 1 ? '' : 's'}`;
 
   /* ---------- entrada ---------- */
@@ -72,7 +72,7 @@
       const r = await MR.call('tLogin', { tcode, pin });
       b.disabled = false; b.textContent = 'Entrar';
       if (!r.ok) { er.textContent = r.err === 'auth' ? 'Código o PIN incorrecto.' : errText(r.err); er.hidden = false; return; }
-      S = { tcode, pin }; ss.set(SKEY, S); D = r; tab = 'home'; ss.set(TABKEY, tab); shell(); firstTour() ? tour() : welcome();
+      S = { tcode, pin }; ss.set(SKEY, S); D = r; tab = 'home'; ss.set(TABKEY, tab); shell(); firstTour() ? tour() : (welcome(), setTimeout(popNew, 1500));
     };
   }
   // 🧭 tour de Mr. Arrieta: la primera vez que el profe entra (por código, en este dispositivo y en la nube)
@@ -201,7 +201,7 @@
       <div class="tp-cols">
       <div class="card tp-card tp-addcard">
         <div class="tp-card-h"><h2>Agregar un espacio extra (fecha específica)</h2></div>
-        <p class="muted tp-small">Publica los horarios reales en los que puedes dictar. Los estudiantes Premium los verán y reservarán (mínimo 12 horas antes). Todo en <b>hora Colombia</b>.</p>
+        <p class="muted tp-small">Publica los horarios reales en los que puedes dictar. Los estudiantes Premium los verán y reservarán (mínimo 4 horas antes). Pueden cancelar sin penalidad hasta 2 horas antes; te llega un correo y un aviso aquí cuando reservan o cancelan. Todo en <b>hora Colombia</b>.</p>
         <label class="tp-l" for="tp-date">1. Fecha</label>
         <input class="inp tp-inp" type="date" id="tp-date" min="${t0}" value="${form.date}">
         <div class="tp-l">2. Hora(s) de inicio <small class="muted">(elige una o varias)</small></div>
@@ -307,13 +307,23 @@
       : `<div class="card tp-card"><div class="tp-empty"><img src="mra-wink.webp" alt="" width="110" height="110"><p>Aún no tienes grupos asignados. La administración te asignará grupos según los niveles que dictas.</p></div></div>`;
   }
 
+  // 🔔 pop-up: reservas, cancelaciones y confirmaciones nuevas (al entrar y cada 2 minutos)
+  const POPPED = new Set();
+  function popNew() {
+    if (!D || document.querySelector('.tp-modal')) return;
+    const nw = (D.notifications || []).filter(n => !n.read && (n.type === 'vip' || n.type === 'club') && !POPPED.has(n.id)); if (!nw.length) return;
+    nw.forEach(n => POPPED.add(n.id));
+    const m = modal(`<h3>🔔 ${nw.length === 1 ? 'Tienes una novedad' : 'Tienes ' + nw.length + ' novedades'}</h3><div class="tp-pop-list">${nw.map(n => `<div><b>${esc(n.title)}</b><small>${esc(n.body || '')}</small></div>`).join('')}</div><button class="btn k block" id="tp-pok">Entendido</button>`);
+    $('#tp-pok', m).onclick = () => { m.remove(); api('notifRead', { ids: nw.map(n => n.id) }).catch(() => { }); nw.forEach(n => n.read = true); if (tab === 'home') shell(); };
+  }
+  setInterval(async () => { if (!S || !D || document.hidden) return; const r = await api('tLogin').catch(() => null); if (r && r.ok) { const had = new Set((D.notifications || []).map(n => n.id)); D.notifications = r.notifications; if ((r.notifications || []).some(n => !had.has(n.id))) popNew(); } }, 120000);
   /* ---------- inicio ---------- */
   async function start() {
     S = ss.get(SKEY);
     if (!S || !S.tcode || !MR.on) { S = null; loginView(); return; }
     app.innerHTML = '<div class="tp-loading">Cargando tu portal…</div>';
     const r = await MR.call('tLogin', { tcode: S.tcode, pin: S.pin });
-    if (r.ok) { D = r; shell(); } else { if (r.err === 'auth') ss.del(SKEY); loginView(r.err === 'auth' ? '' : errText(r.err)); }
+    if (r.ok) { D = r; shell(); setTimeout(popNew, 600); } else { if (r.err === 'auth') ss.del(SKEY); loginView(r.err === 'auth' ? '' : errText(r.err)); }
   }
   start();
 })();

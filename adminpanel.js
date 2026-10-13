@@ -47,7 +47,7 @@
       return;
     }
     app.innerHTML = `<div class="card ad-login"><img src="mra-present.webp" alt="" class="ad-login-img"><span class="lbl">Solo para administración</span><h2>Panel de administración</h2>
-      <p class="muted">Escribe la clave de administración (la que pusiste en Code.gs).</p>
+      <p class="muted">Escribe la clave de administración.</p>
       <input class="inp" id="pw" type="password" autocomplete="current-password" placeholder="Clave"><button class="btn k block lg" id="go">Entrar</button><p id="err" class="ad-err"></p></div>`;
     const go = async () => { const v = $('#pw').value.trim(); if (!v) return; $('#go').disabled = true; $('#go').textContent = 'Verificando…';
       const r = await MRAC.call('aLogin', { key: v }); $('#go').disabled = false; $('#go').textContent = 'Entrar';

@@ -133,8 +133,8 @@
     list('students', { title: '🎓 Estudiantes', sub: 'Progreso, plan, grupo y clases asistidas', add: '＋ Nuevo estudiante', onAdd: newStudent,
       filters: [{ k: '_plan', opts: [['', 'Todos los planes'], ['premium', '👑 Premium'], ['membership', '⭐ Membership'], ['free', '🟢 Acceso gratuito'], ['expired', '⏰ Vencidos']] }],
       row: s => { const pr = J(s.progress, {}); const mod = s.module ? MODN[s.module] : ''; const cur = mod && pr[mod] ? pr[mod].pct : 0;
-        return `<div class="card ad-row" data-open="${esc(s.code)}"><div class="ad-av">${esc(((s.first || '?')[0] + (s.last || '')[0]).toUpperCase())}</div><div class="grow"><b>${esc(s.first)} ${esc(s.last)}</b> ${planChip(s)}${s.status && s.status !== 'activo' ? chip(esc(s.status), 'gray') : ''}
-          <small>${esc(s.code)} · ${mod ? 'Módulo ' + mod : 'Sin placement'}${s._group ? ' · 👥 ' + esc(s._group) : ''}</small>
+        return `<div class="card ad-row" data-open="${esc(s.code)}"><div class="ad-av">${esc(((s.first || '?')[0] + (s.last || '')[0]).toUpperCase())}</div><div class="grow"><b>${esc(s.first)} ${esc(s.last)}</b> ${planChip(s)}${s._trial != null ? chip(s._trial > 0 ? '🎁 prueba: ' + s._trial + ' día' + (s._trial > 1 ? 's' : '') : '🔒 prueba terminada', s._trial > 0 ? '' : 'gray') : ''}${s.status && s.status !== 'activo' ? chip(esc(s.status), 'gray') : ''}
+          <small>${esc(s.code)} · ${mod ? 'Módulo ' + mod : 'Sin placement'}</small>
           <div class="ad-rowstats">${mod ? `${bar(cur)}<span>${cur}% de su módulo</span>` : ''}<span>✅ ${+s.classesDone || 0} clases de la plataforma</span><span>👩‍🏫 ${s._attended} clases con profe</span><span>🕒 ${s.lastSeen ? fDT(s.lastSeen) : 'nunca'}</span></div></div></div>`; },
       open: (code) => studentDetail(code), empty: 'Aún no hay estudiantes. Crea el primero con “＋ Nuevo estudiante”.' });
   }
@@ -143,7 +143,7 @@
     return `<div class="ad-form">
       <label>Nombre<input class="inp" name="first" value="${esc(s.first)}" required></label><label>Apellido<input class="inp" name="last" value="${esc(s.last)}"></label>
       <label>Correo<input class="inp" name="email" type="email" value="${esc(s.email)}"></label><label>WhatsApp<input class="inp" name="whatsapp" inputmode="tel" value="${esc(s.whatsapp)}"></label>
-      <label>Fecha de nacimiento<input class="inp" name="birth" type="date" value="${esc(s.birth)}"></label>
+      <label class="np-birth" ${isNew || s.plan !== 'premium' ? 'style="display:none"' : ''}>Fecha de nacimiento <small>(Premium)</small><input class="inp" name="birth" type="date" value="${esc(s.birth)}"></label>
       <label>Módulo de su ruta<select class="inp" name="module"><option value="">Que tome el placement test</option>${[1, 2, 3, 4].map(n => `<option value="${n}" ${String(s.module) === String(n) ? 'selected' : ''}>Módulo ${n} · ${MODN[n]}</option>`).join('')}</select></label>
       ${isNew ? `<label>Código <small>(vacío = automático)</small><input class="inp" name="code" placeholder="Ej: LAURA-2026" style="text-transform:uppercase"></label>` : `<label>Estado<select class="inp" name="status">${['activo', 'inactivo', 'archivado'].map(x => `<option ${s.status === x ? 'selected' : ''}>${x}</option>`).join('')}</select></label>`}
       <label class="full">Notas internas<textarea class="inp" name="notes" rows="2">${esc(s.notes)}</textarea></label></div>`;
@@ -153,19 +153,32 @@
     const m = modal(`<h2>＋ Nuevo estudiante</h2>${studentForm(prefill || {}, true)}
       <label class="ad-lab">Plan inicial</label><div class="ad-plans">${['free', 'membership', 'premium'].map((k, i) => `<label class="ad-pl"><input type="radio" name="_plan" value="${k}" ${i ? '' : 'checked'}><span>${PLAN[k].join(' ')}</span></label>`).join('')}</div>
       <div class="ad-form" id="np-m" style="display:none"><label>Meses<select class="inp" id="np-mo">${[1, 2, 3, 6, 12].map(n => `<option>${n}</option>`).join('')}</select></label><label>Valor pagado<input class="inp" id="np-amt" inputmode="numeric" placeholder="Automático"></label></div>
+      <label class="ad-pl" style="margin:12px 0"><input type="checkbox" id="np-send" checked><span>📩 Enviarle sus datos de acceso (código y enlace) por <b>correo</b> y <b>WhatsApp</b></span></label>
       <button class="btn k block lg" id="np-ok">Crear estudiante</button>`);
-    $$('[name=_plan]', m).forEach(r => r.onchange = () => { $('#np-m', m).style.display = $('[name=_plan]:checked', m).value === 'free' ? 'none' : ''; });
+    $$('[name=_plan]', m).forEach(r => r.onchange = () => { const pl = $('[name=_plan]:checked', m).value; $('#np-m', m).style.display = pl === 'free' ? 'none' : ''; $('.np-birth', m).style.display = pl === 'premium' ? '' : 'none'; if (pl !== 'premium') $('[name=birth]', m).value = ''; });
     $('#np-ok', m).onclick = async () => {
       const d = formData($('.ad-form', m)); delete d._plan; if (!d.first) return toast('Escribe el nombre');
-      const plan = $('[name=_plan]:checked', m).value; $('#np-ok', m).disabled = true; $('#np-ok', m).textContent = 'Creando…';
+      const plan = $('[name=_plan]:checked', m).value; const send = $('#np-send', m).checked;
+      if (send && !d.email && !d.whatsapp) return toast('Escribe el correo o el WhatsApp para enviarle sus datos');
+      const w = send && d.whatsapp ? window.open('', '_blank') : null; // se abre ya (si no, el navegador lo bloquea) y luego carga WhatsApp
+      if (w) w.document.write('<p style="font:18px sans-serif;text-align:center;margin-top:40px">⏳ Preparando el mensaje de WhatsApp…</p>');
+      $('#np-ok', m).disabled = true; $('#np-ok', m).textContent = 'Creando…';
       const r = await api('aSave', { table: 'Estudiantes', row: Object.assign(d, { code: d.code ? d.code.toUpperCase() : '', source: 'admin' }) });
-      if (!r.ok) { $('#np-ok', m).disabled = false; $('#np-ok', m).textContent = 'Crear estudiante'; return toast(r.err === 'code_exists' ? 'Ese código ya existe' : 'No se pudo crear'); }
+      if (!r.ok) { if (w) w.close(); $('#np-ok', m).disabled = false; $('#np-ok', m).textContent = 'Crear estudiante'; return toast(r.err === 'code_exists' ? 'Ese código ya existe' : 'No se pudo crear'); }
       if (plan !== 'free') await api('aPlan', { code: r.row.code, plan, months: +$('#np-mo', m).value, amount: $('#np-amt', m).value.replace(/\D/g, '') || undefined });
-      m.remove(); shareCode(r.row); if (TAB === 'students') students();
+      m.remove(); if (TAB === 'students') students();
+      if (!send) return shareCode(r.row);
+      const s2 = r.row; let mailed = false;
+      if (s2.email) { const rw = await api('aWelcome', { code: s2.code }); mailed = !!(rw && rw.ok && rw.mailed); }
+      if (w) w.location.href = waLink(s2.whatsapp, accessMsg(s2));
+      modal(`<div class="center"><div style="font-size:44px">✅</div><h2>${esc(s2.first)} ya tiene su acceso</h2><div class="ad-code">${esc(s2.code)}</div>
+        <p>${s2.email ? (mailed ? '📧 Se le envió el correo con su código y el enlace a <b>' + esc(s2.email) + '</b>.' : '⚠️ No se pudo enviar el correo. Revisa la dirección.') : '📧 Sin correo registrado.'}</p>
+        <p>${s2.whatsapp ? '💬 Se abrió WhatsApp con el mensaje listo: solo dale <b>Enviar</b>.' + ` <a href="${waLink(s2.whatsapp, accessMsg(s2))}" target="_blank" rel="noopener">Abrir otra vez</a>` : '💬 Sin WhatsApp registrado.'}</p></div>`);
     };
   }
+  const accessMsg = (s) => `¡Hola ${s.first}! 👋 Bienvenido(a) a la plataforma de mrarrieta.com 🎉\n\n🔑 Tu código de acceso: *${s.code}*\n🌐 Entra aquí: ${BASE}\n\nEscribe tu código en la plataforma y empieza a aprender. ¡Aprende inglés HABLANDO! 🚀`;
   function shareCode(s) {
-    const msg = `¡Hola ${s.first}! 👋 Bienvenido(a) a la plataforma de mrarrieta.com 🎉\n\n🔑 Tu código de acceso: *${s.code}*\n🌐 Entra aquí: ${BASE}\n\nEscribe tu código, toma tu examen de clasificación y descubre tu ruta de aprendizaje. ¡Aprende inglés HABLANDO! 🚀`;
+    const msg = accessMsg(s);
     const m = modal(`<div class="center"><div style="font-size:44px">🔑</div><h2>Código de ${esc(s.first)}</h2><div class="ad-code">${esc(s.code)}</div><p class="muted">Envíaselo por WhatsApp o cópialo.</p>
       <textarea class="inp" rows="6" readonly>${esc(msg)}</textarea><div class="row" style="justify-content:center;margin-top:10px"><button class="btn w" id="sc-c">📋 Copiar mensaje</button>${s.whatsapp ? `<a class="btn ad-wa" target="_blank" rel="noopener" href="${waLink(s.whatsapp, msg)}">💬 Enviar por WhatsApp</a>` : ''}</div></div>`);
     $('#sc-c', m).onclick = () => copy(msg);
@@ -180,11 +193,11 @@
         <p class="muted">${s.email ? '📧 ' + esc(s.email) : ''} ${s.whatsapp ? ' · 📱 ' + esc(s.whatsapp) : ''} ${s.birth ? ' · 🎂 ' + fD(s.birth, { day: 'numeric', month: 'long', year: 'numeric' }) : ''}</p></div>
         <div class="ad-dact">${s.whatsapp ? `<a class="btn ad-wa sm" target="_blank" rel="noopener" href="${waLink(s.whatsapp, 'Hola ' + s.first + ' 👋')}">💬 WhatsApp</a>` : ''}<button class="btn w sm" id="d-share">🔑 Enviar código</button><button class="btn w sm ad-del" id="d-del">🗑️ Borrar</button></div></div>
       <div class="card ad-plan"><h3>💎 Plan</h3>
-        <p>${st.eff === 'free' && !st.expired ? 'Acceso gratuito: examen de clasificación + los 2 primeros temas.' : `${PLAN[s.plan] ? PLAN[s.plan].join(' ') : ''} · desde ${fD(s.planStart)} hasta <b>${fD(s.planEnd)}</b> ${st.expired ? chip('VENCIDO', 'p-expired') : st.daysLeft !== null ? chip(st.daysLeft + ' días restantes', st.daysLeft <= 5 ? 'p-expired' : 'gray') : ''}`}</p>
+        <p>${st.eff === 'free' && !st.expired ? 'Acceso gratuito: prueba de clasificación + los 2 primeros temas.' : `${PLAN[s.plan] ? PLAN[s.plan].join(' ') : ''} · desde ${fD(s.planStart)} hasta <b>${fD(s.planEnd)}</b> ${st.expired ? chip('VENCIDO', 'p-expired') : st.daysLeft !== null ? chip(st.daysLeft + ' días restantes', st.daysLeft <= 5 ? 'p-expired' : 'gray') : ''}`}</p>
         <div class="ad-planbtns"><button class="btn w" data-plan="membership">⭐ Activar Membership</button><button class="btn k" data-plan="premium">👑 Activar Premium</button>${s.plan !== 'free' ? `<button class="btn w" data-plan="${esc(s.plan)}" data-renew="1">🔁 Renovar ${esc(PLAN[s.plan][1])}</button><button class="btn w" data-plan="free">🟢 Pasar a gratuito</button>` : ''}</div>
         ${st.eff === 'premium' && r.credits ? `<div class="ad-cred"><span>⭐ VIP: <b>${r.credits.vipUsed}/${r.credits.vipTotal}</b> usadas</span><span>🎙️ Clubs asistidos: <b>${r.credits.groupDone}/${r.credits.groupTotal}</b></span><span>Ciclo: ${fD(r.credits.cycleStart)} → ${fD(r.credits.cycleEnd)}</span></div>` : ''}
         ${(r.plans || []).length ? `<details><summary>Historial de pagos/planes (${r.plans.length})</summary><div class="ad-mini">${r.plans.map(p => `<div class="ad-mrow"><b>${PLAN[p.plan] ? PLAN[p.plan].join(' ') : esc(p.plan)} · ${esc(p.months || 0)} mes(es) · ${money(p.amount)}</b><span>${fDT(p.date)} · ${fD(p.start)} → ${fD(p.end)}${p.note ? ' · ' + esc(p.note) : ''}</span></div>`).join('')}</div></details>` : ''}</div>
-      <div class="card"><h3>🧭 Progreso en su ruta</h3><p class="muted">Módulo actual: <b>${s.module ? 'Módulo ' + s.module + ' · ' + MODN[s.module] : 'aún sin placement'}</b>${s.moduleBy ? ' (' + (s.moduleBy === 'admin' ? 'asignado por administración' : 'por examen de clasificación') + ')' : ''} · ✅ ${+s.classesDone || 0} clases · ⚡ ${+s.xp || 0} XP · 🕒 última conexión ${s.lastSeen ? fDT(s.lastSeen) : 'nunca'}</p>
+      <div class="card"><h3>🧭 Progreso en su ruta</h3><p class="muted">Módulo actual: <b>${s.module ? 'Módulo ' + s.module + ' · ' + MODN[s.module] : 'aún sin placement'}</b>${s.moduleBy ? ' (' + (s.moduleBy === 'admin' ? 'asignado por administración' : 'por prueba de clasificación') + ')' : ''} · ✅ ${+s.classesDone || 0} clases · ⚡ ${+s.xp || 0} XP · 🕒 última conexión ${s.lastSeen ? fDT(s.lastSeen) : 'nunca'}</p>
         <div class="ad-mods">${['A1', 'A2', 'B2', 'B2+'].map(id => { const x = pr[id] || { done: 0, total: 0, pct: 0 }; return `<div class="ad-mod${x.passed ? ' ok' : ''}"><b>${id}</b>${bar(x.pct)}<span>${x.done}/${x.total || '—'} clases · ${x.pct || 0}%${x.passed ? ' · 🎓 aprobado' : ''}</span></div>`; }).join('')}</div>
         ${(r.placements || []).length ? `<h4>📝 Exámenes de clasificación</h4><div class="ad-mini">${r.placements.map(p => `<button class="ad-mrow" data-pl="${esc(p.id)}"><b>${esc(p.level || ('Módulo ' + p.module))} · nota ${esc(p.final)}</b><span>${fDT(p.date)} · ▶ ver y escuchar audios</span></button>`).join('')}</div>` : ''}</div>
       <div class="card"><h3>👩‍🏫 Clases con profesores · ${r.classes.filter(c => c.attended).length} asistidas</h3>${r.classes.length ? `<div class="ad-mini">${r.classes.map(c => `<div class="ad-mrow"><b>${c.type === 'vip' ? '⭐ VIP' : c.type === 'club' ? '🎙️ Club' : '👥 Grupal'} · ${fD(c.date)} ${fT(c.time)} · ${esc(c.teacher)}</b><span>${c.status === 'done' ? (c.attended ? '✅ asistió' : '❌ no asistió') : c.status === 'scheduled' ? '📅 programada' : c.status === 'cancelled' ? 'cancelada' : '❌ no asistió'}</span></div>`).join('')}</div>` : '<p class="muted">Sin clases todavía.</p>'}
@@ -254,10 +267,10 @@
 
   /* ======================= PLACEMENT ======================= */
   function placement() {
-    list('placement', { title: '🧭 Examen de clasificación', sub: 'Resultados y audios de Speaking',
+    list('placement', { title: '🧭 Prueba de clasificación', sub: 'Resultados y audios de Speaking',
       row: x => `<div class="card ad-row" data-open="${esc(x.id)}"><div class="ad-av">${esc((x.name || '?')[0].toUpperCase())}</div><div class="grow"><b>${esc(x.name)}</b> ${chip(esc(x.level || ('Módulo ' + x.module)), 'p-membership')}
         <small>${fDT(x.date)} · ${esc(x.attempt)} ${x.code ? '· 🔑 ' + esc(x.code) : ''}</small><div class="ad-rowstats"><span>🎧 ${esc(x.listening)}</span><span>📖 ${esc(x.reading)}</span><span>✍️ ${esc(x.writing)}</span><span>🎤 ${esc(x.speaking)}</span><span><b>Nota ${esc(x.final)}</b></span><span>🔊 ${J(x.files, []).length} audios</span></div></div></div>`,
-      open: (id) => placementDetail(id, () => go('placement')), empty: 'Aún nadie ha tomado el examen de clasificación con la nube activa.' });
+      open: (id) => placementDetail(id, () => go('placement')), empty: 'Aún nadie ha tomado la prueba de clasificación con la nube activa.' });
   }
   async function placementDetail(id, onBack) {
     view().innerHTML = '<div class="ad-loading">⏳ Cargando…</div>'; window.scrollTo(0, 0);

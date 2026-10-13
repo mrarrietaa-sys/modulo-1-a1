@@ -774,7 +774,7 @@
         const btns = opts.map(o => { const b = h(`<button class="opt">${esc(o)}</button>`); wrap.appendChild(b); return b; });
         const i = await A.choose(btns); ok = opts[i] === it.a;
         btns[opts.indexOf(it.a)].classList.add('right'); if (!ok) btns[i].classList.add('wrong'); $('.blank', sent).textContent = it.a;
-      } else ok = await orderQ(body, it.w, it.a);
+      } else ok = await orderQ(body, it.w, it.a, it.full);
       mark(ok, it); M.play(it.au);
       await A.feedback(ok, it.full, it.x);
     }
@@ -797,7 +797,7 @@
       if (!stage.isConnected) return A.result(c, t, 'listening', missed);
       const it = wo[n];
       const body = A.head(stage, { lbl, title: 'Put the words in order', ins: 'Forma la oración tocando las palabras en orden.', count: `${n + 1} / ${wo.length}` });
-      const ok = await orderQ(body, it.w, it.a); mark(ok, it); M.play(it.au);
+      const ok = await orderQ(body, it.w, it.a, it.full); mark(ok, it); M.play(it.au);
       await A.feedback(ok, it.full, 'Recuerda: <b>Sujeto + Verbo + Complemento</b>.');
     }
     // 6) Sing & speak
@@ -818,9 +818,10 @@
     }
     return A.result(c, t, 'listening', missed);
   }
-  function orderQ(body, words, correct) {
+  function orderQ(body, words, correct, full) {
     return new Promise(res => {
       const line = h(`<div class="line"></div>`); const bank = h(`<div class="bank"></div>`); body.appendChild(line); body.appendChild(bank);
+      const pu = (String(full || '').trim().match(/[.?!]$/) || [''])[0] || (/^(what|where|when|who|why|how|which|whose|do|does|did|is|are|was|were|can|could|will|would|should|have|has)$/i.test(words.concat().sort((a, b) => correct.indexOf(a) - correct.indexOf(b))[0] || correct[0] || '') ? '?' : ''); if (pu) line.dataset.p = pu; // signo final (¿?) como en las demás actividades
       let order = shuffle(words.map((t, i) => ({ t, i }))); if (order.length > 1 && order.map(o => o.t).join(' ') === correct.join(' ')) order = order.reverse();
       const picked = [];
       order.forEach(o => {

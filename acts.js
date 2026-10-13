@@ -518,16 +518,19 @@
   }
 
   /* ================= 14. SPEAK (voice recognition + recording) ================= */
+  // para mostrar: "nine a.m." → "9:00 a.m." (la voz sigue diciendo "nine")
+  const NUMW = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
+  const dispTok = (text) => { const t = String(text || '').split(' '); return t.map((w, i) => { const n = NUMW.indexOf(w.toLowerCase()); return n > 0 && /^[ap]\.?m\.?[.,?!]*$/i.test(t[i + 1] || '') ? n + ':00' : w; }); };
   function speakCard(body, it, { allowSkip = true } = {}) {
     return new Promise(res => {
       if (it.img) body.appendChild(h(`<div class="mainph" style="max-width:300px">${photo(it.img)}</div>`));
-      const tgt = h(`<div class="target">${M.words(it.en).length ? esc(it.en) : ''}</div>`); body.appendChild(tgt);
+      const tgt = h(`<div class="target">${M.words(it.en).length ? esc(dispTok(it.en).join(' ')) : ''}</div>`); body.appendChild(tgt);
       if (it.es) body.appendChild(h(`<p class="center muted" style="margin:-4px 0 10px">${esc(it.es)}</p>`));
       const ctr = h(`<div class="row" style="justify-content:center;margin-bottom:6px"></div>`); ctr.appendChild(playBtn(it.au, false)); body.appendChild(ctr);
       const mic = h(`<button class="mic" aria-label="Hablar">🎤</button>`); body.appendChild(mic);
       const st = h(`<p class="center" style="font-weight:700;margin:4px 0">${M.canSR ? 'Toca el micrófono y di la frase' : 'Tu navegador no reconoce voz: graba tu voz y compárala 👇'}</p>`); body.appendChild(st);
       const out = h(`<div></div>`); body.appendChild(out);
-      const recRow = h(`<div class="row" style="justify-content:center;margin-top:10px"><button class="btn w sm" id="rec">🎙️ Grabar mi voz y comprobar</button></div>`); body.appendChild(recRow);
+      const recRow = h(`<div class="row" style="justify-content:center;margin-top:10px"><button class="btn w sm" id="rec">🎙️ Grabar mi voz y comprobar</button></div>`); if (!M.canSR) body.appendChild(recRow); // solo si el navegador no reconoce voz
       const bar = h(`<div class="actionbar">${allowSkip ? '<button class="btn w" id="skip">Saltar</button>' : ''}<button class="btn k lg hidden" id="nx">Continuar →</button></div>`); body.appendChild(bar);
       let tries = 0, best = 0;
       const finish = (ok) => { stop(); res({ ok, score: best }); };
@@ -554,8 +557,8 @@
         if (r.error === 'not-allowed' || r.error === 'service-not-allowed') { st.textContent = 'Permite el micrófono en tu navegador 🎤'; return; }
         if (!r.alts.length) { st.textContent = 'No te escuché bien 🙉 Toca el micrófono e intenta otra vez.'; return; }
         tries++; const sc = M.speechScore(it.en, r.alts); best = Math.max(best, sc.score);
-        const tw = it.en.replace(/[.?!,]/g, '').split(' ');
-        tgt.innerHTML = tw.map((w, i) => `<span class="w ${sc.hit[i] ? 'ok' : 'no'}">${esc(w)}</span>`).join(' ');
+        const tw = it.en.replace(/[.?!,]/g, '').split(' '); const shown = dispTok(it.en); // se ve con su puntuación (¿?, a.m.)
+        tgt.innerHTML = shown.map((w, i) => `<span class="w ${sc.hit[i] ? 'ok' : 'no'}">${esc(w)}</span>`).join(' ');
         const missedW = tw.filter((w, i) => !sc.hit[i]);
         let msg, ok = sc.score >= 85, mid = sc.score >= 60;
         if (ok) { msg = '🌟 ¡Excelente pronunciación! Suenas muy natural.'; sfx('ok'); praise(); }

@@ -170,6 +170,7 @@
       ${main}
       ${newbie ? '' : `
       <div id="pt-live"></div>
+      ${!staff && ['membership', 'premium'].includes(P.plan().eff) ? `<div class="card pt-pol" id="pt-pol" role="button" tabindex="0"><span class="pa-ic">📌</span><div class="grow"><span class="lbl">Importante</span><h3 style="margin:0">Política de reservas y cancelaciones</h3><p class="muted" style="margin:2px 0 0">VIP: reserva 4 h antes · Grupales: 3 h antes · Cancela sin penalidad hasta 2 h antes.</p></div><span class="btn w sm">Ver</span></div>` : ''}
       ${staff || ['membership', 'premium'].includes(P.plan().eff) ? `<a class="card pt-arcade pt-clubs" href="clubes.html"><span class="pa-ic">🎙️</span><div class="grow"><span class="lbl">Clubs en vivo · Premium</span><h2>Mis clubs de Conversación y Fonética</h2><p class="muted">Espacios distintos a tus clases: talk show en inglés y gimnasio de pronunciación, según tu nivel.</p></div><span class="btn k">Entrar →</span></a>` : ''}
       <div class="sect-title"><h2>🧭 Mi ruta de aprendizaje</h2></div>
       ${routeBar()}
@@ -181,12 +182,15 @@
       ${pl ? `<div class="sect-title"><h2>📝 Mi prueba de clasificación</h2></div><div class="card pt-plres"><div><b>Resultado:</b> ${esc(P.mod(pl.module).name)} · ${esc(P.mod(pl.module).es)}<br><span class="muted">${new Date(pl.date).toLocaleDateString('es-CO')}${pl.mods ? ' · ' + [1, 2, 3, 4].map(k => `${P.mod(k).id}: ${pl.mods[k]}%`).join(' · ') : ''}</span></div>${(pst.attempts < pst.max || (pst.round || 1) < (pst.rounds || 1)) ? '<button class="btn w sm" id="pt2">🔁 Repetir prueba</button>' : ''}</div>` : ''}
       ${staff ? `<div class="sect-title"><h2>📝 Prueba de clasificación</h2></div><div class="card pt-plres"><div>Puedes presentar o revisar la prueba de clasificación como lo verá el estudiante.</div><button class="btn w sm" id="pt2">📝 Abrir prueba</button></div>` : ''}
       ${certs()}`}
-      <div class="center" style="margin-top:14px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">${staff ? '' : `<button class="btn w" id="pt-plans">💳 Ver planes${P.plan().eff !== 'free' ? ' · mi plan' : ''}</button>`}<button class="btn w" id="pt-tour">🧭 Ver el tour de Mr. Arrieta</button></div>
+      <div class="center" style="margin-top:14px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">${staff ? '' : `<button class="btn w" id="pt-plans">💳 Ver planes${P.plan().eff !== 'free' ? ' · mi plan' : ''}</button>`}<button class="btn w" id="pt-tour">🧭 Ver el tour de Mr. Arrieta</button>${!staff && ['membership', 'premium'].includes(P.plan().eff) ? '<button class="btn w pt-polb">📌 Política de reservas</button>' : ''}</div>
       <p class="center fx-foot" style="margin-top:22px;font-size:13.5px;font-weight:600">mrarrieta.com · ¡Aprende inglés HABLANDO! · WhatsApp ${esc(C.WHATSAPP.replace(/^57/, ''))}</p></div>`;
     if ($('#pt')) $('#pt').onclick = () => route('placement');
     const plans = (e) => { if (e) e.preventDefault(); M.modal(`<div class="pt-plmodal">${planSection()}</div>`, { x: true }); };
     $$('.tb-up').forEach(x => x.onclick = plans); if ($('#pt-tour')) $('#pt-tour').onclick = () => { window.scrollTo(0, 0); portalTour(true); }; if ($('#pt-plans')) $('#pt-plans').onclick = plans;
     wireBirth(); live(); birthdayParty();
+    if ($('#pt-pol')) $('#pt-pol').onclick = () => window.MRPOLICY && MRPOLICY.show();
+    $$('.pt-polb').forEach(x => x.onclick = () => window.MRPOLICY && MRPOLICY.show());
+    setTimeout(policyFirst, 400);
     // bienvenida de regreso (una vez por sesión)
     try { if (P.isBirthday()) sessionStorage.setItem('mra_wb', '1'); // en su cumpleaños el saludo es la fiesta 🎂
       if (back && !sessionStorage.getItem('mra_wb')) { sessionStorage.setItem('mra_wb', '1'); const pr = a && a.ready ? P.progress(a.id) : null;
@@ -245,10 +249,16 @@
   // 2 tours, cada uno UNA sola vez: 'start' (recién llega: prueba, acceso gratuito, planes) y 'profile' (ya tiene su ruta)
   const tourKind = () => { const p = P.get() || {}; return !p.module && p.type !== 'staff' ? 'start' : 'profile'; };
   function tourSeenK(kind) { const p = P.get() || {}; if (p.tourDone) return true; /* tour antiguo: ya lo vio */ if (kind === 'start' ? p.tour1 : p.tour2) return true; try { return !!localStorage.getItem(TOURK() + '_' + kind); } catch (e) { return false; } }
+  // 📌 política: emergente la PRIMERA vez que un estudiante pago entra (una sola vez, guardada en la nube)
+  function polPending() { const p = P.get() || {}; return !!window.MRPOLICY && p.type !== 'staff' && ['membership', 'premium'].includes(P.plan().eff) && !p.pol1; }
+  function policyFirst() {
+    if (!polPending() || $('.pol-modal')) return; if ($('.modal')) return setTimeout(policyFirst, 800);
+    MRPOLICY.show({ first: true, onClose: () => { const p = P.get(); if (p && !p.pol1) { p.pol1 = Date.now(); P.save(p); try { window.MRAC && MRAC.code() && MRAC.sync(true); } catch (e) { } } } });
+  }
   function portalTour(force) {
     const kind = tourKind();
     if ($('#tour')) return; const p = P.get(); if (!p || (tourSeenK(kind) && !force)) return;
-    if ($('.modal')) return setTimeout(() => portalTour(force), 800); // espera a que cierre el saludo
+    if ($('.modal') || (!force && polPending())) return setTimeout(() => portalTour(force), 800); // espera a que cierre el saludo y la política
     try { localStorage.setItem(TOURK() + '_' + kind, '1'); } catch (e) { } const fk = kind === 'start' ? 'tour1' : 'tour2';
     if (!p[fk]) { p[fk] = true; P.save(p); try { window.MRAC && MRAC.code() && MRAC.sync(true); } catch (e) { } } // marcado desde que empieza
     const fn = esc(P.look().nick || p.first || ''); const a = P.assigned(); const pl = P.plan();
@@ -263,7 +273,7 @@
     ] : [
       { mood: 'welcome', t: `¡Muy bien, ${fn}! 🎉`, d: 'Ya tienes tu ruta de aprendizaje. Te muestro tu perfil en 1 minuto.' },
       { sel: '.pt-mymod', mood: 'pointside', t: '📍 Tu ruta', d: 'Aquí ves <b>en qué módulo estás</b>, tu avance y el botón para <b>continuar tu clase</b>.' },
-      { sel: '.lv-wrap', mood: 'present', t: '👩‍🏫 Clases con profes', d: 'Reserva tus <b>clases VIP</b> (mínimo 4 horas antes) y confirma los <b>clubs</b> de tu nivel (mínimo 3 horas antes).' },
+      { sel: '.lv-wrap', mood: 'present', t: '👩‍🏫 Clases con profes', d: 'Reserva tus <b>clases VIP</b> (mínimo 4 horas antes) y reserva tu cupo en las <b>clases grupales</b> de tu nivel (mínimo 3 horas antes). Cancela sin penalización hasta 2 horas antes..' },
       { sel: '.pt-clubs', mood: 'idea', t: '🎙️ Tus clubs', d: 'Conversación y fonética en vivo con estudiantes de tu nivel.' },
       { sel: '.pt-routebar', mood: 'present', t: '🧭 Tu camino', d: 'Tu ruta va de A1 a B2+. Cada módulo se abre cuando <b>apruebas el examen final</b> del anterior.' },
       { sel: '.pt-arcade:not(.pt-clubs)', mood: 'wink', t: '🎮 Zona de juegos', d: 'Juegos rápidos de tu nivel para repasar jugando.' },
@@ -432,29 +442,30 @@
     const pend = (pr.requests || []).find(q => q.status === 'pendiente');
     box.innerHTML = `<div class="sect-title"><h2>👩‍🏫 Mis clases con profes</h2></div><div class="lv-wrap">
       <div class="lv-stats"><div class="lv-st vip"><b>${cr.vipLeft}<small>/${cr.vipTotal}</small></b><span>Clases VIP</span><em>Se renuevan el ${fmtD(addDay(cr.cycleEnd, 1), { day: 'numeric', month: 'short' })}</em></div>
-        <div class="lv-st grp"><b>${cr.groupDone}<small>/${cr.groupTotal}</small></b><span>Clubs</span><em>Este mes</em></div>
+        <div class="lv-st grp"><b>${cr.groupDone}</b><span>Clases grupales</span><em>Este mes · sin límite</em></div>
         <div class="lv-st all"><b>${r.attendedTotal || 0}</b><span>Clases asistidas</span><em>En total</em></div></div>
       <div class="card lv-card lv-vip"><div class="lv-h"><span class="lv-ic">⭐</span><div><span class="lbl">Clases VIP · 1 a 1</span><h3>Reserva tu clase VIP</h3></div></div>
-        <p class="muted">Elige <b>profesor, fecha y hora</b> entre los espacios disponibles. Reserva con mínimo <b>4 horas</b> de anticipación.</p><p class="lv-pol">📌 <b>Cancelación:</b> puedes cancelar <b>sin ninguna penalidad hasta 2 horas antes</b>. Si cancelas con <b>menos de 2 horas</b>, esa clase <b>se descuenta de tu plan</b>.</p><p class="lv-noacum">⚠️ Tus clases <b>no son acumulables</b>: resérvalas antes del <b>${fmtD(cr.cycleEnd, { day: 'numeric', month: 'long' })}</b> o se pierden.</p>
+        <p class="muted">Elige <b>profesor, fecha y hora</b> entre los espacios disponibles. Reserva con mínimo <b>4 horas</b> de anticipación.</p><p class="lv-pol">📌 <b>Cancelación sin penalización:</b> mínimo <b>2 horas</b> antes. <b>Cancelación tardía o inasistencia:</b> la clase se descuenta de tu paquete y no será repuesta. <a href="#" class="lv-polk">Ver política completa</a></p><p class="lv-noacum">⚠️ Tus clases <b>no son acumulables</b>: resérvalas antes del <b>${fmtD(cr.cycleEnd, { day: 'numeric', month: 'long' })}</b> o se pierden.</p>
         <button class="btn k lg" id="lv-book" ${cr.vipLeft ? '' : 'disabled'}>${cr.vipLeft ? '📅 Reservar clase VIP' : '✅ Ya reservaste tus clases VIP de este mes'}</button></div>
       <div class="card lv-card lv-next"><div class="lv-h"><span class="lv-ic">📅</span><div><span class="lbl">Agenda</span><h3>Mis próximas clases</h3></div></div>
         ${up.length ? `<div class="lv-list">${up.map(c => `<div class="lv-cl ${c.type}${c.date === today ? ' hoy' : ''}"><div class="lv-dt"><b>${fmtD(c.date, { day: 'numeric' })}</b><small>${fmtD(c.date, { month: 'short' })}</small></div>
           <div class="grow"><b>${c.type === 'vip' ? '⭐ Clase VIP' : c.type === 'club' ? esc(c.club || '🎙️ Club') : '👥 Clase grupal'}${c.date === today ? ' <i class="lv-today">HOY</i>' : ''}</b><small>${fmtD(c.date, { weekday: 'long' })} · ${fmtT(c.time)} · ${esc(c.teacher || '')}${c.topic ? ' · ' + esc(c.topic) : ''}</small></div>
-          <div class="lv-act">${c.type === 'club' ? (c.confirmed ? '<span class="lv-ok">✅ Confirmada</span>' : c.canConfirm ? `<button class="btn k sm" data-conf="${esc(c.id)}">✅ Confirmar asistencia</button>` : '<span class="lv-pend">⏰ Cerrada (3 h antes)</span>') : ''}${c.meet && (c.type !== 'club' || c.confirmed) ? `<a class="btn k sm" target="_blank" rel="noopener" href="${esc(c.meet)}">🎥 Entrar</a>` : ''}${c.canCancel ? `<button class="btn w sm" data-cancel="${esc(c.id)}" data-kind="${c.type}" data-late="${c.lateCancel ? 1 : ''}">Cancelar</button>` : ''}</div></div>`).join('')}</div>` : '<p class="muted">No tienes clases programadas todavía. Aquí aparecerán tus clases VIP y las sesiones de tus clubs para confirmar asistencia.</p>'}${up.some(c => c.type === 'club') ? '<p class="muted lv-note">🎙️ Confirma tu asistencia a los clubs mínimo <b>3 horas antes</b> para que el profe te espere. El enlace aparece al confirmar. Puedes cancelar sin penalidad hasta <b>2 horas antes</b>.</p>' : ''}</div>
+          <div class="lv-act">${c.type === 'club' ? (c.confirmed ? '<span class="lv-ok">✅ Reservada</span>' : c.full ? '<span class="lv-pend">🚫 Cupos llenos (10/10)</span>' : c.canConfirm ? `<button class="btn k sm" data-conf="${esc(c.id)}">✅ Reservar cupo</button><small class="lv-spots">${c.spots} cupo${c.spots === 1 ? '' : 's'} libre${c.spots === 1 ? '' : 's'}</small>` : '<span class="lv-pend">⏰ Reservas cerradas (3 h antes)</span>') : ''}${c.meet && (c.type !== 'club' || c.confirmed) ? `<a class="btn k sm" target="_blank" rel="noopener" href="${esc(c.meet)}">🎥 Entrar</a>` : ''}${c.canCancel ? `<button class="btn w sm" data-cancel="${esc(c.id)}" data-kind="${c.type}" data-late="${c.lateCancel ? 1 : ''}">Cancelar</button>` : ''}</div></div>`).join('')}</div>` : '<p class="muted">No tienes clases programadas todavía. Aquí aparecerán tus clases VIP y las sesiones de tus clubs para confirmar asistencia.</p>'}${up.some(c => c.type === 'club') ? '<p class="muted lv-note">🎙️ Reserva tu cupo en las clases grupales mínimo <b>3 horas antes</b> (máximo 10 estudiantes por sesión). El enlace aparece al reservar. Cancela sin penalización mínimo <b>2 horas antes</b>.</p>' : ''}</div>
       <div class="card lv-card lv-club"><div class="lv-h"><span class="lv-ic">🎙️</span><div><span class="lbl">Incluido en Premium</span><h3>Clubs de conversación y fonética</h3></div></div>
         ${r.clubs && r.clubs.list ? `<div class="lv-kv">${r.clubs.list.map(k => `<span>${k.key === 'conv' ? '🗣️ Conversación' : '🔤 Fonética'}</span><b>${esc(k.day)} · ${k.time ? fmtT(k.time) : ''} <small>(hora Colombia)</small></b>`).join('')}</div>` : ''}
-        <p class="muted" style="margin:8px 0">✅ <b>Confirma tu asistencia</b> a cada club en <b>Mis próximas clases</b>, mínimo <b>3 horas antes</b>. Tu profe recibe el aviso. Si no puedes ir, cancela <b>hasta 2 horas antes</b> sin penalidad; con menos de 2 horas, esa sesión se pierde.</p><p class="lv-noacum">⚠️ Los clubs y las clases VIP <b>no son acumulables</b>: aprovéchalos durante la vigencia de tu plan.</p>
+        <p class="muted" style="margin:8px 0">✅ Asiste a <b>todas las clases grupales de tu nivel</b> que quieras, sin límite mensual. Es obligatorio <b>reservar tu cupo</b> en <b>Mis próximas clases</b> mínimo <b>3 horas antes</b> (máximo 10 estudiantes por sesión). Cancela sin penalización mínimo <b>2 horas antes</b>; si cancelas tarde o no asistes, no hay penalidad.</p><p class="lv-noacum">⚠️ Los clubs y las clases VIP <b>no son acumulables</b>: aprovéchalos durante la vigencia de tu plan.</p>
         <a class="btn k" href="clubes.html">🎙️ Ir a mis clubs</a></div>
       <div class="card lv-card lv-msg"><div class="lv-h"><span class="lv-ic">✉️</span><div><span class="lbl">Tu profe</span><h3>Escríbele a tu profe</h3></div></div>
         <p class="muted">Envíale un mensaje a tu profe desde aquí. Le llega a su perfil y a su correo.</p><button class="btn w" id="lv-msg">✉️ Escribir a mi profe</button></div>
-      ${(pr.history || []).length ? `<details class="card lv-card lv-hist"><summary>📜 Historial de clases (${pr.history.length})</summary><div class="lv-list">${pr.history.map(c => `<div class="lv-cl ${c.type}"><div class="grow"><b>${c.type === 'vip' ? '⭐ VIP' : '👥 Grupal'} · ${fmtD(c.date)} ${fmtT(c.time)}</b><small>${esc(c.teacher || '')} · ${c.status === 'done' ? (c.attended ? '✅ Asististe' : '❌ No asististe') : c.status === 'cancelled' ? 'Cancelada' : c.status === 'latecancel' ? 'Cancelada tarde (descontada)' : c.status === 'noshow' ? '❌ No asististe' : esc(c.status)}</small></div></div>`).join('')}</div></details>` : ''}
+      ${(pr.history || []).length ? `<details class="card lv-card lv-hist"><summary>📜 Historial de clases (${pr.history.length})</summary><div class="lv-list">${pr.history.map(c => `<div class="lv-cl ${c.type}"><div class="grow"><b>${c.type === 'vip' ? '⭐ VIP' : '👥 Grupal'} · ${fmtD(c.date)} ${fmtT(c.time)}</b><small>${esc(c.teacher || '')} · ${c.status === 'done' ? (c.attended ? '✅ Asististe' : '❌ No asististe') : c.status === 'cancelled' ? 'Cancelada' : c.status === 'latecancel' ? 'Cancelación tardía (descontada)' : c.status === 'noshow' ? '❌ No asististe' : esc(c.status)}</small></div></div>`).join('')}</div></details>` : ''}
     </div>`;
     if ($('#lv-book')) $('#lv-book').onclick = vipBooking;
     $$('[data-cancel]', box).forEach(b => b.onclick = () => cancelVip(b.dataset.cancel, b.dataset.kind, !!b.dataset.late));
     $$('[data-conf]', box).forEach(b => b.onclick = async () => { b.disabled = true; b.textContent = '⏳…';
       const res = await MRAC.call('groupConfirm', { code: MRAC.code(), classId: b.dataset.conf });
-      if (res.ok) { M.toast('✅ ¡Listo! Tu profe ya sabe que vas.'); live(); }
-      else { b.disabled = false; b.textContent = '✅ Confirmar asistencia'; M.toast(res.err === 'too_late' ? '⏰ Ya pasó el límite: se confirma mínimo 3 horas antes.' : 'No se pudo confirmar. Intenta de nuevo.'); } });
+      if (res.ok) { M.toast('✅ ¡Cupo reservado! Tu profe ya sabe que vas.'); live(); }
+      else { b.disabled = false; b.textContent = '✅ Reservar cupo'; M.toast(res.err === 'too_late' ? '⏰ Ya pasó el límite: se reserva mínimo 3 horas antes.' : res.err === 'full' ? '🚫 Esta sesión ya tiene 10 estudiantes. Reserva en el siguiente horario de tu nivel.' : 'No se pudo reservar. Intenta de nuevo.'); if (res.err === 'full') live(); } });
+    $$('.lv-polk', box).forEach(a => a.onclick = (e) => { e.preventDefault(); window.MRPOLICY && MRPOLICY.show(); });
     if ($('#lv-msg')) $('#lv-msg').onclick = teacherMsg;
   }
   function teacherMsg() {
@@ -503,11 +514,11 @@
       else { b.disabled = false; b.textContent = 'Enviar solicitud'; M.toast(r.err === 'pending' ? 'Ya tienes una solicitud en revisión.' : 'No se pudo enviar. Inténtalo de nuevo.'); } };
   }
   function cancelVip(id, kind, late) {
-    const club = kind === 'club', what = club ? 'tu asistencia al club' : 'tu clase VIP';
-    const m = M.modal(`<h3>¿Cancelar ${what}?</h3>${late ? `<p class="lv-noacum">⚠️ Faltan <b>menos de 2 horas</b>. Si cancelas ahora, ${club ? 'esta sesión <b>se pierde</b>' : 'esta clase <b>se descuenta de tu plan</b> y no la recuperas'}.</p>` : `<p>Estás a tiempo: cancelas <b>sin ninguna penalidad</b>${club ? '' : ' y la clase vuelve a tu plan'}.</p>`}<p class="muted">Tu profe recibe el aviso.</p><div class="row"><button class="btn k" id="y">Sí, cancelar</button><button class="btn w" id="n">No</button></div>`, { x: true });
+    const club = kind === 'club', what = club ? 'tu cupo en la clase grupal' : 'tu clase VIP'; if (club) late = false;
+    const m = M.modal(`<h3>¿Cancelar ${what}?</h3>${late ? `<p class="lv-noacum">⚠️ Faltan <b>menos de 2 horas</b>. Si cancelas ahora, ${club ? 'esta sesión <b>se pierde</b>' : 'esta clase <b>se descuenta de tu paquete y no será repuesta</b>'}.</p>` : `<p>${club ? 'En las clases grupales <b>no hay penalidad</b>: puedes seguir asistiendo a las demás de tu nivel.' : 'Estás a tiempo: cancelas <b>sin penalización</b> y la clase vuelve a tu paquete.'}</p>`}<p class="muted">Tu profe recibe el aviso.</p><div class="row"><button class="btn k" id="y">Sí, cancelar</button><button class="btn w" id="n">No</button></div>`, { x: true });
     $('#n', m).onclick = () => m.remove();
     $('#y', m).onclick = async () => { $('#y', m).disabled = true; const r = await MRAC.call(club ? 'groupCancel' : 'vipCancel', { code: MRAC.code(), classId: id }); m.remove();
-      if (r.ok) { M.toast(r.late ? (club ? 'Cancelaste tu asistencia. Esta sesión se pierde.' : 'Clase cancelada. Se descontó de tu plan (menos de 2 horas).') : (club ? 'Cancelaste tu asistencia sin penalidad ✅' : 'Clase cancelada sin penalidad. La clase volvió a tu plan ✅')); await MRAC.me(true); live(); }
+      if (r.ok) { M.toast(r.late ? (club ? 'Cancelaste tu cupo ✅' : 'Clase cancelada. Se descontó de tu paquete (menos de 2 horas).') : (club ? 'Cancelaste tu cupo ✅' : 'Clase cancelada sin penalidad. La clase volvió a tu plan ✅')); await MRAC.me(true); live(); }
       else M.toast(r.err === 'started' ? 'La clase ya empezó: no se puede cancelar.' : 'No se pudo cancelar.'); };
   }
   /* ---------- cumpleaños ---------- */

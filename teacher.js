@@ -201,7 +201,7 @@
       <div class="tp-cols">
       <div class="card tp-card tp-addcard">
         <div class="tp-card-h"><h2>Agregar un espacio extra (fecha específica)</h2></div>
-        <p class="muted tp-small">Publica los horarios reales en los que puedes dictar. Los estudiantes Premium los verán y reservarán (mínimo 4 horas antes). Pueden cancelar sin penalidad hasta 2 horas antes; te llega un correo y un aviso aquí cuando reservan o cancelan. Todo en <b>hora Colombia</b>.</p>
+        <p class="muted tp-small">Publica los horarios reales en los que puedes dictar. Los estudiantes Premium los verán y reservarán (mínimo 4 horas antes). Pueden cancelar sin penalidad hasta 2 horas antes; te llega un correo y un aviso aquí cuando reservan o cancelan. <a href="politica.html" target="_blank" rel="noopener">📌 Política de reservas y cancelaciones</a> Todo en <b>hora Colombia</b>.</p>
         <label class="tp-l" for="tp-date">1. Fecha</label>
         <input class="inp tp-inp" type="date" id="tp-date" min="${t0}" value="${form.date}">
         <div class="tp-l">2. Hora(s) de inicio <small class="muted">(elige una o varias)</small></div>

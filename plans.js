@@ -12,7 +12,7 @@
   const BEN = {
     free: ['Prueba de clasificación', 'Tu nivel y tu ruta de aprendizaje', 'Los 2 primeros temas de tu módulo'],
     membership: ['Toda la plataforma desbloqueada', 'Ruta completa A1 → A2 → B2 → B2+', 'Actividades, juegos, audios y materiales', 'Progreso guardado en la nube', 'Exámenes y certificados'],
-    premium: ['Todo lo de Membership', '2 clases VIP al mes (tú eliges profe, fecha y hora)', 'Clubs de conversación y fonética en vivo', '⚠️ Clases no acumulables: resérvalas durante la vigencia de tu plan'],
+    premium: ['Todo lo de Membership', '2 clases VIP al mes (tú eliges profe, fecha y hora)', 'Clases grupales (clubs) en vivo de tu nivel, sin límite mensual (máx. 10 estudiantes por sesión)', '⚠️ Clases no acumulables: resérvalas durante la vigencia de tu plan'],
   };
   const waMsg = (k, renew) => `¡Hola! 👋 Soy ${who() || 'un estudiante'}. Quiero ${renew ? 'renovar' : 'activar'} el plan ${PL[k].name} (${PL[k].price}${PL[k].per}) en la plataforma de mrarrieta.com 🚀`;
   function card(k, opt) {
@@ -27,7 +27,7 @@
   function cards(current, renew) {
     const ks = current === 'premium' ? (renew ? ['premium'] : []) : current === 'membership' ? (renew ? ['membership', 'premium'] : ['premium']) : ['membership', 'premium'];
     if (!ks.length) return '';
-    return `<div class="pl-grid n${ks.length}">${ks.map(k => card(k, { current, renew })).join('')}</div><p class="pl-note">💳 Pagas por transferencia o Nequi y administración activa tu plan el mismo día. Escríbenos por WhatsApp.</p>`;
+    return `<div class="pl-grid n${ks.length}">${ks.map(k => card(k, { current, renew })).join('')}</div><p class="pl-note">💳 Pagas por transferencia o Nequi y administración activa tu plan el mismo día. Escríbenos por WhatsApp. <a href="politica.html" target="_blank" rel="noopener">📌 Política de reservas y cancelaciones</a></p>`;
   }
   // aviso cuando el contenido está bloqueado (fin del acceso gratuito o plan vencido)
   function modal(M, why) {

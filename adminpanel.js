@@ -170,14 +170,14 @@
       if (!send) return shareCode(r.row);
       const s2 = r.row; let mailed = false;
       if (s2.email) { const rw = await api('aWelcome', { code: s2.code }); mailed = !!(rw && rw.ok && rw.mailed); }
-      if (w) w.location.href = waLink(s2.whatsapp, accessMsg(s2));
+      s2.plan = plan; if (w) w.location.href = waLink(s2.whatsapp, accessMsg(s2));
       modal(`<div class="center"><div style="font-size:44px">✅</div><h2>${esc(s2.first)} ya tiene su acceso</h2><div class="ad-code">${esc(s2.code)}</div>
         <p>${s2.email ? (mailed ? '📧 Se le envió el correo con su código y el enlace a <b>' + esc(s2.email) + '</b>.' : '⚠️ No se pudo enviar el correo. Revisa la dirección.') : '📧 Sin correo registrado.'}</p>
         <p>${s2.whatsapp ? '💬 Se abrió WhatsApp con el mensaje listo: solo dale <b>Enviar</b>.' + ` <a href="${waLink(s2.whatsapp, accessMsg(s2))}" target="_blank" rel="noopener">Abrir otra vez</a>` : '💬 Sin WhatsApp registrado.'}</p></div>`);
     };
   }
   // sin emojis: WhatsApp Web los muestra como signos negros (�) cuando llegan por enlace
-  const accessMsg = (s) => `¡Hola ${s.first}! Bienvenido(a) a la plataforma de mrarrieta.com.\n\n*Tu código de acceso:* ${s.code}\n*Entra aquí:* ${BASE}\n\nEscribe tu código en la plataforma y empieza a aprender. ¡Aprende inglés HABLANDO!`;
+  const accessMsg = (s) => `¡Hola ${s.first}! Bienvenido(a) a la plataforma de mrarrieta.com.\n\n*Tu código de acceso:* ${s.code}\n*Entra aquí:* ${BASE}\n\nEscribe tu código en la plataforma y empieza a aprender.${s.plan === 'premium' ? '\n\n*Importante:* tus clases VIP y tus clubs no son acumulables. Resérvalos durante la vigencia de tu plan; las que no uses antes de la fecha de vencimiento se pierden.' : ''}\n\n¡Aprende inglés HABLANDO!`;
   function shareCode(s) {
     const msg = accessMsg(s);
     const m = modal(`<div class="center"><div style="font-size:44px">🔑</div><h2>Código de ${esc(s.first)}</h2><div class="ad-code">${esc(s.code)}</div><p class="muted">Envíaselo por WhatsApp o cópialo.</p>
@@ -192,7 +192,7 @@
       <div class="card ad-dhead"><div class="ad-av lg">${esc(((s.first || '?')[0] + (s.last || '')[0]).toUpperCase())}</div><div class="grow"><h1>${esc(s.first)} ${esc(s.last)}</h1>
         <p>${chip(PLAN[k].join(' '), 'p-' + k)} <button class="ad-codebtn" id="d-code" title="Copiar">${esc(s.code)} 📋</button></p>
         <p class="muted">${s.email ? '📧 ' + esc(s.email) : ''} ${s.whatsapp ? ' · 📱 ' + esc(s.whatsapp) : ''} ${s.birth ? ' · 🎂 ' + fD(s.birth, { day: 'numeric', month: 'long', year: 'numeric' }) : ''}</p></div>
-        <div class="ad-dact">${s.whatsapp ? `<a class="btn ad-wa sm" target="_blank" rel="noopener" href="${waLink(s.whatsapp, 'Hola ' + s.first + ' 👋')}">💬 WhatsApp</a>` : ''}<button class="btn w sm" id="d-share">🔑 Enviar código</button><button class="btn w sm" id="d-rst">♻️ Reiniciar progreso</button><button class="btn w sm ad-del" id="d-del">🗑️ Borrar</button></div></div>
+        <div class="ad-dact">${s.whatsapp ? `<a class="btn ad-wa sm" target="_blank" rel="noopener" href="${waLink(s.whatsapp, 'Hola ' + s.first + '.')}">💬 WhatsApp</a>` : ''}<button class="btn w sm" id="d-share">🔑 Enviar código</button><button class="btn w sm" id="d-rst">♻️ Reiniciar progreso</button><button class="btn w sm ad-del" id="d-del">🗑️ Borrar</button></div></div>
       <div class="card ad-plan"><h3>💎 Plan</h3>
         <p>${st.eff === 'free' && !st.expired ? 'Acceso gratuito: prueba de clasificación + los 2 primeros temas.' : `${PLAN[s.plan] ? PLAN[s.plan].join(' ') : ''} · desde ${fD(s.planStart)} hasta <b>${fD(s.planEnd)}</b> ${st.expired ? chip('VENCIDO', 'p-expired') : st.daysLeft !== null ? chip(st.daysLeft + ' días restantes', st.daysLeft <= 5 ? 'p-expired' : 'gray') : ''}`}</p>
         <div class="ad-planbtns"><button class="btn w" data-plan="membership">⭐ Activar Membership</button><button class="btn k" data-plan="premium">👑 Activar Premium</button>${s.plan !== 'free' ? `<button class="btn w" data-plan="${esc(s.plan)}" data-renew="1">🔁 Renovar ${esc(PLAN[s.plan][1])}</button><button class="btn w" data-plan="free">🟢 Pasar a gratuito</button>` : ''}</div>
@@ -241,7 +241,7 @@
   }
   function enrollDetail(x) {
     view().innerHTML = `${back()}<div class="card ad-dhead"><div class="ad-av lg">${esc((x.first || '?')[0].toUpperCase())}</div><div class="grow"><h1>${esc(x.first)} ${esc(x.last)}</h1><p>${planName(x.plan)} · ${fDT(x.date)}</p></div>
-      <div class="ad-dact">${x.whatsapp ? `<a class="btn ad-wa sm" target="_blank" rel="noopener" href="${waLink(x.whatsapp, '¡Hola ' + x.first + '! 👋 Te escribimos de mrarrieta.com por tu inscripción.')}">💬 WhatsApp</a>` : ''}</div></div>
+      <div class="ad-dact">${x.whatsapp ? `<a class="btn ad-wa sm" target="_blank" rel="noopener" href="${waLink(x.whatsapp, '¡Hola ' + x.first + '! Te escribimos de mrarrieta.com por tu inscripción.')}">💬 WhatsApp</a>` : ''}</div></div>
       <div class="card"><div class="ad-kv">${[['Correo', x.email], ['WhatsApp', x.whatsapp], ['Fecha de nacimiento', x.birth ? fD(x.birth, { day: 'numeric', month: 'long', year: 'numeric' }) : ''], ['Ciudad / país', x.city], ['Plan de interés', planName(x.plan)], ['Nivel aproximado', x.level], ['Horario preferido', [x.schedule, x.days].filter(Boolean).join(' · ')], ['Medio de pago', x.payment], ['¿Cómo nos conoció?', x.source], ['Comentarios', x.comments]].map(([k, v]) => `<span>${k}</span><b>${esc(v || '—')}</b>`).join('')}</div></div>
       <div class="card"><h3>Acceso a la plataforma</h3>${x.code ? `<p>✅ Ya tiene código: <button class="ad-codebtn" id="e-open">${esc(x.code)} → ver estudiante</button></p>` : `<p class="muted">Crea su estudiante con un clic: se genera su código, queda con <b>Acceso gratuito</b> y le llega un correo con el código. Si ya pagó, actívale el plan desde su ficha.</p><button class="btn k lg" id="e-conv">🔑 Crear acceso (código)</button>`}</div>
       <div class="card"><h3>Seguimiento</h3><div class="ad-form"><label>Estado<select class="inp" id="e-st">${ENR_ST.map(([v, n]) => `<option value="${v}" ${x.status === v ? 'selected' : ''}>${n}</option>`).join('')}</select></label><label class="full">Notas<textarea class="inp" id="e-n" rows="2">${esc(x.notes)}</textarea></label></div><button class="btn w" id="e-sv">💾 Guardar</button></div>`;
@@ -299,7 +299,7 @@
     view().innerHTML = '<div class="ad-loading">⏳ Cargando…</div>'; window.scrollTo(0, 0);
     const r = await api('aGet', { table: 'Reclutamiento', id }); if (!r.ok) return; const x = r.row; const cv = J(x.cv, null);
     view().innerHTML = `${back()}<div class="card ad-dhead"><div class="ad-av lg">${esc((x.name || '?')[0].toUpperCase())}</div><div class="grow"><h1>${esc(x.name)}</h1><p>${chip(x.passed === 'sí' ? '✅ APROBÓ' : '❌ NO APROBÓ', x.passed === 'sí' ? 'p-premium' : 'p-expired')} · nota final <b>${esc(x.final)}</b></p><p class="muted">${fDT(x.date)} · 📧 ${esc(x.email)} · 📱 ${esc(x.whatsapp)}</p></div>
-      <div class="ad-dact">${x.whatsapp ? `<a class="btn ad-wa sm" target="_blank" rel="noopener" href="${waLink(x.whatsapp, 'Hola ' + x.name + ' 👋 Te escribimos de mrarrieta.com por tu proceso de selección.')}">💬 WhatsApp</a>` : ''}</div></div>
+      <div class="ad-dact">${x.whatsapp ? `<a class="btn ad-wa sm" target="_blank" rel="noopener" href="${waLink(x.whatsapp, 'Hola ' + x.name + '. Te escribimos de mrarrieta.com por tu proceso de selección.')}">💬 WhatsApp</a>` : ''}</div></div>
       <div class="card"><div class="ad-kv">${[['Ciudad / país', x.city], ['Experiencia', x.experience], ['Disponibilidad', x.availability], ['Sobre el candidato', x.about]].map(([k, v]) => `<span>${k}</span><b>${esc(v || '—')}</b>`).join('')}</div>
         <h4>📄 Hoja de vida</h4>${cv ? `<div class="row"><button class="btn w" id="r-cv">⬇️ Descargar ${esc(cv.name)}</button><a class="btn w" target="_blank" rel="noopener" href="https://drive.google.com/file/d/${esc(cv.fileId)}/view">Abrir en Drive</a></div>` : '<p class="muted">No adjuntó hoja de vida.</p>'}</div>
       <div class="card"><h3>Resultados de la prueba</h3><div class="ad-scores">${[['🎧 Listening', x.listening], ['📖 Reading', x.reading], ['✍️ Writing', x.writing], ['🎤 Speaking', x.speaking], ['⭐ Final', x.final]].map(([k, v]) => `<div><span>${k}</span><b>${esc(v)}</b>${bar(+v * 10)}</div>`).join('')}</div></div>

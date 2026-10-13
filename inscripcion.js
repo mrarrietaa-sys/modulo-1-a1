@@ -18,7 +18,7 @@
     { id: 'membership', name: (P.membership && P.membership.name) || 'Membership', price: (P.membership && P.membership.price) || '$59.900', per: (P.membership && P.membership.per) || '/mes', tag: 'Toda la plataforma', icon: '🚀',
       perks: ['Toda la plataforma: ruta A1 → A2 → B2 → B2+', 'Tu progreso guardado en la nube', 'Todas las actividades y materiales', 'Estudia a tu ritmo, desde cualquier dispositivo'], note: 'No incluye clases con profe.' },
     { id: 'premium', name: (P.premium && P.premium.name) || 'Premium', price: (P.premium && P.premium.price) || '$349.000', per: (P.premium && P.premium.per) || '/mes', tag: 'Plataforma + clases', icon: '⭐', best: true,
-      perks: ['Todo lo de Membership', '4 clases grupales al mes (la escuela te asigna tu grupo)', '2 clases VIP al mes: tú las reservas según la disponibilidad real de los profes', 'Club de conversación y fonética'] },
+      perks: ['Todo lo de Membership', '2 clases VIP al mes: tú las reservas según la disponibilidad real de los profes', 'Clubs de conversación y fonética en vivo', '⚠️ Clases no acumulables: resérvalas durante la vigencia de tu plan'] },
   ];
   const DAYS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
   const SCHED = [['Mañana', '🌅', '6:00 a. m. – 12:00 m.'], ['Tarde', '☀️', '12:00 m. – 6:00 p. m.'], ['Noche', '🌙', '6:00 p. m. – 9:00 p. m.']];
@@ -84,7 +84,7 @@
 
         <div id="in-premium" class="in-cond" hidden>
           <fieldset class="in-fs">
-            <legend>Horario preferido para tus clases grupales <small class="muted">(hora Colombia)</small></legend>
+            <legend>Horario preferido para tus clases <small class="muted">(hora Colombia)</small></legend>
             <div class="in-chips" data-group="schedule">${SCHED.map(([v, i, h]) => chip('schedule', v, `${i} ${v}<small>${h}</small>`)).join('')}</div>
           </fieldset>
           <fieldset class="in-fs">

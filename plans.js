@@ -12,14 +12,14 @@
   const BEN = {
     free: ['Prueba de clasificación', 'Tu nivel y tu ruta de aprendizaje', 'Los 2 primeros temas de tu módulo'],
     membership: ['Toda la plataforma desbloqueada', 'Ruta completa A1 → A2 → B2 → B2+', 'Actividades, juegos, audios y materiales', 'Progreso guardado en la nube', 'Exámenes y certificados'],
-    premium: ['Todo lo de Membership', '4 clases grupales al mes (te asigna la escuela)', '2 clases VIP al mes (tú eliges profe, fecha y hora)', 'Club de conversación y fonética'],
+    premium: ['Todo lo de Membership', '2 clases VIP al mes (tú eliges profe, fecha y hora)', 'Clubs de conversación y fonética en vivo', '⚠️ Clases no acumulables: resérvalas durante la vigencia de tu plan'],
   };
   const waMsg = (k, renew) => `¡Hola! 👋 Soy ${who() || 'un estudiante'}. Quiero ${renew ? 'renovar' : 'activar'} el plan ${PL[k].name} (${PL[k].price}${PL[k].per}) en la plataforma de mrarrieta.com 🚀`;
   function card(k, opt) {
     opt = opt || {}; const p = PL[k]; const cur = opt.current === k;
     return `<div class="pl-card ${k}${cur ? ' cur' : ''}">${k === 'premium' ? '<span class="pl-rib">👑 Más completo</span>' : ''}
       <h3>${k === 'premium' ? '👑' : '⭐'} ${esc(p.name)}</h3><div class="pl-price"><b>${esc(p.price)}</b><small>${esc(p.per)}</small></div>
-      <p class="pl-tag">${k === 'premium' ? 'Plataforma + clases grupales + clases VIP' : 'Plataforma + tu ruta de aprendizaje'}</p>
+      <p class="pl-tag">${k === 'premium' ? 'Plataforma + clases VIP + clubs en vivo' : 'Plataforma + tu ruta de aprendizaje'}</p>
       <ul>${BEN[k].map(b => `<li>${esc(b)}</li>`).join('')}</ul>
       ${cur && !opt.renew ? '<div class="pl-on">✅ Tu plan actual</div>' : `<a class="btn ${k === 'premium' ? 'k' : 'w'} block pl-go" target="_blank" rel="noopener" href="${WA(waMsg(k, opt.renew && cur))}">${opt.renew && cur ? '🔁 Renovar' : 'Quiero ' + esc(p.name)} →</a>`}</div>`;
   }

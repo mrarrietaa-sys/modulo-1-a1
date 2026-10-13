@@ -20,7 +20,7 @@
   const fT = (t) => { if (!t) return ''; const [hh, mm] = String(t).split(':').map(Number); return `${((hh + 11) % 12) + 1}:${String(mm || 0).padStart(2, '0')} ${hh >= 12 ? 'p. m.' : 'a. m.'}`; };
   const todayISO = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
   const addDays = (iso, n) => { const d = new Date(iso + 'T12:00:00'); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); };
-  const waLink = (raw, txt) => { let d = String(raw || '').replace(/\D/g, ''); if (!d) return ''; if (d.length === 10) d = '57' + d; return 'https://wa.me/' + d + (txt ? '?text=' + encodeURIComponent(txt) : ''); };
+  const waLink = (raw, txt) => { let d = String(raw || '').replace(/\D/g, ''); if (!d) return ''; if (d.length === 10) d = '57' + d; return 'https://api.whatsapp.com/send?phone=' + d + (txt ? '&text=' + encodeURIComponent(txt) : ''); };
   const BASE = (C.PLATFORM_URL || location.href.replace(/[^/]*$/, ''));
   function toast(m) { let t = $('#ad-toast'); if (!t) { t = document.createElement('div'); t.id = 'ad-toast'; document.body.appendChild(t); } t.textContent = m; t.className = 'on'; clearTimeout(t._t); t._t = setTimeout(() => t.className = '', 2600); }
   function modal(html) { const m = document.createElement('div'); m.className = 'ad-modal'; m.innerHTML = `<div class="ad-mcard"><button class="ad-mx" aria-label="Cerrar">✕</button>${html}</div>`; document.body.appendChild(m); m.querySelector('.ad-mx').onclick = () => m.remove(); m.addEventListener('click', e => { if (e.target === m) m.remove(); }); return m; }
@@ -176,7 +176,8 @@
         <p>${s2.whatsapp ? '💬 Se abrió WhatsApp con el mensaje listo: solo dale <b>Enviar</b>.' + ` <a href="${waLink(s2.whatsapp, accessMsg(s2))}" target="_blank" rel="noopener">Abrir otra vez</a>` : '💬 Sin WhatsApp registrado.'}</p></div>`);
     };
   }
-  const accessMsg = (s) => `¡Hola ${s.first}! 👋 Bienvenido(a) a la plataforma de mrarrieta.com 🎉\n\n🔑 Tu código de acceso: *${s.code}*\n🌐 Entra aquí: ${BASE}\n\nEscribe tu código en la plataforma y empieza a aprender. ¡Aprende inglés HABLANDO! 🚀`;
+  // sin emojis: WhatsApp Web los muestra como signos negros (�) cuando llegan por enlace
+  const accessMsg = (s) => `¡Hola ${s.first}! Bienvenido(a) a la plataforma de mrarrieta.com.\n\n*Tu código de acceso:* ${s.code}\n*Entra aquí:* ${BASE}\n\nEscribe tu código en la plataforma y empieza a aprender. ¡Aprende inglés HABLANDO!`;
   function shareCode(s) {
     const msg = accessMsg(s);
     const m = modal(`<div class="center"><div style="font-size:44px">🔑</div><h2>Código de ${esc(s.first)}</h2><div class="ad-code">${esc(s.code)}</div><p class="muted">Envíaselo por WhatsApp o cópialo.</p>

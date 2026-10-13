@@ -10,7 +10,7 @@
   const WA = (t) => `https://wa.me/${C.WHATSAPP}?text=${encodeURIComponent(t)}`;
   const who = () => { const p = prof(); return (p.name || p.first || '') + (p.code ? ` (código ${p.code})` : ''); };
   const BEN = {
-    free: ['Examen de clasificación', 'Tu nivel y tu ruta de aprendizaje', 'Los 2 primeros temas de tu módulo'],
+    free: ['Prueba de clasificación', 'Tu nivel y tu ruta de aprendizaje', 'Los 2 primeros temas de tu módulo'],
     membership: ['Toda la plataforma desbloqueada', 'Ruta completa A1 → A2 → B2 → B2+', 'Actividades, juegos, audios y materiales', 'Progreso guardado en la nube', 'Exámenes y certificados'],
     premium: ['Todo lo de Membership', '4 clases grupales al mes (te asigna la escuela)', '2 clases VIP al mes (tú eliges profe, fecha y hora)', 'Club de conversación y fonética'],
   };

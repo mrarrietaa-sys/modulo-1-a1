@@ -1,11 +1,13 @@
 /* =====================================================================
-   EXAMEN DE CLASIFICACIÓN (Placement Test) — mismo examen y funciones del original
-   40 preguntas (10 Listening · 10 Reading · 10 Writing · 10 Speaking), de fácil a difícil
-   · Cronómetro de 45 minutos · 2 intentos (el 3.º con código del profe)
-   · Progreso guardado · Correcto / incorrecto en cada pregunta
-   · Módulo recomendado = el primer módulo con menos de 70 % en Listening+Reading+Writing
-   · PDF, copiar resumen, correo al estudiante + copia a administración, panel (Sheets)
-   · Al terminar, el perfil queda ubicado automáticamente en su módulo
+   PRUEBA DE CLASIFICACIÓN (Placement Test) — ADAPTATIVA
+   · Evalúa las 4 habilidades (Listening, Reading, Writing, Speaking) en CADA nivel
+   · Nivel por nivel (A1 → A2 → B2 → B2+): 4 preguntas por nivel, una de cada habilidad
+     - 3/3 en Listening+Reading+Writing → sube de nivel
+     - 2/3 → 2 preguntas de confirmación del mismo nivel (precisión)
+     - 0-1/3 → se detiene: ese es su módulo
+   · Speaking cuenta en el resultado y desempata la confirmación
+   · Unos 10 minutos (máximo 20) · 2 intentos por oportunidad · progreso guardado
+   · PDF, resumen, correo al estudiante + copia a administración, nube
    ===================================================================== */
 (function () {
   const M = window.M1;
@@ -15,13 +17,39 @@
   const CFG = Object.assign({
     EMAILJS_PUBLIC_KEY: "F1fEtbt3ocfrt5V3C", EMAILJS_SERVICE_ID: "service_dxc9gsh", EMAILJS_TEMPLATE_ID: "template_oridazp",
     SHEETS_WEBAPP_URL: "https://script.google.com/macros/s/AKfycbzFUJ_xanGR-L1A14l7VUU-QeZoLBCpT1xIBjXWQXrqtLxEbpIp8ppgBoyMV1YwBX_-VQ/exec",
-    ADMIN_EMAIL: "mrarrietaa@gmail.com", TIME_MIN: 45, ATTEMPTS: 2,
-  }, C.EXAM || {});
+    ADMIN_EMAIL: "mrarrietaa@gmail.com", ATTEMPTS: 2,
+  }, C.EXAM || {}, { TIME_MIN: 20 });
   const MASTERY = 0.70;
   const LIMIT = CFG.TIME_MIN * 60 * 1000;
   const KEY = 'mra_placement_v1';
   const ITEMS = []; EX.sections.forEach(sec => sec.items.forEach((it, idx) => ITEMS.push(Object.assign({}, it, { section: sec.key, label: sec.label, icon: sec.icon, idx }))));
   const N = ITEMS.length;
+  // ---------- motor adaptativo ----------
+  const SKILLS = ['listening', 'reading', 'writing', 'speaking'];
+  let PL = null; // { m, phase, queue, pos, passed, asked, sp, done, rec, all }
+  const pick = (arr) => arr.length ? arr[Math.floor(Math.random() * arr.length)] : null;
+  const poolOf = (m, sec, not) => ITEMS.map((it, i) => i).filter(i => ITEMS[i].module === m && ITEMS[i].section === sec && !(not || []).includes(i));
+  const isOk = (i) => !!(answers[i] && answers[i].correct === true);
+  const stageCore = (m) => SKILLS.map(sec => pick(poolOf(m, sec, PL ? PL.asked : []))).filter(i => i !== null);
+  function initPlan() { PL = { m: 1, phase: 'core', queue: [], pos: 0, passed: {}, asked: [], sp: null, done: false }; PL.queue = stageCore(1); }
+  function passLv() { PL.passed[PL.m] = true; if (PL.m >= 4) { PL.done = true; PL.rec = 4; PL.all = true; return 'end'; } PL.m++; PL.phase = 'core'; PL.queue = stageCore(PL.m); PL.pos = 0; return 'up'; }
+  function failLv() { PL.passed[PL.m] = false; PL.done = true; PL.rec = PL.m; PL.all = false; return 'end'; }
+  function decide() {
+    const m = PL.m, q = PL.queue;
+    if (PL.phase === 'core') {
+      const obj = q.filter(i => ITEMS[i].section !== 'speaking'), c = obj.filter(isOk).length;
+      const si = q.find(i => ITEMS[i].section === 'speaking'); PL.sp = si === undefined || (answers[si] && answers[si].neutral) ? null : isOk(si);
+      if (c >= obj.length) return passLv();
+      if (c <= obj.length - 2) return failLv();
+      // confirmación: 2 preguntas más del mismo nivel, empezando por la habilidad que falló
+      const failed = obj.filter(i => !isOk(i)).map(i => ITEMS[i].section); const order = failed.concat(['listening', 'reading', 'writing'].filter(x => !failed.includes(x)), ['listening', 'reading', 'writing']);
+      const extra = []; order.forEach(sec => { if (extra.length < 2) { const x = pick(poolOf(m, sec, PL.asked.concat(extra))); if (x !== null) extra.push(x); } });
+      if (!extra.length) return PL.sp === false ? failLv() : passLv();
+      PL.phase = 'conf'; PL.queue = extra; PL.pos = 0; return 'conf';
+    }
+    const c2 = q.filter(isOk).length;
+    return (c2 === q.length || (c2 === q.length - 1 && PL.sp !== false)) ? passLv() : failLv();
+  }
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   const COURSE = { vip: 'Curso VIP (1 a 1)', group: 'Cursos grupales', self: 'Estudiar por mi cuenta en la plataforma' };
 
@@ -63,7 +91,7 @@
     const [hx, hy] = pt(((hour % 12) + minute / 60) * 30, 46), [mx, my] = pt(minute * 6, 70);
     return `<div class="pt-clock"><svg viewBox="0 0 200 200" width="190" height="190"><circle cx="100" cy="100" r="92" fill="#fff" stroke="#0B2A5B" stroke-width="5"/>${ticks}${nums}<line x1="100" y1="100" x2="${hx.toFixed(1)}" y2="${hy.toFixed(1)}" stroke="#0B2A5B" stroke-width="7" stroke-linecap="round"/><line x1="100" y1="100" x2="${mx.toFixed(1)}" y2="${my.toFixed(1)}" stroke="#E3242B" stroke-width="5" stroke-linecap="round"/><circle cx="100" cy="100" r="7" fill="#0B2A5B" stroke="#E3242B" stroke-width="2"/></svg></div>`;
   }
-  function saveProg() { ST.prog = { first, last, temail, wa, course, cur, startedAt, answers: answers.map(a => a && (a.url || a.blob) ? Object.assign({}, a, { url: null, blob: null }) : a) }; persist(); }
+  function saveProg() { ST.prog = { plan: PL, first, last, temail, wa, course, cur, startedAt, answers: answers.map(a => a && (a.url || a.blob) ? Object.assign({}, a, { url: null, blob: null }) : a) }; persist(); }
   function shell(html) { stopRec(); stopPoll(); app.innerHTML = `<div class="wrap fx">${html}</div>`; window.scrollTo(0, 0); }
   function top(extra = '') {
     return `<div class="fx-top"><span class="lbl">Placement test · Clasificación</span><span class="fx-chip">INTENTO ${Math.min(ST.attempts + 1, maxAttempts())}/${maxAttempts()}</span>${extra}<div class="grow"></div><button class="btn w sm" id="fx-exit">✕ Salir</button></div>`;
@@ -78,7 +106,7 @@
     first = pr.first || (pr.name || '').split(' ')[0] || ''; last = pr.last || (pr.name || '').split(' ').slice(1).join(' ');
     temail = pr.email || ''; wa = pr.whatsapp || ''; course = pr.course || '';
     if (ST.attempts >= maxAttempts()) return locked();
-    const p = ST.prog; const done = p && Array.isArray(p.answers) ? p.answers.filter(a => a && a.answered).length : 0;
+    const p = ST.prog; const done = p && Array.isArray(p.answers) ? p.answers.filter(a => a && a.answered).length : 0; if (p && !p.plan && p.answers) { ST.prog = null; persist(); return welcome(); } // progreso de la versión anterior (40 preguntas)
     if (p && (done > 0 || p.startedAt)) return resume(p, done);
     welcome();
   }
@@ -92,24 +120,24 @@
     // portada (ID de Unsplash verificado en build/imgmap3.json: 'road signs two directions')
     shell(`${top()}<div class="card center fx-welcome">${extraNotice()}
       <figure class="ex-cover"><div class="ex-cimg"><img src="https://images.unsplash.com/photo-1583125320604-8245f1e50c1e?w=1200&h=600&fit=crop&crop=entropy&q=80&auto=format" alt="Find your starting point" onerror="this.style.opacity=0"><span class="ex-cbadge">🧭 A1 → B2+</span></div><figcaption>Find your starting point</figcaption></figure>
-      <div class="ex-skills">${EX.sections.map(s => `<span><b>${s.items.length}</b> ${s.icon} ${esc(s.label)}</span>`).join('')}</div>
-      <span class="lbl" style="margin-top:6px">✦ Examen de clasificación interactivo</span>
+      <div class="ex-skills">${EX.sections.map(s => `<span>${s.icon} ${esc(s.label)}</span>`).join('')}</div>
+      <span class="lbl" style="margin-top:6px">✦ Prueba de clasificación interactiva</span>
       <h1 style="font-size:clamp(26px,5.5vw,34px);margin:10px 0 4px">Placement Test</h1>
       <p style="font-weight:800;margin:0">Listening + Reading + Writing + Speaking</p>
-      <p class="muted" style="margin:4px 0 12px">${N} preguntas — Descubre en qué módulo debes empezar en mrarrieta.com</p>
-      <div class="fx-info">${M.mascot('fx-wmra', 'point')}<div>Vas a completar el examen de clasificación. Primero verás las instrucciones y comenzarás con <b>Listening</b>. Las preguntas van de <b>más fáciles a más difíciles</b>, para saber exactamente en qué módulo debes comenzar.<br><span class="muted">⏱ ${CFG.TIME_MIN} minutos · ${ROUNDS} oportunidades de ${CFG.ATTEMPTS} intentos ${ST.attempts ? `· Ya usaste <b>${ST.attempts}</b> de ${maxAttempts()}` : ''}</span></div></div>
+      <p class="muted" style="margin:4px 0 12px">⏱ Unos 10 minutos — Descubre en qué módulo debes empezar en mrarrieta.com</p>
+      <div class="fx-info">${M.mascot('fx-wmra', 'point')}<div>Vas a completar la prueba de clasificación. Es una prueba <b>inteligente</b>: se adapta a ti. Empiezas en el nivel más básico y, si respondes bien, subes de nivel. En cada nivel evaluamos tus <b>4 habilidades</b>.<br><span class="muted">⏱ Unos 10 minutos · ${ROUNDS} oportunidades de ${CFG.ATTEMPTS} intentos ${ST.attempts ? `· Ya usaste <b>${ST.attempts}</b> de ${maxAttempts()}` : ''}</span></div></div>
       <button class="btn k lg" id="go">Continuar →</button></div>`);
     wireExit(); $('#go').onclick = () => (temail ? instructions() : studentEmail());
   }
   function resume(p, done) {
-    shell(`${top()}<div class="card center">${M.mascot('mascot', 'watch')}<h2>💾 Tienes un examen en progreso</h2>
-      <p class="muted">${esc((p.first || '') + ' ' + (p.last || ''))} — ${done} de ${N} preguntas respondidas.${p.startedAt ? ` Tiempo restante: <b>${fmt(LIMIT - (Date.now() - p.startedAt))}</b>` : ''}</p>
+    shell(`${top()}<div class="card center">${M.mascot('mascot', 'watch')}<h2>💾 Tienes una prueba en progreso</h2>
+      <p class="muted">${esc((p.first || '') + ' ' + (p.last || ''))} — ${done} pregunta(s) respondida(s).${p.startedAt ? ` Tiempo restante: <b>${fmt(LIMIT - (Date.now() - p.startedAt))}</b>` : ''}</p>
       <div class="row" style="justify-content:center"><button class="btn k lg" id="c">Continuar donde quedé</button><button class="btn w" id="r">Empezar de nuevo</button></div>
       <p class="muted" style="font-size:13px;margin-top:10px">Las grabaciones de Speaking no se pueden recuperar al recargar: tendrás que grabarlas otra vez.</p></div>`);
     wireExit();
     $('#c').onclick = async () => { await M.loadAudio(['pt', 'maPT']); first = p.first || first; last = p.last || last; temail = p.temail || temail; wa = p.wa || wa; course = p.course || course;
       answers = (p.answers && p.answers.length === N) ? p.answers.map((a, i) => a && ITEMS[i].section === 'speaking' ? null : a) : new Array(N).fill(null);
-      startedAt = p.startedAt || Date.now(); startTimer(); go(p.cur || 0, true); };
+      PL = p.plan || null; if (!PL) initPlan(); startedAt = p.startedAt || Date.now(); startTimer(); show(); };
     $('#r').onclick = () => { if (p.startedAt) { ST.attempts++; } ST.prog = null; persist(); run(app, ctx); };
   }
   const saveProfile = () => { const pr = P.get() || {}; Object.assign(pr, { first, last, name: (first + ' ' + last).trim(), email: temail, whatsapp: wa, course }); P.save(pr); };
@@ -122,7 +150,7 @@
       first = f; last = l; saveProfile(); studentEmail(); };
   }
   function studentEmail() {
-    shell(`${top()}<div class="card fx-form"><span class="lbl">Your email</span><h2>Tu correo electrónico</h2><p class="muted">Ahí te llegará el resultado de tu examen de clasificación.</p>
+    shell(`${top()}<div class="card fx-form"><span class="lbl">Your email</span><h2>Tu correo electrónico</h2><p class="muted">Ahí te llegará el resultado de tu prueba de clasificación.</p>
       <input class="inp" id="e" type="email" inputmode="email" placeholder="tucorreo@gmail.com" value="${esc(temail)}">
       <p class="muted" style="font-size:13px">Además, una copia automática se envía a administración.</p>
       <div class="actionbar"><button class="btn w" id="b">← Atrás</button><button class="btn k lg" id="go">Continuar →</button></div></div>`);
@@ -148,19 +176,18 @@
   }
   function instructions() {
     shell(`${top()}<div class="card fx-form"><span class="lbl">Instrucciones generales</span><h2>Antes de empezar</h2><ul class="fx-ul">
-      <li>El examen tiene <b>${N} preguntas</b> en 4 partes: Listening, Reading, Writing y Speaking (10 cada una).</li>
-      <li>Tienes un máximo de <b>${CFG.TIME_MIN} minutos</b>. El cronómetro aparece arriba; si llega a cero, el examen se envía solo con lo que hayas respondido.</li>
-      <li>Las preguntas empiezan fáciles y se vuelven más difíciles — así sabremos exactamente en qué módulo debes comenzar.</li>
-      <li>En cada pregunta verás de inmediato si tu respuesta es <b>correcta o incorrecta</b>.</li>
+      <li>La prueba es <b>adaptativa</b>: avanzas nivel por nivel (A1 → A2 → B2 → B2+). En cada nivel respondes <b>4 preguntas</b>: 🎧 Listening, 📖 Reading, ✍️ Writing y 🎤 Speaking.</li><li>Si respondes bien, subes al siguiente nivel. Si tienes dudas en un nivel, te hacemos <b>2 preguntas de confirmación</b> para ubicarte con precisión. Cuando llegas a tu nivel, la prueba termina.</li>
+      <li>Toma <b>unos 10 minutos</b> (máximo ${CFG.TIME_MIN}). El cronómetro aparece arriba; si llega a cero, la prueba se envía sola con lo que hayas respondido.</li>
+            <li>En cada pregunta verás de inmediato si tu respuesta es <b>correcta o incorrecta</b>.</li>
       <li>En Listening toca <b>🔊 Escuchar</b> para oír el audio en inglés americano. En Speaking toca <b>🎤</b>, habla y toca otra vez para detener; puedes grabar de nuevo.</li>
       <li>En Speaking puedes tocar <b>🎧 Escuchar un ejemplo de respuesta</b> antes de grabar, como guía.</li>
-      <li>Debes responder todas las preguntas antes de enviar.</li>
-      <li>Tienes <b>${ROUNDS} oportunidades de ${CFG.ATTEMPTS} intentos</b> cada una. Si no te sientes a gusto con tu resultado, puedes repetir el examen y <b>tu ruta se actualiza con el nuevo resultado</b>. Al finalizar verás tu <b>módulo recomendado</b>, un PDF descargable, y tu resultado se enviará a tu correo y a administración. <b>Con tu resultado se crea automáticamente tu ruta de aprendizaje.</b></li>
+      <li>Responde cada pregunta para poder avanzar. Responde con calma: no hay preguntas de relleno, cada una cuenta.</li>
+      <li>Tienes <b>${ROUNDS} oportunidades de ${CFG.ATTEMPTS} intentos</b> cada una. Si no te sientes a gusto con tu resultado, puedes repetir la prueba y <b>tu ruta se actualiza con el nuevo resultado</b>. Al finalizar verás tu <b>módulo recomendado</b>, un PDF descargable, y tu resultado se enviará a tu correo y a administración. <b>Con tu resultado se crea automáticamente tu ruta de aprendizaje.</b></li>
       <li>Tu progreso se guarda solo: si se recarga la página, puedes continuar donde quedaste.</li></ul>
       <p class="muted" style="font-size:14px">🎤 Tu navegador te pedirá permiso para usar el micrófono en la sección de Speaking.</p>
-      <div class="actionbar"><button class="btn k lg" id="go">🚀 Comenzar examen</button></div></div>`);
+      <div class="actionbar"><button class="btn k lg" id="go">🚀 Comenzar prueba</button></div></div>`);
     wireExit();
-    $('#go').onclick = async () => { await M.loadAudio(['pt', 'maPT']); answers = new Array(N).fill(null); startedAt = Date.now(); saveProg(); startTimer(); go(0, false); };
+    $('#go').onclick = async () => { await M.loadAudio(['pt', 'maPT']); answers = new Array(N).fill(null); initPlan(); startedAt = Date.now(); startTimer(); show(); };
   }
 
   // ---------- cronómetro ----------
@@ -169,33 +196,36 @@
   function stopTimer() { if (timerIv) clearInterval(timerIv); timerIv = null; }
 
   // ---------- preguntas ----------
-  function go(i, fromResume) {
-    if (i >= N) return review();
-    const prev = ITEMS[cur]; cur = Math.max(0, i); const it = ITEMS[cur];
-    if (!fromResume && it.idx === 0 && (!prev || prev.section !== it.section || i === 0) && !fixMode) return sectionIntro(it.section, () => item());
-    item();
+  function show() { cur = PL.queue[PL.pos]; if (!PL.asked.includes(cur)) PL.asked.push(cur); saveProg(); item(); }
+  function advance() {
+    PL.pos++; if (PL.pos < PL.queue.length) return show();
+    const r = decide(); saveProg();
+    if (r === 'end') return submit();
+    if (r === 'up') return levelUp();
+    show();
   }
-  function sectionIntro(key, next) {
-    const sec = EX.sections.find(s => s.key === key);
-    shell(`${top(`<span class="fx-chip t" id="fx-timer"></span>`)}<div class="card center fx-sec"><div style="font-size:60px">${sec.icon}</div><h1>${sec.label.toUpperCase()}</h1><p class="muted" style="font-size:17px">${esc(sec.desc)}</p><button class="btn k lg" id="go">Continuar →</button></div>`);
-    wireExit(); tick(); $('#go').onclick = next;
+  function levelUp() {
+    const m = P.mod(PL.m); sfx('win');
+    shell(`${top(`<span class="fx-chip t" id="fx-timer"></span>`)}<div class="card center fx-sec"><div style="font-size:60px">🚀</div><h1>¡Muy bien!</h1><p style="font-size:18px">Superaste el nivel anterior. Ahora vamos con el <b>${esc(m.name)} · ${esc(m.level)}</b>.</p><p class="muted">Las preguntas serán un poco más difíciles. ¡Tú puedes!</p><div class="actionbar" style="justify-content:center"><button class="btn k lg" id="go">Continuar →</button></div></div>`);
+    wireExit(); tick(); $('#go').onclick = show;
   }
-  function pills(active) { return EX.sections.map(s => { const done = ITEMS.every((it, i) => it.section !== s.key || (answers[i] && answers[i].answered)); return `<span class="${s.key === active ? 'on' : done ? 'ok' : ''}">${s.icon} ${s.label}</span>`; }).join(''); }
+  function pills() { return [1, 2, 3, 4].map(k => { const mm = P.mod(k); const st = PL && PL.passed[k] === true ? 'ok' : PL && PL.m === k ? 'on' : ''; return `<span class="${st}">${PL && PL.passed[k] === true ? '✓ ' : ''}${esc(mm.id)}</span>`; }).join(''); }
   function item() {
     const it = ITEMS[cur]; const a = answers[cur] || (answers[cur] = { answered: false, correct: null, value: null });
+    const qn = PL.asked.indexOf(cur) + 1; const pct = Math.min(96, Math.round(((PL.m - 1) + (PL.pos + 1) / (PL.queue.length + 1)) / 4 * 100));
     shell(`${top(`<span class="fx-chip t" id="fx-timer"></span>`)}
-      <div class="fx-prog"><i style="width:${Math.round((cur + 1) / N * 100)}%"></i></div><div class="secbar fx-pills">${pills(it.section)}</div>
-      <div class="card fx-item"><div class="hd"><span class="lbl">${it.icon} ${it.label} · ${esc(it.topic)}</span><span class="qcount">${cur + 1} / ${N}</span></div><div class="fx-body"></div><div class="fx-fb"></div>
-      <div class="actionbar"><button class="btn w" id="pv" ${cur === 0 ? 'disabled' : ''}>← Anterior</button><button class="btn k lg" id="nx">${fixMode ? 'Siguiente pendiente →' : cur === N - 1 ? 'Ir a revisión final →' : 'Siguiente →'}</button></div></div>`);
+      <div class="fx-prog"><i style="width:${pct}%"></i></div><div class="secbar fx-pills">${pills()}</div>
+      <div class="card fx-item"><div class="hd"><span class="lbl">${it.icon} ${it.label} · ${esc(it.topic)}</span><span class="qcount">Pregunta ${qn}</span></div><div class="fx-body"></div><div class="fx-fb"></div>
+      <div class="actionbar"><span class="muted" style="font-size:13px">${PL.phase === 'conf' ? '🔎 Pregunta de confirmación' : 'Nivel ' + esc(P.mod(PL.m).id)}</span><button class="btn k lg" id="nx" disabled>Siguiente →</button></div></div>`);
     wireExit(); tick();
-    $('#pv').onclick = () => { stopRec(); go(cur - 1, true); };
-    $('#nx').onclick = () => { stopRec(); saveProg(); if (fixMode) { const n = answers.findIndex((x, i) => i > cur && !(x && x.answered)); if (n >= 0) { cur = n; item(); } else { fixMode = false; review(); } } else go(cur + 1, false); };
+    $('#nx').onclick = () => { if (!(answers[cur] && answers[cur].answered)) return; stopRec(); advance(); };
     const body = $('.fx-body'); const fb = $('.fx-fb');
     const feedback = (ok, wrong, neutral) => { fb.className = 'fx-fb show ' + (neutral ? 'neutral' : ok ? 'ok' : 'bad'); fb.innerHTML = neutral ? '✔ Respuesta guardada.' : ok ? '✅ ¡Correcto!' : `❌ Incorrecto. ${wrong || ''}`; };
     if (it.section === 'listening') renderMC(body, it, a, feedback, true);
     else if (it.section === 'reading') renderMC(body, it, a, feedback, false);
     else if (it.section === 'writing') renderW(body, it, a, feedback);
     else renderS(body, it, a, feedback);
+    refreshPills();
   }
   function renderMC(body, it, a, feedback, listen) {
     const opts = it.type === 'tf' ? ['True', 'False'] : it.options; const ci = it.type === 'tf' ? (it.correct ? 0 : 1) : it.correct;
@@ -207,7 +237,7 @@
     if (a.answered) { paint(); feedback(a.correct, `La respuesta correcta es: <b>${esc(opts[ci])}</b>`); return; }
     btns.forEach((b, i) => b.onclick = () => { a.answered = true; a.value = i; a.correct = i === ci; paint(); sfx(a.correct ? 'ok' : 'bad'); feedback(a.correct, `La respuesta correcta es: <b>${esc(opts[ci])}</b>`); saveProg(); refreshPills(); });
   }
-  function refreshPills() { const p = $('.fx-pills'); if (p) p.innerHTML = pills(ITEMS[cur].section); }
+  function refreshPills() { const nx = $('#nx'); if (nx) nx.disabled = !(answers[cur] && answers[cur].answered); }
   function renderW(body, it, a, feedback) {
     if (it.type === 'blank') {
       body.innerHTML = `${img(it.img)}<div class="fx-lab">${esc(it.prompt)}</div><div class="fx-q">${esc(it.sentence).replace('___', '<span class="blank">&nbsp;&nbsp;&nbsp;&nbsp;</span>')}</div>
@@ -281,24 +311,25 @@
   function review() {
     const miss = answers.filter(a => !(a && a.answered)).length;
     shell(`${top(`<span class="fx-chip t" id="fx-timer"></span>`)}<div class="card"><span class="lbl">Final review</span><h2>Revisión final</h2>
-      <p class="muted">${miss ? `Te faltan <b>${miss}</b> pregunta(s) por responder antes de enviar.` : 'Respondiste todas las preguntas. Ya puedes enviar tu examen.'}</p>
+      <p class="muted">${miss ? `Te faltan <b>${miss}</b> pregunta(s) por responder antes de enviar.` : 'Respondiste todas las preguntas. Ya puedes enviar tu prueba.'}</p>
       <div class="fx-rev">${ITEMS.map((it, i) => { const ok = answers[i] && answers[i].answered; return `<button class="${ok ? 'ok' : 'miss'}" data-i="${i}">${i + 1}. ${it.icon} ${esc(it.topic)} ${ok ? '✓' : '— pendiente'}</button>`; }).join('')}</div>
-      <div class="actionbar"><button class="btn w" id="bk">← Volver al examen</button><button class="btn k lg" id="sb" ${miss ? 'disabled' : ''}>📨 Enviar examen</button></div></div>`);
+      <div class="actionbar"><button class="btn w" id="bk">← Volver a la prueba</button><button class="btn k lg" id="sb" ${miss ? 'disabled' : ''}>📨 Enviar prueba</button></div></div>`);
     wireExit(); tick();
     $$('.fx-rev button').forEach(b => b.onclick = () => { const i = +b.dataset.i; fixMode = !(answers[i] && answers[i].answered); cur = i; item(); });
     $('#bk').onclick = () => { fixMode = false; cur = 0; item(); };
-    $('#sb').onclick = () => { const m = M.modal(`<h3>¿Enviar tu examen?</h3><p class="muted">Después de enviarlo no podrás cambiar tus respuestas.</p><div class="row"><button class="btn k" id="y">Sí, enviar</button><button class="btn w" id="n">Revisar otra vez</button></div>`);
+    $('#sb').onclick = () => { const m = M.modal(`<h3>¿Enviar tu prueba?</h3><p class="muted">Después de enviarlo no podrás cambiar tus respuestas.</p><div class="row"><button class="btn k" id="y">Sí, enviar</button><button class="btn w" id="n">Revisar otra vez</button></div>`);
       $('#y', m).onclick = () => { m.remove(); submit(); }; $('#n', m).onclick = () => m.remove(); };
   }
   function scores() {
-    const per = {}; EX.sections.forEach(s => { const idx = ITEMS.map((it, i) => i).filter(i => ITEMS[i].section === s.key); const c = idx.filter(i => answers[i] && answers[i].correct === true).length; per[s.key] = { c, t: idx.length, score: c / idx.length * 10 }; });
+    const asked = PL ? PL.asked : []; const per = {};
+    EX.sections.forEach(s => { const idx = asked.filter(i => ITEMS[i].section === s.key); const c = idx.filter(isOk).length; let lv = 0; idx.forEach(i => { if (isOk(i)) lv = Math.max(lv, ITEMS[i].module); }); per[s.key] = { c, t: idx.length, score: lv / 4 * 10 }; });
     const fin = Math.round((per.listening.score + per.reading.score + per.writing.score + per.speaking.score) / 4 * 10) / 10; return { per, fin };
   }
-  // la señal de clasificación: dominio por módulo con Listening + Reading + Writing
+  // la clasificación sale del recorrido adaptativo (nivel por nivel)
   function mastery() {
-    const mods = {}; [1, 2, 3, 4].forEach(m => { const idx = ITEMS.map((it, i) => i).filter(i => ITEMS[i].section !== 'speaking' && ITEMS[i].module === m); const c = idx.filter(i => answers[i] && answers[i].correct === true).length; mods[m] = { c, t: idx.length, pct: idx.length ? c / idx.length : 0 }; mods[m].ok = mods[m].pct >= MASTERY; });
-    let rec = [1, 2, 3, 4].find(m => !mods[m].ok); const all = !rec; if (!rec) rec = 4;
-    return { mods, rec, all };
+    const asked = PL ? PL.asked : []; const mods = {};
+    [1, 2, 3, 4].forEach(m => { const idx = asked.filter(i => ITEMS[i].module === m); const c = idx.filter(isOk).length; mods[m] = { c, t: idx.length, pct: idx.length ? c / idx.length : 0, ok: !!(PL && PL.passed[m]) }; });
+    const rec = PL ? (PL.done ? PL.rec : PL.m) : 1; return { mods, rec, all: !!(PL && PL.all) };
   }
   const NAMES = { listening: 'Listening', reading: 'Reading', writing: 'Writing', speaking: 'Speaking' };
   function comment(per, ms) {
@@ -327,7 +358,7 @@
       <p class="muted">${esc(r.name)} — ${esc(r.attemptLabel)}</p>
       <div class="pt-mods">${[1, 2, 3, 4].map(k => { const mm = P.mod(k), x = r.ms.mods[k]; return `<div class="${k === r.ms.rec ? 'rec' : x.ok ? 'ok' : ''}"><b>${esc(mm.name)}</b><small>${esc(mm.es)}</small><span>${Math.round(x.pct * 100)}%</span><em>${k === r.ms.rec ? '📍 Empiezas aquí' : x.ok ? '✓ Dominado' : '—'}</em></div>`; }).join('')}</div>
       <div class="fx-bars">${Object.keys(r.per).map(k => `<div><span>${EX.sections.find(s => s.key === k).icon} ${NAMES[k]}</span><div class="bar"><i style="width:${r.per[k].score * 10}%"></i></div><b>${r.per[k].score.toFixed(1)}</b></div>`).join('')}</div>
-      <div class="fx-comment">${r.timedOut ? `<b>⏱ Se acabó el tiempo (${CFG.TIME_MIN} minutos).</b> Tu examen se envió automáticamente con las respuestas que tenías.<br><br>` : ''}<b>Comentario:</b> ${esc(comment(r.per, r.ms))}</div>
+      <div class="fx-comment">${r.timedOut ? `<b>⏱ Se acabó el tiempo (${CFG.TIME_MIN} minutos).</b> Tu prueba se envió automáticamente con las respuestas que tenías.<br><br>` : ''}<b>Comentario:</b> ${esc(comment(r.per, r.ms))}</div>
       ${(() => { const asg = P.assigned(); return asg && asg.n > m.n ? `<div class="pt-trial">🎓 <b>Ojo:</b> en este dispositivo ya aprobaste el examen final del ${esc(P.mod(asg.n - 1).name)}, por eso hoy tu ruta está en el <b>${esc(asg.name)} (${esc(asg.es)})</b>.</div>` : ''; })()}
       ${trial ? `<div class="pt-trial">🟢 <b>Acceso gratuito:</b> ya puedes explorar los <b>2 primeros temas</b> del ${esc((P.trialMod() || m).name)}.</div>` : ''}
       <div class="fx-notify">${cloud() ? '<div id="n0" class="pending">⏳ Avisando a tu profe y a administración…</div>' : ''}<div id="n1" class="pending">⏳ Guardando resultados…</div><div id="n2" class="pending">⏳ Enviando correo con tu resultado…</div><div id="n3" class="pending">⏳ Enviando copia a administración…</div></div>
@@ -335,7 +366,7 @@
         <button class="btn w" id="pdf">📄 Descargar reporte PDF</button><button class="btn w" id="cp">📋 Copiar resumen</button>
         <a class="btn" style="text-decoration:none;background:#25D366;color:#fff" target="_blank" rel="noopener" href="https://wa.me/${C.WHATSAPP}?text=${waMsg}">💬 ${trial ? 'Quiero inscribirme' : 'Escribir a mrarrieta.com'}</a>
         ${left > 0 ? `<button class="btn w" id="again">🔁 Intentar de nuevo (te queda${left > 1 ? 'n' : ''} ${left})</button>` : (ST.round || 1) < ROUNDS ? `<button class="btn w" id="again2">🔁 Usar mi segunda oportunidad (${CFG.ATTEMPTS} intentos)</button>` : cloud() ? '<button class="btn w" id="extra">🙋 Solicitar un intento adicional</button>' : ''}</div>
-      <p class="muted center" style="font-size:14px;margin-top:10px">¿No te sientes a gusto con tu resultado? Puedes repetir el examen: <b>tu ruta de aprendizaje se actualiza con el nuevo resultado</b>.</p></div>`);
+      <p class="muted center" style="font-size:14px;margin-top:10px">¿No te sientes a gusto con tu resultado? Puedes repetir la prueba: <b>tu ruta de aprendizaje se actualiza con el nuevo resultado</b>.</p></div>`);
     wireExit(); sfx('win'); M.confetti(3500);
     $('#prof').onclick = () => ctx.route('home'); $('#pdf').onclick = reportPDF; $('#cp').onclick = copySummary;
     if ($('#again')) $('#again').onclick = () => run(app, ctx);
@@ -348,7 +379,7 @@
   async function cloudSave(r) {
     if (!(window.MRAC && MRAC.on)) return;
     const m = P.mod(r.ms.rec); const prof = P.get() || {};
-    const sp = []; ITEMS.forEach((it, i) => { if (it.section === 'speaking') sp.push({ i: i + 1, task: it.task, transcript: (r.answersSnap[i] && r.answersSnap[i].value) || '' }); });
+    const sp = []; ITEMS.forEach((it, i) => { if (it.section === 'speaking' && r.answersSnap[i] && r.answersSnap[i].answered) sp.push({ i: i + 1, task: it.task, transcript: (r.answersSnap[i] && r.answersSnap[i].value) || '' }); });
     const res = await MRAC.call('placement', { code: prof.code || '', name: r.name, email: r.temail || prof.email || '', whatsapp: r.wa || prof.whatsapp || '', attempt: r.attemptLabel, listening: r.per.listening.score.toFixed(1), reading: r.per.reading.score.toFixed(1), writing: r.per.writing.score.toFixed(1), speaking: r.per.speaking.score.toFixed(1), final: r.fin.toFixed(1), module: r.ms.rec, moduleSet: prof.moduleSet || Date.now(), level: m.name + ' · ' + m.es, mods: Object.fromEntries(Object.entries(r.ms.mods).map(([k, v]) => [k, Math.round(v.pct * 100)])), speakingAnswers: sp, timedOut: r.timedOut });
     if (!res.ok) return;
     let n = 0; for (let i = 0; i < ITEMS.length; i++) { const a = r.answersSnap[i]; if (ITEMS[i].section !== 'speaking' || !a || !a.blob) continue; n++;
@@ -391,7 +422,7 @@
     const r = last_; const m = P.mod(r.ms.rec); const { jsPDF } = window.jspdf; const d = new jsPDF({ unit: 'pt', format: 'a4' });
     d.setFillColor(11, 42, 91); d.rect(0, 0, 595, 90, 'F'); d.setFillColor(227, 36, 43); d.rect(0, 90, 595, 6, 'F');
     const logo = await logoData(); if (logo) d.addImage(logo, 'PNG', 455, 14, 110, 64);
-    d.setTextColor(255, 255, 255); d.setFont('helvetica', 'bold'); d.setFontSize(18); d.text('Reporte del Examen de Clasificación', 40, 44);
+    d.setTextColor(255, 255, 255); d.setFont('helvetica', 'bold'); d.setFontSize(18); d.text('Reporte del Prueba de Clasificación', 40, 44);
     d.setFontSize(11); d.setFont('helvetica', 'normal'); d.text('Placement Test — mrarrieta.com', 40, 66);
     let y = 130; d.setTextColor(17, 17, 17); d.setFont('helvetica', 'bold'); d.setFontSize(13); d.text('Estudiante: ' + r.name, 40, y); y += 22;
     d.setFont('helvetica', 'normal'); d.setFontSize(11);
@@ -404,7 +435,7 @@
     d.setFont('helvetica', 'bold'); d.setFontSize(12); d.text('Comentario', 40, y); y += 18; d.setFont('helvetica', 'normal'); d.setFontSize(11);
     const w = d.splitTextToSize(comment(r.per, r.ms), 515); d.text(w, 40, y); y += w.length * 14 + 20;
     d.setDrawColor(150); d.line(40, y, 555, y); y += 18; d.setFontSize(9); d.setTextColor(120); d.text('mrarrieta.com — ¡Aprende inglés HABLANDO!', 40, y);
-    d.save('Reporte_Examen_Clasificacion_' + r.name.replace(/\s+/g, '_') + '.pdf');
+    d.save('Reporte_Prueba_Clasificacion_' + r.name.replace(/\s+/g, '_') + '.pdf');
   }
   function secondChance() { ST.round = 2; ST.prog = null; persist(); sfx('win'); M.toast('✓ Segunda oportunidad activada: tienes ' + CFG.ATTEMPTS + ' intentos más'); run(app, ctx); }
   function locked() {
@@ -417,9 +448,9 @@
       wireExit(); $('#hm').onclick = () => ctx.route('home'); $('#sc').onclick = secondChance; return;
     }
     if (cloud()) return lockedCloud();
-    const msg = encodeURIComponent(`Hola 👋 Soy ${name()}. Usé mis ${CFG.ATTEMPTS} intentos del examen de clasificación y quiero solicitar una oportunidad adicional.`);
+    const msg = encodeURIComponent(`Hola 👋 Soy ${name()}. Usé mis ${CFG.ATTEMPTS} intentos de la prueba de clasificación y quiero solicitar una oportunidad adicional.`);
     shell(`${top()}<div class="card center fx-form">${M.mascot('mascot', 'watch')}<h2>🔒 Sin intentos disponibles</h2>
-      <p class="muted">Ya usaste tus ${ROUNDS} oportunidades (${maxAttempts()} intentos) del examen de clasificación. Para un intento adicional, <b>pide un código a administración</b>.</p>
+      <p class="muted">Ya usaste tus ${ROUNDS} oportunidades (${maxAttempts()} intentos) de la prueba de clasificación. Para un intento adicional, <b>pide un código a administración</b>.</p>
       <a class="btn" style="text-decoration:none;background:#25D366;color:#fff" target="_blank" rel="noopener" href="https://wa.me/${C.WHATSAPP}?text=${msg}">💬 Solicitar otra oportunidad</a>
       <label style="margin-top:16px">Código</label><input class="inp" id="code" placeholder="Ej: EXAMEN-LAURA" style="text-transform:uppercase">
       <div class="actionbar" style="justify-content:center"><button class="btn w" id="hm">👤 Mi perfil</button><button class="btn k lg" id="ok">Desbloquear intento</button></div></div>`);
@@ -436,7 +467,7 @@
   // con nube: después de las 2 oportunidades se pide un intento adicional a administración
   function lockedCloud() {
     shell(`${top()}<div class="card center fx-form ex-lock">${M.mascot('mascot', 'watch')}<h2>🔒 Sin intentos disponibles</h2>
-      <p class="muted">Ya usaste tus ${ROUNDS} oportunidades (${maxAttempts()} intentos) del examen de clasificación. Si necesitas otra, pídesela a <b>administración</b>: cuando la aprueben, el intento se habilita aquí mismo.</p>
+      <p class="muted">Ya usaste tus ${ROUNDS} oportunidades (${maxAttempts()} intentos) de la prueba de clasificación. Si necesitas otra, pídesela a <b>administración</b>: cuando la aprueben, el intento se habilita aquí mismo.</p>
       <div id="ex-req"></div>
       <div class="actionbar" style="justify-content:center"><button class="btn w" id="hm">👤 Mi perfil</button></div></div>`);
     wireExit(); $('#hm').onclick = () => { stopPoll(); ctx.route('home'); };
@@ -460,7 +491,7 @@
       const b = e.currentTarget; b.disabled = true; b.textContent = '⏳ Enviando solicitud…';
       let r = null; try { r = await MRAC.requestAttempt('placement', KEY, ($('#ex-why').value || '').trim()); } catch (er) { r = null; }
       if (r && r.ok) { ST.reqPending = Date.now(); persist(); sfx('ok'); renderReq(); return; }
-      if (r && r.err === 'pending') { ST.reqPending = ST.reqPending || Date.now(); persist(); renderReq('Ya tenías una solicitud pendiente para este examen.'); return; }
+      if (r && r.err === 'pending') { ST.reqPending = ST.reqPending || Date.now(); persist(); renderReq('Ya tenías una solicitud pendiente para esta prueba.'); return; }
       renderReq('✗ No se pudo enviar la solicitud (revisa tu conexión) e inténtalo de nuevo.');
     };
   }

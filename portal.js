@@ -1,6 +1,6 @@
 /* =====================================================================
    PORTAL — Perfil del estudiante (inicio de toda la plataforma)
-   Ingreso con código → (nombre) → examen de clasificación → módulos
+   Ingreso con código → (nombre) → prueba de clasificación → módulos
    ===================================================================== */
 (function () {
   const M = window.M1, P = window.MRAP, C = window.M1CONFIG;
@@ -77,7 +77,7 @@
       <div class="pt-or"><span>¿Aún no eres estudiante?</span></div>
       <div class="pt-free"><h2>🟢 EMPIEZA GRATIS</h2>
         <p><b>Crea tu acceso gratuito y descubre tu ruta de aprendizaje.</b></p>
-        <p class="muted">Realiza nuestro examen de clasificación y explora los primeros temas de tu módulo.</p>
+        <p class="muted">Realiza nuestra prueba de clasificación y explora los primeros temas de tu módulo.</p>
         <a class="btn block lg pt-wa" target="_blank" rel="noopener" href="${WA('¡Hola! 👋 Quiero EMPEZAR GRATIS en la plataforma de mrarrieta.com y descubrir mi ruta de aprendizaje. ¿Me envían mi código de acceso gratuito? 🟢')}">EMPEZAR GRATIS →</a>
         <a class="btn w block pt-insc" href="inscripcion.html">📝 Formulario de inscripción</a></div></div>
       <p class="center pt-links"><a href="reclutamiento.html">👩‍🏫 Trabaja con nosotros</a> · <a href="profesores.html">🧑‍🏫 Soy profesor</a> · <a href="administracion.html">🔐 Administración</a></p></div>`;
@@ -91,6 +91,7 @@
         const r = await MRAC.login(v); b.disabled = false; b.textContent = 'Entrar →';
         if (r.ok) { sfx('win'); M.confetti(1500); try { sessionStorage.removeItem('mra_back'); } catch (e) { } greetVoice(); return route('home'); }
         if (r.err === 'inactive') return bad('Tu acceso está inactivo. Escríbenos por WhatsApp 🙏');
+        if (r.err === 'trial_over') { b.disabled = false; return trialOver(v); }
         if (r.err === 'network' || r.err === 'offline') return bad('No hay conexión con la nube. Revisa tu internet e inténtalo de nuevo.');
         return bad();
       }
@@ -125,6 +126,12 @@
       P.MODS.forEach(m => { try { const s = JSON.parse(localStorage.getItem(m.key) || 'null'); if (s) { s.name = f + ' ' + l; localStorage.setItem(m.key, JSON.stringify(s)); } } catch (e) { } });
       route('home'); };
   }
+  // el acceso gratuito (5 días) terminó → invitación a inscribirse
+  function trialOver(code) {
+    M.modal(`<div class="center"><div style="font-size:48px">🎁</div><h3>Tu acceso gratuito terminó</h3><p>Gracias por conocer <b>mrarrieta.com</b> 💙. Tu progreso está guardado: inscríbete y continúa justo donde lo dejaste.</p>
+      <a class="btn k block lg" target="_blank" rel="noopener" href="${WA('¡Hola! Mi código es ' + (code || '') + ', terminó mi acceso gratuito y quiero inscribirme en mrarrieta.com 🚀')}">💬 Quiero inscribirme</a>
+      <a class="btn w block" href="inscripcion.html" style="margin-top:8px">📝 Formulario de inscripción</a></div>`, { x: true });
+  }
   function logout() {
     const m = M.modal(`<h3>¿Salir de tu perfil?</h3><p class="muted">Tu progreso queda guardado${window.MRAC && MRAC.code() ? ' en la nube: puedes continuar desde cualquier dispositivo' : ' en este dispositivo'}. Para volver a entrar necesitarás tu código.</p><div class="row"><button class="btn k" id="y">Sí, salir</button><button class="btn w" id="n">Cancelar</button></div>`, { x: true });
     $('#n', m).onclick = () => m.remove(); $('#y', m).onclick = async () => { const cur = P.get(); if (window.MRAC && MRAC.code()) { $('#y', m).disabled = true; $('#y', m).textContent = 'Guardando…'; await MRAC.sync(true); } m.remove(); if (cur && cur.first) P.save(cur); P.clear(); try { sessionStorage.removeItem('mra_me_cache'); } catch (e) { } route('home'); };
@@ -139,15 +146,15 @@
     const hr = new Date().getHours(); const back = P.isBack(); const greet = back ? 'Welcome back' : hr < 12 ? 'Good morning' : hr < 18 ? 'Good afternoon' : 'Good evening';
     let main = '';
     if (!p.module && !staff) {
-      main = `<div class="card pt-step"><div class="pt-stepn">1</div><div><span class="lbl">Primer paso</span><h2>Toma tu examen de clasificación</h2>
-        <p>Son <b>40 preguntas</b> (Listening, Reading, Writing y Speaking) que van de fáciles a difíciles. Al terminar, la plataforma te <b>ubica automáticamente</b> en el módulo que te corresponde: A1, A2, B2 o B2+.</p>
-        <p class="muted">⏱ 45 minutos · ${pst.rounds || 1} oportunidades de 2 intentos${pst.attempts ? ` · Ya usaste ${pst.attempts}` : ''}${pst.inProgress ? ' · <b>Tienes un examen en progreso</b>' : ''}</p>
-        <button class="btn k lg" id="pt">📝 ${pst.inProgress ? 'Continuar' : 'Tomar'} mi examen de clasificación</button></div></div>`;
+      main = `<div class="card pt-step"><div class="pt-stepn">1</div><div><span class="lbl">Primer paso</span><h2>Toma tu prueba de clasificación</h2>
+        <p>Es una prueba <b>corta e inteligente</b> (unos 10 minutos) que evalúa tu Listening, Reading, Writing y Speaking y se adapta a tu nivel. Al terminar, la plataforma te <b>ubica automáticamente</b> en el módulo que te corresponde: A1, A2, B2 o B2+.</p>
+        <p class="muted">⏱ Unos 10 minutos · ${pst.rounds || 1} oportunidades de 2 intentos${pst.attempts ? ` · Ya usaste ${pst.attempts}` : ''}${pst.inProgress ? ' · <b>Tienes una prueba en progreso</b>' : ''}</p>
+        <button class="btn k lg" id="pt">📝 ${pst.inProgress ? 'Continuar' : 'Tomar'} mi prueba de clasificación</button></div></div>`;
     } else if (a || staff) {
       const ready = a && a.ready;
       main = `<div class="card pt-mymod">${a ? `<div class="pt-mymod-img" style="background-image:url('${U(a.img)}')"><span>${a.n}</span></div>` : ''}<div><span class="lbl">${staff ? 'Modo profe' : '🧭 Tu ruta de aprendizaje'}</span>
         <h2>${staff ? 'Todos los módulos abiertos para revisión' : `<small class="pt-here">📍 Estás aquí</small>${esc(a.name)} · ${esc(a.es)}`}</h2>
-        ${a ? `<p class="muted">${pl && p.assignedBy !== 'admin' ? `Tu ruta se creó con tu examen de clasificación (${new Date(pl.date).toLocaleDateString('es-CO')}).` : 'Tu ruta fue asignada por administración.'}${a.n > (p.module || 1) ? ' ¡Avanzaste en tu ruta al aprobar el módulo anterior! 🎉' : ''}</p>` : ''}
+        ${a ? `<p class="muted">${pl && p.assignedBy !== 'admin' ? `Tu ruta se creó con tu prueba de clasificación (${new Date(pl.date).toLocaleDateString('es-CO')}).` : 'Tu ruta fue asignada por administración.'}${a.n > (p.module || 1) ? ' ¡Avanzaste en tu ruta al aprobar el módulo anterior! 🎉' : ''}</p>` : ''}
         ${a && ready ? `<div class="pt-bar"><i style="width:${P.progress(a.id).pct}%"></i></div><p class="muted" style="margin:4px 0 10px">${P.progress(a.id).done} de ${trial ? '4 clases de tu acceso gratuito' : a.classes + ' clases'} completadas</p><a class="btn k lg" href="${a.url}">▶ ${P.progress(a.id).done ? 'Continuar' : 'Empezar'} mi ruta</a>` : ''}
         ${a && !ready && trial && P.trialMod() ? `<p class="pt-soon">🚧 Tu ${esc(a.name)} se está terminando de construir. Mientras tanto, usa tu acceso gratuito con los 2 primeros temas del <b>${esc(P.trialMod().name)}</b>.</p><a class="btn k lg" href="${P.trialMod().url}">▶ Entrar con mi acceso gratuito</a>` : ''}
         ${a && !ready && !trial ? `<p class="pt-soon">🚧 Tu ${esc(a.name)} se está terminando de construir. ¡Muy pronto estará listo! Mientras tanto puedes repasar los módulos anteriores.</p>` : ''}</div></div>`;
@@ -157,7 +164,7 @@
         <p class="muted">${staff ? '👨‍🏫 Perfil de profesor — puedes revisar todo.' : trial ? '🟢 Acceso gratuito — descubre tu ruta de aprendizaje.' : '🎓 Estudiante de mrarrieta.com'}</p></div>${M.mascot('pt-headmra', 'welcome')}</section>
       ${birthdayBanner()}
       <div id="pt-ann"></div>
-      ${trial ? `<div class="pt-trialbar">${P.plan().expired ? `⏰ <div><b>Tu plan venció.</b> Tu progreso sigue guardado. Renuévalo para seguir con toda tu ruta. <a href="#pt-plan" id="tb-up">Renovar mi plan →</a></div>` : `🟢 <div><b>Estás en tu acceso gratuito.</b> Tienes el examen de clasificación y los <b>2 primeros temas</b> de tu módulo. ¿Te gustó? <a href="#pt-plan" id="tb-up">Desbloquea toda tu ruta →</a></div>`}</div>` : ''}
+      ${trial ? `<div class="pt-trialbar">${P.plan().expired ? `⏰ <div><b>Tu plan venció.</b> Tu progreso sigue guardado. Renuévalo para seguir con toda tu ruta. <a href="#pt-plan" id="tb-up">Renovar mi plan →</a></div>` : `🟢 <div><b>Estás en tu acceso gratuito.</b> Tienes la prueba de clasificación y los <b>2 primeros temas</b> de tu módulo. ¿Te gustó? <a href="#pt-plan" id="tb-up">Desbloquea toda tu ruta →</a></div>`}</div>` : ''}
       ${main}
       <a class="card pt-arcade pt-clubs" href="clubes.html"><span class="pa-ic">🎙️</span><div class="grow"><span class="lbl">Clubs en vivo · Premium</span><h2>Mis clubs de Conversación y Fonética</h2><p class="muted">Espacios distintos a tus clases: talk show en inglés y gimnasio de pronunciación, según tu nivel.</p></div><span class="btn k">Entrar →</span></a>
       <a class="card pt-arcade" href="juegos.html"><span class="pa-ic">🎮</span><div class="grow"><span class="lbl">Zona de juegos</span><h2>¡Juega y aprende inglés!</h2><p class="muted">Juegos rápidos y divertidos de tu nivel: suma monedas, rompe récords y aprende jugando.</p></div><span class="btn k">Jugar →</span></a>
@@ -169,8 +176,8 @@
       ${routeBar()}
       <div class="pt-mods-grid pt-route">${P.MODS.map(m => modCard(m)).join('')}</div>
       ${courseCard()}
-      ${pl ? `<div class="sect-title"><h2>📝 Mi examen de clasificación</h2></div><div class="card pt-plres"><div><b>Resultado:</b> ${esc(P.mod(pl.module).name)} · ${esc(P.mod(pl.module).es)}<br><span class="muted">${new Date(pl.date).toLocaleDateString('es-CO')}${pl.mods ? ' · ' + [1, 2, 3, 4].map(k => `${P.mod(k).id}: ${pl.mods[k]}%`).join(' · ') : ''}</span></div>${(pst.attempts < pst.max || (pst.round || 1) < (pst.rounds || 1)) ? '<button class="btn w sm" id="pt2">🔁 Repetir examen</button>' : ''}</div>` : ''}
-      ${staff ? `<div class="sect-title"><h2>📝 Examen de clasificación</h2></div><div class="card pt-plres"><div>Puedes presentar o revisar el examen de clasificación como lo verá el estudiante.</div><button class="btn w sm" id="pt2">📝 Abrir examen</button></div>` : ''}
+      ${pl ? `<div class="sect-title"><h2>📝 Mi prueba de clasificación</h2></div><div class="card pt-plres"><div><b>Resultado:</b> ${esc(P.mod(pl.module).name)} · ${esc(P.mod(pl.module).es)}<br><span class="muted">${new Date(pl.date).toLocaleDateString('es-CO')}${pl.mods ? ' · ' + [1, 2, 3, 4].map(k => `${P.mod(k).id}: ${pl.mods[k]}%`).join(' · ') : ''}</span></div>${(pst.attempts < pst.max || (pst.round || 1) < (pst.rounds || 1)) ? '<button class="btn w sm" id="pt2">🔁 Repetir examen</button>' : ''}</div>` : ''}
+      ${staff ? `<div class="sect-title"><h2>📝 Prueba de clasificación</h2></div><div class="card pt-plres"><div>Puedes presentar o revisar la prueba de clasificación como lo verá el estudiante.</div><button class="btn w sm" id="pt2">📝 Abrir examen</button></div>` : ''}
       ${certs()}
       <p class="center fx-foot" style="margin-top:22px;font-size:13.5px;font-weight:600">mrarrieta.com · ¡Aprende inglés HABLANDO! · WhatsApp ${esc(C.WHATSAPP.replace(/^57/, ''))}</p></div>`;
     if ($('#pt')) $('#pt').onclick = () => route('placement');
@@ -184,7 +191,7 @@
       $('#wbx', wm).onclick = () => wm.remove(); M.confetti && M.confetti(900); } } catch (e) { }
     if (!p.tourDone) setTimeout(portalTour, 900);
     $('#me-av').onclick = () => route('me'); if ($('#me-go')) $('#me-go').onclick = () => route('me');
-    if ($('#pt2')) $('#pt2').onclick = () => { if (staff) return route('placement'); const m = M.modal(`<h3>¿Repetir el examen de clasificación?</h3><p>¿No te sentiste a gusto con tu resultado? Puedes repetirlo: <b>tu ruta de aprendizaje se actualizará con el nuevo resultado</b>.</p><p class="muted">Tienes ${pst.rounds || 1} oportunidades de 2 intentos cada una. Llevas ${pst.attempts} intento(s)${pst.attempts >= pst.max && (pst.round || 1) < (pst.rounds || 1) ? ' — se activará tu <b>segunda oportunidad</b>' : ''}.</p><div class="row"><button class="btn k" id="y">Sí, repetir</button><button class="btn w" id="n">Cancelar</button></div>`, { x: true }); $('#n', m).onclick = () => m.remove(); $('#y', m).onclick = () => { m.remove(); route('placement'); }; };
+    if ($('#pt2')) $('#pt2').onclick = () => { if (staff) return route('placement'); const m = M.modal(`<h3>¿Repetir la prueba de clasificación?</h3><p>¿No te sentiste a gusto con tu resultado? Puedes repetirla: <b>tu ruta de aprendizaje se actualizará con el nuevo resultado</b>.</p><p class="muted">Tienes ${pst.rounds || 1} oportunidades de 2 intentos cada una. Llevas ${pst.attempts} intento(s)${pst.attempts >= pst.max && (pst.round || 1) < (pst.rounds || 1) ? ' — se activará tu <b>segunda oportunidad</b>' : ''}.</p><div class="row"><button class="btn k" id="y">Sí, repetir</button><button class="btn w" id="n">Cancelar</button></div>`, { x: true }); $('#n', m).onclick = () => m.remove(); $('#y', m).onclick = () => { m.remove(); route('placement'); }; };
     $$('.pt-mod').forEach(el => el.onclick = () => openMod(el.dataset.id));
   }
   function routeBar() {
@@ -206,7 +213,7 @@
     if (r === 'soon') return M.modal(`<div class="center">${M.mascot('mascot', 'think')}</div><h3 class="center">🚧 ${esc(m.name)} · ${esc(m.es)}</h3><p class="center">Este módulo está en construcción. ¡Muy pronto estará disponible en tu perfil!</p>`, { x: true });
     if (P.isTrial() && window.MRPLANS && a) return MRPLANS.modal(M);
     const msg = P.isTrial() ? `Tu acceso gratuito incluye solo el inicio de tu ruta. ¡Inscríbete para estudiar todos los módulos!`
-      : !a ? 'Primero toma tu examen de clasificación para saber en qué módulo empiezas.'
+      : !a ? 'Primero toma tu prueba de clasificación para saber en qué módulo empiezas.'
       : `Para abrir el ${m.name} primero debes <b>terminar y aprobar el examen final del ${esc(a.name)}</b>. ¡Paso a paso! 💪`;
     const mm = M.modal(`<div class="center">${M.mascot('mascot', 'pointside')}</div><h3 class="center">🔒 ${esc(m.name)} bloqueado</h3><p class="center" style="font-size:17px">${msg}</p>
       ${P.isTrial() ? `<a class="btn block pt-wa" target="_blank" rel="noopener" href="${WA('¡Hola! Quiero inscribirme en mrarrieta.com 🚀')}">💬 Quiero inscribirme</a>` : '<button class="btn k block" id="cl">Entendido</button>'}`, { x: true });
@@ -234,15 +241,15 @@
     const all = [
       { mood: 'welcome', t: `¡Hola, ${fn}! 👋`, d: 'Soy Mr. Arrieta, tu profe. Te muestro en 1 minuto cómo funciona tu plataforma.' },
       { sel: '.pt-avwrap', mood: 'point', t: 'Tu perfil', d: 'Toca tu foto para <b>personalizar tu perfil</b>: tómate una foto o crea <b>tu propio Mr. Arrieta</b>.' },
-      { sel: '.pt-step', mood: 'idea', t: 'Primer paso: tu examen de clasificación', d: 'Son 40 preguntas de Listening, Reading, Writing y Speaking. Con tu resultado se crea <b>tu ruta de aprendizaje</b>.' },
+      { sel: '.pt-step', mood: 'idea', t: 'Primer paso: tu prueba de clasificación', d: 'Unos 10 minutos: Listening, Reading, Writing y Speaking, adaptada a tu nivel. Con tu resultado se crea <b>tu ruta de aprendizaje</b>.' },
       { sel: '.pt-mymod', mood: 'pointside', t: 'Tu ruta de aprendizaje', d: 'Aquí ves <b>en qué punto de tu ruta estás</b> y entras a tus clases.' },
-      { sel: '.pt-trialbar', mood: 'present', t: 'Tu acceso gratuito', d: 'Puedes tomar el examen de clasificación y explorar los <b>2 primeros temas</b> de tu ruta. ¡Disfrútalo!' },
+      { sel: '.pt-trialbar', mood: 'present', t: 'Tu acceso gratuito', d: 'Puedes tomar la prueba de clasificación y explorar los <b>2 primeros temas</b> de tu ruta. ¡Disfrútalo!' },
       { sel: '#pt-plan', mood: 'idea', t: 'Tu plan', d: P.plan().premium ? 'Tienes <b>Premium</b>: toda la plataforma + clases grupales, clases VIP y el Club de conversación.' : P.plan().paid ? 'Tienes <b>Membership</b>: toda la plataforma y tu ruta completa. Si quieres acompañamiento de profes, pásate a Premium.' : 'Aquí ves los planes: <b>Membership</b> desbloquea toda la plataforma y <b>Premium</b> suma clases con profes.' },
       { sel: '.lv-wrap', mood: 'present', t: 'Tus clases con profes', d: 'Aquí ves tu <b>grupo</b>, reservas tus <b>clases VIP</b> con tus créditos y entras al <b>Club de conversación</b>.' },
       { sel: '.pt-routebar', mood: 'present', t: 'Tu camino', d: 'Tu ruta va de A1 a B2+. Cada etapa se abre cuando <b>apruebas el examen final</b> de la anterior.' },
       { sel: '.pt-perso', mood: 'wink', t: 'Hazla tuya', d: 'Viste a tu Mr. Arrieta, ponle sombrero, elige colores y fondo. ¡Tu plataforma, a tu estilo!' },
       { sel: '#out', mood: 'watch', t: 'Salir', d: 'Con este botón cierras tu sesión. Tu progreso queda guardado.' },
-      { mood: 'thumbs', t: '¡Listo! 🚀', d: p.module ? '¡Vamos a tu ruta de aprendizaje!' : 'Empieza con tu examen de clasificación para crear tu ruta.', last: true },
+      { mood: 'thumbs', t: '¡Listo! 🚀', d: p.module ? '¡Vamos a tu ruta de aprendizaje!' : 'Empieza con tu prueba de clasificación para crear tu ruta.', last: true },
     ];
     const steps = all.filter(x => !x.sel || $(x.sel));
     const ov = h(`<div id="tour"><div class="tour-hole"></div><div class="tour-card"></div></div>`); document.body.appendChild(ov);
@@ -377,7 +384,7 @@
     const ic = { free: '🟢', membership: '⭐', premium: '👑' }[pl.eff] || '🟢';
     const end = pl.end ? fmtD(pl.end, { day: 'numeric', month: 'long', year: 'numeric' }) : '';
     const sub = pl.expired ? `Tu plan ${esc(MRPLANS.PL[pl.plan] ? MRPLANS.PL[pl.plan].name : '')} venció el ${end}. Tu progreso sigue guardado.`
-      : pl.eff === 'free' ? 'Examen de clasificación, tu ruta de aprendizaje y los 2 primeros temas.'
+      : pl.eff === 'free' ? 'Prueba de clasificación, tu ruta de aprendizaje y los 2 primeros temas.'
       : `Activo hasta el <b>${end}</b>${pl.daysLeft !== null && pl.daysLeft <= 5 ? ` · <b class="pl-warn">vence en ${pl.daysLeft} día${pl.daysLeft === 1 ? '' : 's'}</b>` : ''}`;
     const renew = pl.expired || (pl.paid && pl.daysLeft !== null && pl.daysLeft <= 5);
     return `<div class="sect-title" id="pt-plan"><h2>💎 Mi plan</h2></div>
@@ -390,9 +397,11 @@
     const box = $('#pt-live'); const sig = () => { const q = P.get() || {}; return [q.plan, q.planEnd, q.type, q.module, q.expired].map(x => String(x == null ? '' : x)).join('|'); }; const before = sig();
     if (box && P.plan().premium) box.innerHTML = '<div class="sect-title"><h2>👩‍🏫 Mis clases con profes</h2></div><div class="card lv-load">⏳ Cargando tus clases…</div>';
     const r = await MRAC.me(); if (!r || !document.body.contains(box)) return;
+    if (r.ok === false && r.err === 'trial_over') { const c = MRAC.code(); P.clear(); try { sessionStorage.removeItem('mra_me_cache'); } catch (e) { } route('home'); return trialOver(c); }
     if (r.ok === false && (r.err === 'notfound' || r.err === 'inactive')) { M.toast('Tu acceso ya no está activo. Escríbenos por WhatsApp.'); return; }
     if (before !== sig()) { topbar(); return home(); } // el plan cambió en la nube → actualizar perfil
     const ann = r.conf && r.conf.announcement; if (ann && $('#pt-ann')) $('#pt-ann').innerHTML = `<div class="pt-ann">📣 ${esc(ann)}</div>`;
+    if (r.trialLeft != null && r.trialLeft > 0 && $('#pt-ann')) $('#pt-ann').insertAdjacentHTML('afterbegin', `<div class="pt-ann pt-trial">🎁 ${r.trialLeft === 1 ? '<b>Hoy es tu último día</b> de acceso gratuito.' : 'Te quedan <b>' + r.trialLeft + ' días</b> de acceso gratuito.'} <a class="btn k sm" target="_blank" rel="noopener" href="${WA('¡Hola! Soy ' + (P.get().first || '') + ' (código ' + MRAC.code() + ') y quiero inscribirme en mrarrieta.com 🚀')}">💬 Quiero inscribirme</a></div>`);
     if (!r.premium) { if (box) box.innerHTML = ''; return; }
     renderLive(box, r);
   }

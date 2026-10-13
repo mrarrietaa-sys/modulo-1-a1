@@ -14,7 +14,7 @@
 
   const PLANS = [
     { id: 'free', name: 'Acceso gratuito', price: '$0', per: '', tag: 'Para empezar', icon: '🟢',
-      perks: ['Código de acceso entregado por la escuela', 'Examen de clasificación', 'Tu nivel y tu ruta de aprendizaje', 'Los 2 primeros temas gratis'] },
+      perks: ['Código de acceso entregado por la escuela', 'Prueba de clasificación', 'Tu nivel y tu ruta de aprendizaje', 'Los 2 primeros temas gratis'] },
     { id: 'membership', name: (P.membership && P.membership.name) || 'Membership', price: (P.membership && P.membership.price) || '$59.900', per: (P.membership && P.membership.per) || '/mes', tag: 'Toda la plataforma', icon: '🚀',
       perks: ['Toda la plataforma: ruta A1 → A2 → B2 → B2+', 'Tu progreso guardado en la nube', 'Todas las actividades y materiales', 'Estudia a tu ritmo, desde cualquier dispositivo'], note: 'No incluye clases con profe.' },
     { id: 'premium', name: (P.premium && P.premium.name) || 'Premium', price: (P.premium && P.premium.price) || '$349.000', per: (P.premium && P.premium.per) || '/mes', tag: 'Plataforma + clases', icon: '⭐', best: true,
@@ -37,7 +37,7 @@
       <div class="in-hero-txt">
         <span class="lbl">Inscripciones abiertas</span>
         <h1>Aprende inglés <span class="in-hl">HABLANDO</span>, a tu ritmo y con tu propia ruta.</h1>
-        <p>Una plataforma completa para niños, jóvenes y adultos hispanohablantes: examen de clasificación, ruta de aprendizaje del A1 al B2+, actividades interactivas y, si lo quieres, clases en vivo con profes.</p>
+        <p>Una plataforma completa para niños, jóvenes y adultos hispanohablantes: prueba de clasificación, ruta de aprendizaje del A1 al B2+, actividades interactivas y, si lo quieres, clases en vivo con profes.</p>
         <ul class="in-hero-pts"><li>✅ 100 % en línea</li><li>✅ Metodología RealTalk®</li><li>✅ Tu progreso siempre guardado</li></ul>
       </div>
       <img class="in-hero-img" src="mra-welcome.webp" alt="Mr. Arrieta te da la bienvenida" width="300" height="300">
@@ -79,7 +79,7 @@
         <fieldset class="in-fs">
           <legend>¿Cuál crees que es tu nivel de inglés?</legend>
           <div class="in-chips" data-group="level">${LEVELS.map(([v, t]) => chip('level', v, t)).join('')}</div>
-          <small class="muted">No te preocupes: con el examen de clasificación confirmamos tu nivel.</small>
+          <small class="muted">No te preocupes: con la prueba de clasificación confirmamos tu nivel.</small>
         </fieldset>
 
         <div id="in-premium" class="in-cond" hidden>
@@ -209,7 +209,7 @@
       <span class="lbl">Inscripción recibida</span>
       <h1>¡Bienvenido(a), ${esc(d.first)}! 🎉</h1>
       <p>Recibimos tus datos para el plan <b>${esc(p.name)}</b>. Te enviamos un correo de confirmación a <b>${esc(d.email)}</b> y muy pronto te escribiremos por WhatsApp con tu <b>código de acceso</b>.</p>
-      <ol class="in-next"><li><b>Recibe tu código</b> por WhatsApp.</li><li><b>Toma tu examen de clasificación</b> y conoce tu nivel.</li><li><b>Empieza tu ruta</b> de aprendizaje${d.plan === 'premium' ? ' y reserva tus clases VIP' : ''}.</li></ol>
+      <ol class="in-next"><li><b>Recibe tu código</b> por WhatsApp.</li><li><b>Toma tu prueba de clasificación</b> y conoce tu nivel.</li><li><b>Empieza tu ruta</b> de aprendizaje${d.plan === 'premium' ? ' y reserva tus clases VIP' : ''}.</li></ol>
       <a class="btn k lg block in-wa" href="https://wa.me/${WA}?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">💬 ${paid ? 'Escríbenos para activar tu plan' : 'Escríbenos para recibir tu código'}</a>
       <a class="btn w block" href="index.html" style="margin-top:12px">Ir a la plataforma</a>
     </section>`;

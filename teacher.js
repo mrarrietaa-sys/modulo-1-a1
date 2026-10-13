@@ -127,8 +127,9 @@
   async function reload() { const r = await api('tLogin'); if (r.ok) { D = r; shell(); } else if (r.err !== 'auth') toast(errText(r.err), true); return r.ok; }
 
   /* ---------- estructura principal ---------- */
-  const TABS = [['home', '🏠', 'Resumen'], ['avail', '🗓️', 'Mi disponibilidad'], ['classes', '🎓', 'Mis clases']];
+  const TABS = [['home', '🏠', 'Resumen'], ['avail', '🗓️', 'Mi disponibilidad'], ['classes', '🎓', 'Mis clases'], ['pay', '💰', 'Mis pagos']];
   function shell() {
+    bell();
     outBtn.classList.remove('hidden'); outBtn.onclick = () => { if (confirm('¿Cerrar sesión?')) logout(); };
     const t = D.teacher;
     app.innerHTML = `<div class="tp-head">
@@ -139,7 +140,7 @@
       <section id="tp-body"></section>`;
     if ($('#tp-tour')) $('#tp-tour').onclick = () => tour();
     $$('.tp-tab').forEach((b) => b.onclick = () => { tab = b.dataset.tab; ss.set(TABKEY, tab); shell(); });
-    ({ home, avail, classes, groups }[tab] || home)($('#tp-body'));
+    ({ home, avail, classes, groups, pay }[tab] || home)($('#tp-body'));
   }
 
   /* ---------- 1. Resumen ---------- */
@@ -152,7 +153,7 @@
         ${(c.type === 'group' || c.type === 'club') && c.status === 'scheduled' ? `<small class="muted">✅ ${+c.confirmed || 0} confirmado(s)${c.flags === 'cutoff' ? '' : ' · se cierra 3 h antes'}</small>` : ''}${c.status === 'sin-asistentes' ? '<small class="tp-note">🙌 Nadie confirmó: no necesitas conectarte.</small>' : ''}
         ${c.notes && opt && opt.notes ? `<small class="tp-note">📝 ${esc(c.notes)}</small>` : ''}</div>
       <div class="tp-cls-act">
-        ${c.status === 'scheduled' && c.date >= today() ? (link ? `<a class="btn k sm" href="${esc(link)}" target="_blank" rel="noopener">🎥 Entrar a la clase</a>` : '<small class="muted">Sin enlace de clase</small>') : ''}
+        ${c.status === 'scheduled' && c.date >= today() ? (link ? `<a class="btn k sm" href="${esc(link)}" target="_blank" rel="noopener"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 6h11a2 2 0 0 1 2 2v1.6l3.4-2.3A1 1 0 0 1 22 8.1v7.8a1 1 0 0 1-1.6.8L17 14.4V16a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z"/></svg> Entrar a la clase</a>` : '<small class="muted">Sin enlace de clase</small>') : ''}
         ${canMark ? `<button class="btn ok sm" data-mark="${esc(c.id)}">✓ Marcar como dictada</button><button class="btn w sm" data-noshow="${esc(c.id)}">No asistió</button>` : ''}
       </div></li>`;
   }
@@ -161,13 +162,11 @@
     $$('[data-noshow]', root).forEach((b) => b.onclick = () => markDialog(b.dataset.noshow, 'noshow'));
   }
   function home(el) {
-    setTimeout(() => { const nb = document.getElementById('tp-nread'); if (nb) nb.onclick = async () => { nb.disabled = true; await api('notifRead', { all: true }); (D.notifications || []).forEach(n => n.read = true); shell(); }; }, 0);
     const t0 = today();
     const up = D.classes.filter((c) => c.status === 'scheduled' && c.date >= t0);
     const pend = D.classes.filter((c) => c.status === 'scheduled' && c.date <= t0 && !(c.date === t0 && endHM(c.time, c.duration) > nowHM()));
     const free = D.slots.filter((s) => s.status === 'free' && s.date >= t0).length;
-    const nt = (D.notifications || []).slice(0, 12); const unread = nt.filter(n => !n.read);
-    el.innerHTML = `${nt.length ? `<div class="card tp-notif"><h3>🔔 Notificaciones ${unread.length ? `<span class="tp-nbadge">${unread.length} nueva${unread.length > 1 ? 's' : ''}</span>` : ''}</h3><div class="tp-nlist">${nt.map(n => `<div class="tp-n${n.read ? '' : ' new'}"><b>${esc(n.title)}</b>${n.body ? `<p>${esc(n.body)}</p>` : ''}<small>${esc(String(n.date || '').replace('T', ' ').slice(0, 16))}</small></div>`).join('')}</div>${unread.length ? '<button class="btn w sm" id="tp-nread">✓ Marcar todas como leídas</button>' : ''}</div>` : ''}<div class="tp-stats">
+    el.innerHTML = `<div class="tp-stats">
         <div class="tp-stat red"><b>${+D.stats.taughtMonth || 0}</b><span>clases dictadas este mes</span></div>
         <div class="tp-stat"><b>${+D.stats.taughtTotal || 0}</b><span>clases dictadas en total</span></div>
         <div class="tp-stat"><b>${up.length}</b><span>próximas clases</span></div>
@@ -281,6 +280,7 @@
         : `<p>${c.type === 'vip' ? `Se registrará que <b>${esc(studentName(c.students[0] || ''))}</b> no se presentó a la clase.` : 'Se registrará que <b>ningún estudiante</b> se presentó a la clase.'}</p>`}
       <label class="tp-l" for="tp-notes">Notas de la clase <small class="muted">(opcional)</small></label>
       <textarea class="inp tp-inp" id="tp-notes" rows="3" maxlength="800" placeholder="${done ? 'Tema visto, avances, tareas…' : 'Ej: esperé 15 minutos, le escribí por WhatsApp…'}">${esc(c.notes || '')}</textarea>
+      <p class="tp-payinfo">💰 ${done ? 'Clase dictada: se paga ' + COP((D.pay && D.pay.cur && D.pay.cur.rate) || 21800) : 'Si te conectaste y el estudiante no llegó, se pagan ' + COP((D.pay && D.pay.cur && D.pay.cur.noshowRate) || 10000)}. Al guardar, les llega un aviso al estudiante, a ti y a administración.</p>
       <div class="row tp-mbtns"><button class="btn w" data-x>Cancelar</button><button class="btn ${done ? 'ok' : 'k'}" id="tp-msave">${done ? 'Guardar clase dictada ✓' : 'Guardar: no asistió'}</button></div>`);
     $('#tp-msave', m).onclick = async () => {
       const attendance = {}; c.students.forEach((code) => { attendance[String(code).toUpperCase()] = false; });
@@ -292,6 +292,22 @@
     };
   }
 
+
+  /* ---------- 💰 Mis pagos ---------- */
+  const COP = (n) => '$' + Math.round(+n || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  const MES = (ym) => { const [y, m] = String(ym).split('-').map(Number); return new Date(y, m - 1, 15).toLocaleDateString('es-CO', { month: 'long', year: 'numeric' }); };
+  const PST = { done: ['ok', 'Dictada'], noshow: ['warn', 'Te conectaste · el estudiante no asistió'], cancelled: ['off', 'Cancelada a tiempo'], latecancel: ['off', 'Cancelada fuera de tiempo'], 'sin-asistentes': ['off', 'Sin reservas'] };
+  let payView = 'cur';
+  function pay(el) {
+    const P = (D.pay || {})[payView]; if (!P) { el.innerHTML = '<div class="card tp-card"><p class="muted">Aún no hay información de pagos.</p></div>'; return; }
+    el.innerHTML = `<div class="tp-subtabs tp-seg" role="tablist"><button class="tp-segb${payView === 'cur' ? ' on' : ''}" data-pv="cur">Este mes</button><button class="tp-segb${payView === 'prev' ? ' on' : ''}" data-pv="prev">Mes anterior</button></div>
+      <div class="tp-pay-hero card"><span class="lbl">Total a pagar · ${esc(MES(P.month))}</span><b>${COP(P.total)}</b>
+        <div class="tp-pay-k"><span><b>${P.done}</b> clase${P.done === 1 ? '' : 's'} dictada${P.done === 1 ? '' : 's'} × ${COP(P.rate)}</span><span><b>${P.noshow}</b> inasistencia${P.noshow === 1 ? '' : 's'} del estudiante × ${COP(P.noshowRate)}</span></div></div>
+      <div class="tp-alert"><b>¿Cómo se calcula?</b> Se paga cada clase <b>dictada</b> (${COP(P.rate)} por clase de 50 min). Si <b>te conectas y el estudiante no asiste</b>, se pagan ${COP(P.noshowRate)}. Las clases canceladas (a tiempo o fuera de tiempo) y las no dictadas no se pagan. El pago es mensual. Recuerda <b>marcar cada clase</b> en Mis clases.</div>
+      <div class="card tp-card"><div class="tp-card-h"><h2>Detalle</h2><small class="muted">hora Colombia</small></div>
+      ${P.items.length ? `<ul class="tp-list tp-pay-list">${P.items.map((x) => { const st = PST[x.status] || ['off', x.status]; return `<li class="tp-pay-row"><div><b>${dLabel(x.date)} · ${h12(x.time)}</b><small>${x.type === 'vip' ? 'VIP' : esc(x.club || 'Clase grupal')}${x.who ? ' · ' + esc(x.who) : ''}</small></div><span class="tp-pst ${st[0]}">${esc(st[1])}</span><b class="tp-amt">${COP(x.amount)}</b></li>`; }).join('')}</ul>` : '<p class="muted">No hay clases registradas en este mes.</p>'}</div>`;
+    $$('[data-pv]', el).forEach((b) => b.onclick = () => { payView = b.dataset.pv; pay(el); });
+  }
   /* ---------- 4. Mis grupos ---------- */
   function groups(el) {
     const gs = D.groups || [];
@@ -303,7 +319,7 @@
         ${next ? `<p class="tp-small">Próxima sesión: <b>${rel(next.date) || dLabel(next.date)}</b> · ${h12(next.time)}</p>` : ''}
         <div class="tp-l">Estudiantes (${list.length})</div>
         ${list.length ? `<ul class="tp-studs">${list.map((s) => `<li><span class="tp-av">${esc((s.name || '?')[0].toUpperCase())}</span><span>${esc(s.name || s.code)}<small>${esc(s.code)}${s.module ? ' · Módulo ' + esc(s.module) : ''}</small></span></li>`).join('')}</ul>` : '<p class="muted tp-small">Aún no hay estudiantes en este grupo.</p>'}
-        ${g.meet ? `<a class="btn k sm" href="${esc(g.meet)}" target="_blank" rel="noopener">🎥 Enlace de la clase</a>` : ''}</article>`; }).join('')}</div>`
+        ${g.meet ? `<a class="btn k sm" href="${esc(g.meet)}" target="_blank" rel="noopener"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 6h11a2 2 0 0 1 2 2v1.6l3.4-2.3A1 1 0 0 1 22 8.1v7.8a1 1 0 0 1-1.6.8L17 14.4V16a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z"/></svg> Enlace de la clase</a>` : ''}</article>`; }).join('')}</div>`
       : `<div class="card tp-card"><div class="tp-empty"><img src="mra-wink.webp" alt="" width="110" height="110"><p>Aún no tienes grupos asignados. La administración te asignará grupos según los niveles que dictas.</p></div></div>`;
   }
 
@@ -316,7 +332,11 @@
     const m = modal(`<h3>🔔 ${nw.length === 1 ? 'Tienes una novedad' : 'Tienes ' + nw.length + ' novedades'}</h3><div class="tp-pop-list">${nw.map(n => `<div><b>${esc(n.title)}</b><small>${esc(n.body || '')}</small></div>`).join('')}</div><button class="btn k block" id="tp-pok">Entendido</button>`);
     $('#tp-pok', m).onclick = () => { m.remove(); api('notifRead', { ids: nw.map(n => n.id) }).catch(() => { }); nw.forEach(n => n.read = true); if (tab === 'home') shell(); };
   }
-  setInterval(async () => { if (!S || !D || document.hidden) return; const r = await api('tLogin').catch(() => null); if (r && r.ok) { const had = new Set((D.notifications || []).map(n => n.id)); D.notifications = r.notifications; if ((r.notifications || []).some(n => !had.has(n.id))) popNew(); } }, 120000);
+  let bellOn = false;
+  function bell() { if (bellOn || !window.MRBELL) { if (window.MRBELL && D) MRBELL.set(D.notifications || []); return; } bellOn = true;
+    MRBELL.set(D.notifications || []);
+    MRBELL.mount({ active: () => !!S, fetch: async () => { if (!S || !D) return null; const r = await api('tLogin').catch(() => null); if (!r || !r.ok) return null; const had = new Set((D.notifications || []).map(n => n.id)); D.notifications = r.notifications; D.pay = r.pay; if ((r.notifications || []).some(n => !had.has(n.id))) popNew(); return r.notifications; },
+      markRead: (ids, all) => api('notifRead', all ? { all: true } : { ids }).catch(() => { }) }); }
   /* ---------- inicio ---------- */
   async function start() {
     S = ss.get(SKEY);

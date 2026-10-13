@@ -40,7 +40,7 @@
     return p;
   }
   function collect() { const keys = {}; try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (SYNC_RX.test(k)) keys[k] = localStorage.getItem(k); } } catch (e) { } return keys; }
-  function wipeLocal() { try { const ks = []; for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (SYNC_RX.test(k) && k !== 'mra_profile_v1') ks.push(k); } ks.forEach(k => localStorage.removeItem(k)); } catch (e) { } ls.del(TS); }
+  function wipeLocal(block) { try { const ks = []; for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (SYNC_RX.test(k) && k !== 'mra_profile_v1') ks.push(k); } ks.forEach(k => localStorage.removeItem(k)); } catch (e) { } ls.del(TS); if (block) { window.__mraWiped = true; ls.set('mra_wipe', String(Date.now())); } }
   function applyData(data, profileOnly) { if (!data || !data.keys) return; if (!profileOnly) wipeLocal(); if (!profileOnly) Object.keys(data.keys).forEach(k => { if (SYNC_RX.test(k) && k !== 'mra_profile_v1') ls.set(k, data.keys[k]); });
     const rp = J(data.keys.mra_profile_v1, null); const p = prof();
     if (rp && p) { ['look', 'tourDone', 'first', 'last', 'name', 'birth', 'email', 'placement', 'lastSeen', 'module', 'moduleSet', 'assignedBy'].forEach(k => { if (rp[k] !== undefined && (p[k] === undefined || p[k] === null || p[k] === '' || (k === 'module' && (+rp.moduleSet || 0) > (+p.moduleSet || 0)) || k === 'look' || k === 'tourDone')) p[k] = rp[k]; }); ls.set('mra_profile_v1', JSON.stringify(p)); }
@@ -50,6 +50,7 @@
   async function login(rawCode) {
     const c = String(rawCode || '').trim().toUpperCase(); if (!c) return { ok: false, err: 'empty' };
     const r = await call('login', { code: c }); if (!r.ok) return r;
+    window.__mraWiped = false; // nueva sesión en esta página
     const owner = ls.get(OWNER), same = owner === r.student.code;
     // primer uso de la nube en este dispositivo y la nube aún no tiene progreso → se sube lo que ya había aquí
     const migrate = false; const hadProf = !!prof(); // nunca se sube a un estudiante el progreso que había en el dispositivo (podía ser de otra persona)
@@ -83,18 +84,20 @@
   }
   let timer = null, busy = false, dirty = false;
   async function sync(now) {
-    const c = code(); if (!c) return false;
+    const c = code(); if (!c || window.__mraWiped) return false;
     if (!now) { dirty = true; clearTimeout(timer); timer = setTimeout(() => sync(true), 15000); return true; }
     if (busy) { for (let i = 0; i < 40 && busy; i++) await new Promise(r => setTimeout(r, 250)); if (busy) { dirty = true; return false; } } busy = true; dirty = false; const ts = Date.now();
     const r = await call('sync', { code: c, ts, base: +ls.get(TS) || 0, keys: collect(), summary: summary() });
-    if (!r.ok && r.err === 'reset') { busy = false; wipeLocal(); const p0 = prof(); if (p0) { p0.module = null; p0.placement = null; ls.set('mra_profile_v1', JSON.stringify(p0)); } ls.set(TS, String(Date.now())); try { location.reload(); } catch (e) { } return false; }
+    if (!r.ok && r.err === 'reset') { busy = false; wipeLocal(true); const p0 = prof(); if (p0) { p0.module = null; p0.placement = null; ls.set('mra_profile_v1', JSON.stringify(p0)); } ls.set(TS, String(Date.now())); try { location.reload(); } catch (e) { } return false; }
     busy = false; if (r.ok) { ls.set(TS, String(ts)); if (r.student) applyStudent(r.student, r.state); }
     if (dirty) { clearTimeout(timer); timer = setTimeout(() => sync(true), 15000); }
     return r.ok;
   }
-  function beacon(force) { const c = code(); if (!c || !URL_ || (!dirty && force !== true)) return; try { const ts = Date.now(); const body = JSON.stringify({ action: 'sync', code: c, ts, base: +ls.get(TS) || 0, keys: collect(), summary: summary() }); if (navigator.sendBeacon && navigator.sendBeacon(URL_, new Blob([body], { type: 'text/plain;charset=utf-8' }))) { ls.set(TS, String(ts)); dirty = false; } } catch (e) { } }
+  function beacon(force) { const c = code(); if (window.__mraWiped || !c || !URL_ || (!dirty && force !== true)) return; try { const ts = Date.now(); const body = JSON.stringify({ action: 'sync', code: c, ts, base: +ls.get(TS) || 0, keys: collect(), summary: summary() }); if (navigator.sendBeacon && navigator.sendBeacon(URL_, new Blob([body], { type: 'text/plain;charset=utf-8' }))) { ls.set(TS, String(ts)); dirty = false; } } catch (e) { } }
   // detecta cambios en el progreso para sincronizar solo cuando hace falta (ahorra cuota con muchos usuarios)
-  try { const orig = Storage.prototype.setItem; Storage.prototype.setItem = function (k, v) { orig.apply(this, arguments); if (this === window.localStorage && SYNC_RX.test(k) && code()) sync(false); }; } catch (e) { }
+  try { const orig = Storage.prototype.setItem; Storage.prototype.setItem = function (k, v) { if (this === window.localStorage && window.__mraWiped && SYNC_RX.test(k) && k !== 'mra_profile_v1') return; /* tras borrar el dispositivo, esta página (con datos viejos en memoria) ya no puede volver a escribir progreso */ orig.apply(this, arguments); if (this === window.localStorage && SYNC_RX.test(k) && code()) sync(false); }; } catch (e) { }
+  // si en otra pestaña se cerró sesión o administración reinició el progreso, esta pestaña se recarga (no puede reescribir datos viejos)
+  window.addEventListener('storage', (e) => { if (e.key === 'mra_wipe' && e.newValue) { window.__mraWiped = true; try { location.reload(); } catch (x) { } } });
   document.addEventListener('visibilitychange', () => { if (document.hidden) beacon(); });
   window.addEventListener('pagehide', beacon);
 
@@ -125,7 +128,7 @@
   // al abrir cualquier página con sesión: refresca plan, avisos e intentos extra (máx. 1 vez por minuto)
   setTimeout(() => { if (code()) me().catch(() => { }); }, 800);
   // cerrar sesión: guarda en la nube y deja el dispositivo limpio (el siguiente que entre no ve el progreso de otro)
-  async function signOut() { const ok = await sync(true); if (ok) { wipeLocal(); ls.del(OWNER); ls.del(ME); try { sessionStorage.removeItem(ME); } catch (e) { } } return ok; }
+  async function signOut() { const ok = await sync(true); if (ok) { wipeLocal(true); ls.del(OWNER); ls.del(ME); try { sessionStorage.removeItem(ME); } catch (e) { } } return ok; }
   window.MRAC = { signOut, flush: () => beacon(true), examResult, requestAttempt, homework, feedbackFor, evalSave, notifications, markRead, isPremium: premium, cachedMe: () => { const c = cachedMe(); return c && c.r; }, on: !!URL_, url: URL_, call, login, me, sync, upload, saveProfile, code, toB64, applyStudent, wipeLocal,
     planName: (p) => ({ free: 'Acceso gratuito', membership: 'Membership', premium: 'Premium' }[p] || 'Acceso gratuito') };
 })();

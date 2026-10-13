@@ -89,6 +89,7 @@
       ['watch', '🔔 Correos diarios', 'Cada mañana te llega un correo con tu resumen del día. Si nadie confirma un club, te avisamos 3 horas antes para que no tengas que conectarte.', null],
       ['thumbs', '¡Listo! 🚀', 'Para empezar, escribe tu <b>disponibilidad semanal</b>.', 'avail'],
     ];
+    try { localStorage.setItem(TKEY(), '1'); } catch (e) { } if (D && D.teacher && !D.teacher.tour) { D.teacher.tour = 1; api('tTour').catch(() => { }); } // marcado desde que empieza
     let i = 0;
     const m = document.createElement('div'); m.className = 'tp-modal'; document.body.appendChild(m);
     const end = (go) => { m.remove(); try { localStorage.setItem(TKEY(), '1'); } catch (e) { } if (D && D.teacher && !D.teacher.tour) { D.teacher.tour = '1'; api('tTour').catch(() => { }); } if (go) { tab = 'avail'; ss.set(TABKEY, tab); shell(); } };

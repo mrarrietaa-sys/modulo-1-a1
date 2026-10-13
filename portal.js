@@ -192,7 +192,7 @@
       const wm = M.modal(`<div class="center wb">${P.pic() ? P.avHTML('pt-av big') : M.mascot('mascot bounce', 'wink')}<h2>Welcome, ${esc(P.look().nick || p.first)}! 👋</h2><p style="font-size:17px">¡Qué bueno verte de nuevo! ${pr && pr.done ? `Llevas <b>${pr.done} clase(s)</b> en tu ruta. ¡Sigamos!` : 'Hoy es un gran día para avanzar en tu ruta de aprendizaje.'}</p>
         ${a && a.ready && !staff ? `<a class="btn k block lg" style="text-decoration:none" href="${a.url}">▶ Continuar mi ruta</a>` : ''}<button class="btn w block" id="wbx" style="margin-top:8px">Ir a mi perfil</button></div>`, { x: true });
       $('#wbx', wm).onclick = () => wm.remove(); M.confetti && M.confetti(900); } } catch (e) { }
-    if (!p.tourDone) setTimeout(portalTour, 900);
+    if (!p.tourDone && !tourSeen()) setTimeout(portalTour, 900);
     $('#me-av').onclick = () => route('me'); if ($('#me-go')) $('#me-go').onclick = () => route('me');
     if ($('#pt2')) $('#pt2').onclick = () => { if (staff) return route('placement'); const m = M.modal(`<h3>¿Repetir la prueba de clasificación?</h3><p>¿No te sentiste a gusto con tu resultado? Puedes repetirla: <b>tu ruta de aprendizaje se actualizará con el nuevo resultado</b>.</p><p class="muted">Tienes ${pst.rounds || 1} oportunidades de 2 intentos cada una. Llevas ${pst.attempts} intento(s)${pst.attempts >= pst.max && (pst.round || 1) < (pst.rounds || 1) ? ' — se activará tu <b>segunda oportunidad</b>' : ''}.</p><div class="row"><button class="btn k" id="y">Sí, repetir</button><button class="btn w" id="n">Cancelar</button></div>`, { x: true }); $('#n', m).onclick = () => m.remove(); $('#y', m).onclick = () => { m.remove(); route('placement'); }; };
     $$('.pt-mod').forEach(el => el.onclick = () => openMod(el.dataset.id));
@@ -237,9 +237,13 @@
     return `<div class="sect-title"><h2>🎓 Mis certificados</h2></div><div class="pt-certs">${course}${done.map(m => `<a class="card pt-cert" href="${m.url}#cert">🎓 <div><b>${esc(m.name)} · ${esc(m.level)}</b><small>Nota: ${(P.modState(m.id).final.score || 0).toFixed ? Number(P.modState(m.id).final.score).toFixed(1) : ''}/10 · Ver y descargar</small></div></a>`).join('')}</div>`;
   }
   /* ---------- tour guiado del perfil (primera vez de cualquier estudiante) ---------- */
+  // el tour sale solo UNA vez por código (queda marcado en este dispositivo y en la nube)
+  const TOURK = () => { const p = P.get() || {}; return 'mra_tourseen_' + ((window.MRAC && MRAC.code && MRAC.code()) || p.codeHash || p.first || 'x'); };
+  function tourSeen() { try { return !!localStorage.getItem(TOURK()); } catch (e) { return false; } }
   function portalTour(force) {
-    if ($('#tour')) return; const p = P.get(); if (!p || (p.tourDone && !force)) return;
-    if ($('.modal')) return setTimeout(portalTour, 800); // espera a que cierre el saludo (cumpleaños / welcome back)
+    if ($('#tour')) return; const p = P.get(); if (!p || ((p.tourDone || tourSeen()) && !force)) return;
+    if ($('.modal')) return setTimeout(() => portalTour(force), 800); // espera a que cierre el saludo
+    try { localStorage.setItem(TOURK(), '1'); } catch (e) { } if (!p.tourDone) { p.tourDone = true; P.save(p); try { window.MRAC && MRAC.code() && MRAC.sync(true); } catch (e) { } } // marcado desde que empieza
     const fn = esc(P.look().nick || p.first || ''); const a = P.assigned();
     const all = [
       { mood: 'welcome', t: `¡Hola, ${fn}! 👋`, d: 'Soy Mr. Arrieta, tu profe. Te muestro en 1 minuto cómo funciona tu plataforma.' },
@@ -257,7 +261,7 @@
     const steps = all.filter(x => !x.sel || $(x.sel));
     const ov = h(`<div id="tour"><div class="tour-hole"></div><div class="tour-card"></div></div>`); document.body.appendChild(ov);
     const hole = $('.tour-hole', ov), card = $('.tour-card', ov); let i = 0;
-    const end = (go) => { ov.remove(); window.removeEventListener('resize', place); window.removeEventListener('scroll', place); const q = P.get(); if (q) { q.tourDone = true; P.save(q); try { window.MRAC && MRAC.code() && MRAC.sync(true); } catch (e) { } }
+    const end = (go) => { ov.remove(); window.removeEventListener('resize', place); window.removeEventListener('scroll', place); const q = P.get(); try { localStorage.setItem(TOURK(), '1'); } catch (e) { } if (q) { q.tourDone = true; P.save(q); try { window.MRAC && MRAC.code() && MRAC.sync(true); } catch (e) { } }
       if (go) { M.confetti && M.confetti(1500); if (!q.module && q.type !== 'staff') route('placement'); else if (a && a.ready) location.href = a.url; } };
     function place() {
       const st = steps[i]; const el = st.sel && $(st.sel);

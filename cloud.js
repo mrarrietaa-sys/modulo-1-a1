@@ -51,11 +51,11 @@
     const r = await call('login', { code: c }); if (!r.ok) return r;
     const owner = ls.get(OWNER), same = owner === r.student.code;
     // primer uso de la nube en este dispositivo y la nube aún no tiene progreso → se sube lo que ya había aquí
-    const migrate = owner === null && !r.data;
+    const migrate = owner === null && !r.data; const hadProf = !!prof();
     if (!same && !migrate) { wipeLocal(); ls.del('mra_profile_v1'); }
     applyStudent(r.student, r.state, same || migrate ? prof() : {});
     const localTs = +ls.get(TS) || 0;
-    if (r.data && (!same || (+r.data.ts || 0) > localTs)) applyData(r.data);
+    if (r.data && (!same || !hadProf || (+r.data.ts || 0) > localTs)) applyData(r.data); // al volver a entrar tras cerrar sesión se recupera el perfil (foto, tour visto…)
     ls.set(OWNER, r.student.code); cacheMe(r);
     if (migrate) setTimeout(() => sync(true), 1500);
     return r;

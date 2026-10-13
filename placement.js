@@ -177,16 +177,9 @@
       wa = v; saveProfile(); instructions(); };
   }
   function instructions() {
-    shell(`${top()}<div class="card fx-form"><span class="lbl">Instrucciones generales</span><h2>Antes de empezar</h2><ul class="fx-ul">
-      <li>La prueba es <b>adaptativa</b>: avanzas nivel por nivel (A1 → A2 → B2 → B2+). En cada nivel respondes <b>4 preguntas</b>: 🎧 Listening, 📖 Reading, ✍️ Writing y 🎤 Speaking.</li><li>Si respondes bien, subes al siguiente nivel. Si tienes dudas en un nivel, te hacemos <b>2 preguntas de confirmación</b> para ubicarte con precisión. Cuando llegas a tu nivel, la prueba termina.</li>
-      <li>Toma <b>unos 10 minutos</b> (máximo ${CFG.TIME_MIN}). El cronómetro aparece arriba; si llega a cero, la prueba se envía sola con lo que hayas respondido.</li>
-            <li>En cada pregunta verás de inmediato si tu respuesta es <b>correcta o incorrecta</b>.</li>
-      <li>En Listening toca <b>🔊 Escuchar</b> para oír el audio en inglés americano. En Speaking toca <b>🎤</b>, habla y toca otra vez para detener; puedes grabar de nuevo.</li>
-      <li>En Speaking puedes tocar <b>🎧 Escuchar un ejemplo de respuesta</b> antes de grabar, como guía.</li>
-      <li>Responde cada pregunta para poder avanzar. Responde con calma: no hay preguntas de relleno, cada una cuenta.</li>
-      <li>Tienes <b>${ROUNDS} oportunidades de ${CFG.ATTEMPTS} intentos</b> cada una. Si no te sientes a gusto con tu resultado, puedes repetir la prueba y <b>tu ruta se actualiza con el nuevo resultado</b>. Al finalizar verás tu <b>módulo recomendado</b>, un PDF descargable, y tu resultado se enviará a tu correo y a administración. <b>Con tu resultado se crea automáticamente tu ruta de aprendizaje.</b></li>
-      <li>Tu progreso se guarda solo: si se recarga la página, puedes continuar donde quedaste.</li></ul>
-      <p class="muted" style="font-size:14px">🎤 Tu navegador te pedirá permiso para usar el micrófono en la sección de Speaking.</p>
+    shell(`${top()}<div class="card fx-form center"><span class="lbl">¡Listo para empezar!</span><h2>Así de fácil 😊</h2>
+      <div class="pt-quick"><div><b>⏱️ 10 min</b><span>Rápida y se adapta a tu nivel</span></div><div><b>🎧📖✍️🎤</b><span>Escuchas, lees, escribes y hablas</span></div><div><b>✅ Al instante</b><span>Ves si acertaste en cada pregunta</span></div></div>
+      <p class="muted" style="font-size:14px">🎤 Permite el micrófono cuando te lo pida. Responde con calma, ¡no hay presión!</p>
       <div class="actionbar"><button class="btn k lg" id="go">🚀 Comenzar prueba</button></div></div>`);
     wireExit();
     $('#go').onclick = async () => { await M.loadAudio(['pt', 'maPT']); answers = new Array(N).fill(null); initPlan(); startedAt = Date.now(); startTimer(); show(); };
@@ -367,12 +360,12 @@
       ${trial ? `<div class="pt-trial">🟢 <b>Acceso gratuito:</b> ya puedes explorar los <b>2 primeros temas</b> del ${esc((P.trialMod() || m).name)}.</div>` : ''}
       <div class="fx-notify">${cloud() ? '<div id="n0" class="pending">⏳ Avisando a tu profe y a administración…</div>' : ''}<div id="n1" class="pending">⏳ Guardando resultados…</div><div id="n2" class="pending">⏳ Enviando correo con tu resultado…</div><div id="n3" class="pending">⏳ Enviando copia a administración…</div></div>
       <div class="row" style="justify-content:center;margin-top:14px"><button class="btn k lg" id="prof">${firstUrl() ? "▶ Empezar mi primera clase" : "👤 Ir a mi perfil y empezar →"}</button>
-        <button class="btn w" id="pdf">📄 Descargar reporte PDF</button><button class="btn w" id="cp">📋 Copiar resumen</button>
+        <button class="btn w" id="pdf">📄 Descargar reporte PDF</button>
         <a class="btn" style="text-decoration:none;background:#25D366;color:#fff" target="_blank" rel="noopener" href="https://wa.me/${C.WHATSAPP}?text=${waMsg}">💬 ${trial ? 'Quiero inscribirme' : 'Escribir a mrarrieta.com'}</a>
         ${left > 0 ? `<button class="btn w" id="again">🔁 Intentar de nuevo (te queda${left > 1 ? 'n' : ''} ${left})</button>` : (ST.round || 1) < ROUNDS ? `<button class="btn w" id="again2">🔁 Usar mi segunda oportunidad (${CFG.ATTEMPTS} intentos)</button>` : cloud() ? '<button class="btn w" id="extra">🙋 Solicitar un intento adicional</button>' : ''}</div>
       <p class="muted center" style="font-size:14px;margin-top:10px">¿No te sientes a gusto con tu resultado? Puedes repetir la prueba: <b>tu ruta de aprendizaje se actualiza con el nuevo resultado</b>.</p></div>`);
     wireExit(); sfx('win'); M.confetti(3500);
-    $('#prof').onclick = () => { const u = firstUrl(); if (u) location.href = u; else ctx.route('home'); }; $('#pdf').onclick = reportPDF; $('#cp').onclick = copySummary;
+    $('#prof').onclick = () => { const u = firstUrl(); if (u) location.href = u; else ctx.route('home'); }; $('#pdf').onclick = reportPDF; 
     if ($('#again')) $('#again').onclick = () => run(app, ctx);
     if ($('#again2')) $('#again2').onclick = secondChance;
     if ($('#extra')) $('#extra').onclick = locked;

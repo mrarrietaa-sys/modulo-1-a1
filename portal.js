@@ -170,7 +170,7 @@
       ${main}
       ${newbie ? '' : `
       <div id="pt-live"></div>
-      ${!staff && ['membership', 'premium'].includes(P.plan().eff) ? `<div class="card pt-pol" id="pt-pol" role="button" tabindex="0"><span class="pa-ic">📌</span><div class="grow"><span class="lbl">Importante</span><h3 style="margin:0">Política de reservas y cancelaciones</h3><p class="muted" style="margin:2px 0 0">VIP: reserva 4 h antes · Grupales: 3 h antes · Cancela sin penalidad hasta 2 h antes.</p></div><span class="btn w sm">Ver</span></div>` : ''}
+      ${!staff && P.plan().eff === 'premium' ? `<div class="card pt-pol" id="pt-pol" role="button" tabindex="0"><span class="pa-ic">📌</span><div class="grow"><span class="lbl">Importante</span><h3 style="margin:0">Política de reservas y cancelaciones</h3><p class="muted" style="margin:2px 0 0">VIP: reserva 4 h antes · Grupales: 3 h antes · Cancela sin penalidad hasta 2 h antes.</p></div><span class="btn w sm">Ver</span></div>` : ''}
       ${staff || ['membership', 'premium'].includes(P.plan().eff) ? `<a class="card pt-arcade pt-clubs" href="clubes.html"><span class="pa-ic">🎙️</span><div class="grow"><span class="lbl">Clubs en vivo · Premium</span><h2>Mis clubs de Conversación y Fonética</h2><p class="muted">Espacios distintos a tus clases: talk show en inglés y gimnasio de pronunciación, según tu nivel.</p></div><span class="btn k">Entrar →</span></a>` : ''}
       <div class="sect-title"><h2>🧭 Mi ruta de aprendizaje</h2></div>
       ${routeBar()}
@@ -182,7 +182,7 @@
       ${pl ? `<div class="sect-title"><h2>📝 Mi prueba de clasificación</h2></div><div class="card pt-plres"><div><b>Resultado:</b> ${esc(P.mod(pl.module).name)} · ${esc(P.mod(pl.module).es)}<br><span class="muted">${new Date(pl.date).toLocaleDateString('es-CO')}${pl.mods ? ' · ' + [1, 2, 3, 4].map(k => `${P.mod(k).id}: ${pl.mods[k]}%`).join(' · ') : ''}</span></div>${(pst.attempts < pst.max || (pst.round || 1) < (pst.rounds || 1)) ? '<button class="btn w sm" id="pt2">🔁 Repetir prueba</button>' : ''}</div>` : ''}
       ${staff ? `<div class="sect-title"><h2>📝 Prueba de clasificación</h2></div><div class="card pt-plres"><div>Puedes presentar o revisar la prueba de clasificación como lo verá el estudiante.</div><button class="btn w sm" id="pt2">📝 Abrir prueba</button></div>` : ''}
       ${certs()}`}
-      <div class="center" style="margin-top:14px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">${staff ? '' : `<button class="btn w" id="pt-plans">💳 Ver planes${P.plan().eff !== 'free' ? ' · mi plan' : ''}</button>`}<button class="btn w" id="pt-tour">🧭 Ver el tour de Mr. Arrieta</button>${!staff && ['membership', 'premium'].includes(P.plan().eff) ? '<button class="btn w pt-polb">📌 Política de reservas</button>' : ''}</div>
+      <div class="center" style="margin-top:14px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">${staff ? '' : `<button class="btn w" id="pt-plans">💳 Ver planes${P.plan().eff !== 'free' ? ' · mi plan' : ''}</button>`}<button class="btn w" id="pt-tour">🧭 Ver el tour de Mr. Arrieta</button>${!staff && P.plan().eff === 'premium' ? '<button class="btn w pt-polb">📌 Política de reservas</button>' : ''}</div>
       <p class="center fx-foot" style="margin-top:22px;font-size:13.5px;font-weight:600">mrarrieta.com · ¡Aprende inglés HABLANDO! · WhatsApp ${esc(C.WHATSAPP.replace(/^57/, ''))}</p></div>`;
     if ($('#pt')) $('#pt').onclick = () => route('placement');
     const plans = (e) => { if (e) e.preventDefault(); M.modal(`<div class="pt-plmodal">${planSection()}</div>`, { x: true }); };
@@ -250,7 +250,7 @@
   const tourKind = () => { const p = P.get() || {}; return !p.module && p.type !== 'staff' ? 'start' : 'profile'; };
   function tourSeenK(kind) { const p = P.get() || {}; if (p.tourDone) return true; /* tour antiguo: ya lo vio */ if (kind === 'start' ? p.tour1 : p.tour2) return true; try { return !!localStorage.getItem(TOURK() + '_' + kind); } catch (e) { return false; } }
   // 📌 política: emergente la PRIMERA vez que un estudiante pago entra (una sola vez, guardada en la nube)
-  function polPending() { const p = P.get() || {}; return !!window.MRPOLICY && p.type !== 'staff' && ['membership', 'premium'].includes(P.plan().eff) && !p.pol1; }
+  function polPending() { const p = P.get() || {}; return !!window.MRPOLICY && p.type !== 'staff' && P.plan().eff === 'premium' && !p.pol1; }
   function policyFirst() {
     if (!polPending() || $('.pol-modal')) return; if ($('.modal')) return setTimeout(policyFirst, 800);
     MRPOLICY.show({ first: true, onClose: () => { const p = P.get(); if (p && !p.pol1) { p.pol1 = Date.now(); P.save(p); try { window.MRAC && MRAC.code() && MRAC.sync(true); } catch (e) { } } } });

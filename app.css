@@ -3630,3 +3630,4 @@ p.ce-revchip{margin:8px auto 0}
 .pol-first{background:#eef4ff;border-radius:10px;padding:8px 12px;font-weight:700;margin:0 0 10px}
 .pt-pol{display:flex;align-items:center;gap:12px;cursor:pointer}.pt-pol .pa-ic{font-size:30px}
 .pol-page{max-width:760px;margin:20px auto;padding:0 16px}
+.pol-only{background:#eef4ff;border-radius:10px;padding:8px 12px;margin:0 0 10px;font-size:15px}

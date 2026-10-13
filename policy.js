@@ -3,6 +3,7 @@
   const HTML = `<div class="pol">
   <p class="pol-k">MRARRIETA.COM – RealTalk®</p>
   <h2 class="pol-t">📌 Política de reservas y cancelaciones</h2>
+  <p class="pol-only">Aplica para estudiantes <b>Premium</b>: las clases VIP y las clases grupales son exclusivas de este plan.</p>
   <section><h3>1. Clases VIP</h3><ul>
     <li><b>Reserva:</b> mínimo <b>4 horas</b> antes de la clase.</li>
     <li><b>Cancelación sin penalización:</b> mínimo <b>2 horas</b> antes de la clase.</li>
@@ -12,7 +13,7 @@
     <li><b>Cancelación sin penalización:</b> mínimo <b>2 horas</b> antes de la clase.</li>
     <li><b>Cancelación tardía o inasistencia:</b> no aplica penalidad. El estudiante podrá seguir asistiendo a las demás clases grupales de su nivel.</li></ul></section>
   <section><h3>3. Acceso y cupos de clases grupales</h3><ul>
-    <li>Con su cuenta y membresía activas, el estudiante podrá asistir a <b>todas las clases grupales que desee de su nivel</b>, sin límite mensual.</li>
+    <li>Con su plan <b>Premium</b> activo, el estudiante podrá asistir a <b>todas las clases grupales que desee de su nivel</b>, sin límite mensual.</li>
     <li><b>Cupo máximo:</b> cada sesión grupal admite un máximo de <b>10 estudiantes</b>. Una vez completados los cupos, se cerrarán las reservas y el estudiante deberá esperar al siguiente horario disponible de su nivel para reservar.</li>
     <li>Es <b>obligatorio reservar con anticipación</b> para asistir a las clases grupales.</li></ul></section>
   <section><h3>4. Cancelaciones por parte de MRARRIETA.COM</h3>

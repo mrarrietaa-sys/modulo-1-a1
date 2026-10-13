@@ -3613,3 +3613,4 @@ p.ce-revchip{margin:8px auto 0}
 .tp-notif h3{display:flex;align-items:center;gap:8px;margin:0 0 8px}.tp-nbadge{background:#E3242B;color:#fff;border-radius:99px;padding:2px 10px;font-size:12px}
 .tp-nlist{display:flex;flex-direction:column;gap:6px;max-height:340px;overflow:auto;margin-bottom:8px}.tp-n{border:2px solid #d6dde8;border-radius:10px;padding:8px 10px}.tp-n.new{border-color:#E3242B;background:#fff6f6}.tp-n p{margin:3px 0;font-size:13.5px}.tp-n small{color:#718096;font-size:12px}
 .btn.ad-del{border-color:#E3242B;color:#E3242B}.btn.k.ad-del{background:#E3242B;color:#fff}
+.pt-trial{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center}

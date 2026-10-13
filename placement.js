@@ -84,6 +84,8 @@
     const t = norm(text); return item.keywordGroups.every(g => g.some(k => t.includes(' ' + k + ' ') || t.includes(k)));
   }
   const spellOk = () => true;
+  // escritura: ignora mayúsculas, espacios dobles, puntuación final y el apóstrofo curvo del celular (’)
+  const wnorm = (t) => String(t || '').toLowerCase().replace(/[\u2018\u2019\u00b4`]/g, "'").replace(/\s+/g, ' ').trim().replace(/^[.,!?;:¡¿"]+|[.,!?;:"]+$/g, '').trim();
   function clockSVG(hour, minute) {
     const cx = 100, cy = 100, r = 92; const pt = (a, l) => { const rad = (a - 90) * Math.PI / 180; return [cx + l * Math.cos(rad), cy + l * Math.sin(rad)]; };
     let ticks = ''; for (let i = 0; i < 12; i++) { const [x1, y1] = pt(i * 30, r - 6), [x2, y2] = pt(i * 30, r - (i % 3 ? 14 : 20)); ticks += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="#0B2A5B" stroke-width="${i % 3 ? 2 : 3.5}" stroke-linecap="round"/>`; }
@@ -245,8 +247,8 @@
       const inp = $('#wi', body), chk = $('#wc', body);
       const show = () => { inp.value = a.value; inp.disabled = chk.disabled = true; inp.classList.add(a.correct ? 'right' : 'wrong'); feedback(a.correct, `La respuesta correcta es: <b>${esc(it.accept[0])}</b>`); };
       if (a.answered) return show();
-      const go = () => { const v = inp.value.trim().toLowerCase().replace(/[.!?]$/, ''); if (!v) { inp.classList.add('wrong'); setTimeout(() => inp.classList.remove('wrong'), 400); return; }
-        a.answered = true; a.value = v; a.correct = it.accept.includes(v); sfx(a.correct ? 'ok' : 'bad'); show(); saveProg(); refreshPills(); };
+      const go = () => { const v = wnorm(inp.value); if (!v) { inp.classList.add('wrong'); setTimeout(() => inp.classList.remove('wrong'), 400); return; }
+        a.answered = true; a.value = v; a.correct = it.accept.some(x => wnorm(x) === v || wnorm(x).replace(/'/g, '') === v.replace(/'/g, '')); sfx(a.correct ? 'ok' : 'bad'); show(); saveProg(); refreshPills(); };
       chk.onclick = go; inp.onkeydown = e => { if (e.key === 'Enter') go(); }; setTimeout(() => inp.focus({ preventScroll: true }), 200);
     } else {
       body.innerHTML = `${img(it.img)}<div class="fx-lab">${esc(it.prompt)}</div><p class="muted">${esc(it.example || '')}</p>

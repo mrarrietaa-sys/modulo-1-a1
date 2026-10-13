@@ -3631,3 +3631,28 @@ p.ce-revchip{margin:8px auto 0}
 .pt-pol{display:flex;align-items:center;gap:12px;cursor:pointer}.pt-pol .pa-ic{font-size:30px}
 .pol-page{max-width:760px;margin:20px auto;padding:0 16px}
 .pol-only{background:#eef4ff;border-radius:10px;padding:8px 12px;margin:0 0 10px;font-size:15px}
+/* ---- pulido visual (v90): iconos visibles, textos que caben, reserva VIP ---- */
+.btn{line-height:1.2;text-align:center}
+.btn .ico{width:1.15em;height:1.15em;flex:none}
+.btn.k .ico{color:#fff}
+.lv-cl .grow{flex:1 1 220px}
+.lv-act{flex-wrap:wrap;gap:8px;align-items:center;justify-content:flex-end;margin-left:auto}
+.lv-act .btn.sm{min-height:40px;white-space:nowrap}
+.lv-spots{display:block;font-size:12px;color:var(--mut);text-align:center;width:100%}
+.lv-rules{list-style:none;margin:10px 0 12px;padding:0;display:grid;gap:8px}
+.lv-rules li{display:flex;gap:10px;align-items:flex-start;background:#f7f9fc;border:2px solid #e2e8f0;border-radius:12px;padding:10px 12px;font-size:15px;line-height:1.45}
+.lv-rules li span{font-size:18px;line-height:1.2;flex:none}
+.lv-pol,.lv-noacum{line-height:1.45}
+.vb .modal-card,.modal .card:has(.vb){max-width:560px}
+.vb-topics{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;max-height:230px;overflow:auto;padding:2px 2px 6px;margin-bottom:8px}
+.vb-tp{background:#fff;border:2px solid var(--k);border-radius:12px;padding:8px 10px;text-align:left;display:grid;gap:2px;line-height:1.25;cursor:pointer}
+.vb-tp b{font:800 14px var(--fh)}.vb-tp small{font-size:12px;color:var(--mut)}
+.vb-tp.on{background:var(--k);color:#fff}.vb-tp.on small{color:#dbe4f3}
+.vb-other{border-style:dashed}
+.vb .hidden{display:none}
+.vb #vb-topic{margin-bottom:10px}
+.btn.lg.vb-ok{font-size:17px;padding:14px 18px;white-space:normal}
+.vb-h{min-height:58px;align-content:center}
+.tp-dur{background:#eef4ff;border-radius:10px;padding:10px 12px;margin:4px 0 10px;font-size:15px}
+@media (max-width:520px){.lv-act{width:100%;justify-content:stretch}.lv-act .btn.sm{flex:1}.vb-topics{grid-template-columns:1fr 1fr}}
+a.btn,a.btn:hover{text-decoration:none}

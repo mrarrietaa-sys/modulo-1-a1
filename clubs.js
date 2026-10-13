@@ -12,7 +12,7 @@
   const ME = document.currentScript && document.currentScript.getAttribute('src') || 'js/clubs.js';
   const BASE = ME.replace(/clubs\.js(\?.*)?$/, '');
   const TZ = -5;                    // hora Colombia (UTC-5, sin horario de verano)
-  const H = 3600e3, DAY = 864e5, WEEK = 7 * DAY, LEN = 60 * 60e3;   // sesión de 60 min
+  const H = 3600e3, DAY = 864e5, WEEK = 7 * DAY, LEN = 50 * 60e3;   // sesión de 50 min
   const DEFAULT_START = '2026-10-12';
   const DOW = { domingo: 0, lunes: 1, martes: 2, miercoles: 3, jueves: 4, viernes: 5, sabado: 6 };
   const DAYN = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
@@ -421,7 +421,7 @@
       '<p class="cl-tag">' + esc(m.name) + ' · Niveles ' + BAND[band] + ' · ' + esc(B.season ? B.season.es : '') + '</p>' +
       '<div class="cl-season">Esta semana: ' + m.ep + ' ' + I.n + ' de 24' + (I.before ? ' (la temporada empieza el ' + fmtDate(I.s0) + ')' : '') + '</div>' +
       '<div class="row"><button type="button" class="btn sm w" data-goto>⬇ Ir a esta semana</button><button type="button" class="btn sm w" data-print>🖨️ Imprimir</button><button type="button" class="btn sm w" data-openall>Abrir todo</button></div></div></header>' +
-      '<section class="cl-how"><h3>Formato del show (60 min)</h3><p class="muted">Cada sesión es un "episodio" con estaciones cortas y dinámicas. Nada de tablero ni explicaciones largas: el profe es <b>presentador</b>, los estudiantes son los <b>invitados</b>. Usa salas pequeñas, cronómetro visible, marcador de puntos y giros sorpresa.</p>' +
+      '<section class="cl-how"><h3>Formato del show (50 min)</h3><p class="muted">Cada sesión es un "episodio" con estaciones cortas y dinámicas. Nada de tablero ni explicaciones largas: el profe es <b>presentador</b>, los estudiantes son los <b>invitados</b>. Usa salas pequeñas, cronómetro visible, marcador de puntos y giros sorpresa.</p>' +
       '<div class="cl-legend">' + Object.keys(KIND).map(k => '<span class="cl-kind">' + KIND[k][0] + ' ' + KIND[k][1] + '</span>').join('') + '</div></section>' +
       (units.length ? units : [{ n: 0 }]).map(u => '<section class="cl-gunit">' + (u.n ? '<h3 class="cl-gunit-h">' + esc(u.emoji) + ' Unidad ' + u.n + ': ' + esc(u.title) + ' <small>' + esc(u.es) + '</small></h3>' : '') +
         B.sessions.filter(s => !u.n || s.unit === u.n).map(s => {

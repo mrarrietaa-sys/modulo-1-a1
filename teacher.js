@@ -23,10 +23,10 @@
   const dLabel = (iso, long) => { const d = new Date(iso + 'T12:00:00Z'); return long ? `${DOWL[d.getUTCDay()]} ${d.getUTCDate()} de ${MON[d.getUTCMonth()]}` : `${DOW[d.getUTCDay()]} ${d.getUTCDate()} ${MON[d.getUTCMonth()]}`; };
   const rel = (iso) => { const t = today(); return iso === t ? 'Hoy' : iso === addDays(t, 1) ? 'Mañana' : iso === addDays(t, -1) ? 'Ayer' : ''; };
   const h12 = (hm) => { if (!/^\d{1,2}:\d{2}/.test(hm || '')) return hm || ''; let [h, m] = hm.split(':').map(Number); const ap = h < 12 ? 'a. m.' : 'p. m.'; h = h % 12 || 12; return `${h}:${String(m).padStart(2, '0')} ${ap}`; };
-  const endHM = (hm, dur) => { const [h, m] = String(hm).split(':').map(Number); const t = h * 60 + m + (+dur || 60); return `${String(Math.floor(t / 60) % 24).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`; };
+  const endHM = (hm, dur) => { const [h, m] = String(hm).split(':').map(Number); const t = h * 60 + m + 50; return `${String(Math.floor(t / 60) % 24).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`; };
 
   let S = null, D = null, tab = ss.get(TABKEY) || 'home', clsView = 'up';
-  const form = { date: '', hours: [], dur: '60', repeat: false, weeks: 4 };
+  const form = { date: '', hours: [], dur: '50', repeat: false, weeks: 4 };
 
   /* ---------- utilidades de UI ---------- */
   function toast(msg, bad) { const t = document.createElement('div'); t.className = 'tp-toast' + (bad ? ' bad' : ''); t.setAttribute('role', 'status'); t.textContent = msg; document.body.appendChild(t); requestAnimationFrame(() => t.classList.add('on')); setTimeout(() => { t.classList.remove('on'); setTimeout(() => t.remove(), 300); }, 3200); }
@@ -196,7 +196,7 @@
     const slots = D.slots.filter((s) => s.status !== 'deleted' && s.date >= t0 && !(s.date === t0 && s.status === 'free' && s.time <= nowHM()));
     const byDate = {}; slots.forEach((s) => (byDate[s.date] = byDate[s.date] || []).push(s));
     el.innerHTML = `<div class="card tp-card tp-week"><div class="tp-card-h"><h2>📅 Mi disponibilidad semanal</h2></div>
-        <p class="muted tp-small">Marca las horas en que puedes dictar cada semana. La plataforma crea automáticamente tus espacios de <b>1 hora</b> para las próximas <b>4 semanas</b> (y los renueva cada día). Los estudiantes Premium los verán para reservar sus clases VIP.</p>
+        <p class="muted tp-small">Marca las horas en que puedes dictar cada semana. La plataforma crea automáticamente tus espacios de <b>50 minutos</b> para las próximas <b>4 semanas</b> (y los renueva cada día). Los estudiantes Premium los verán para reservar sus clases VIP.</p>
         <div id="tp-wg"></div><button class="btn k lg block" id="tp-wsave" style="margin-top:12px">Guardar mi disponibilidad semanal</button></div>
       <div class="tp-cols">
       <div class="card tp-card tp-addcard">
@@ -208,7 +208,7 @@
         <div class="tp-hours" role="group" aria-label="Horas">${HOURS.concat(extra).map((h) => `<button type="button" class="tp-hour${form.hours.indexOf(h) >= 0 ? ' on' : ''}${form.date === t0 && h <= nowHM() ? ' past' : ''}" data-h="${h}" aria-pressed="${form.hours.indexOf(h) >= 0}">${h12(h)}</button>`).join('')}</div>
         <div class="tp-other"><label for="tp-time">Otra hora:</label><input class="inp tp-inp" type="time" id="tp-time" step="300"><button type="button" class="btn w sm" id="tp-addh">Añadir</button></div>
         <div class="tp-l">3. Duración</div>
-        <div class="tp-seg" role="radiogroup">${['30', '45', '60'].map((d) => `<button type="button" class="tp-segb${form.dur === d ? ' on' : ''}" data-d="${d}" role="radio" aria-checked="${form.dur === d}">${d} min</button>`).join('')}</div>
+        <p class="tp-dur">⏱️ Todas las clases de la escuela duran <b>50 minutos</b>.</p>
         <label class="tp-rep"><input type="checkbox" id="tp-rep" ${form.repeat ? 'checked' : ''}> <span>Repetir cada semana</span></label>
         <div class="tp-weeks${form.repeat ? '' : ' hidden'}"><label for="tp-weeks">durante</label><select class="inp tp-inp" id="tp-weeks">${[1, 2, 3, 4, 5, 6, 7, 8].map((n) => `<option value="${n}" ${+form.weeks === n ? 'selected' : ''}>${n} semana${n > 1 ? 's' : ''}</option>`).join('')}</select></div>
         <div class="tp-preview" id="tp-prev"></div>
@@ -218,7 +218,7 @@
         <div class="tp-card-h"><h2>Mis espacios</h2><small class="muted">${slots.filter((s) => s.status === 'free').length} libres · ${slots.filter((s) => s.status === 'booked').length} reservados</small></div>
         ${Object.keys(byDate).length ? Object.keys(byDate).sort().map((d) => `<div class="tp-day"><h3>${rel(d) ? `<span class="tp-rel">${rel(d)}</span> ` : ''}${dLabel(d, true)}</h3><ul>${byDate[d].map((s) => {
           const c = s.status === 'booked' ? D.classes.find((x) => x.id === s.classId) : null;
-          return `<li class="tp-slot ${s.status}"><span class="tp-slot-t">${h12(s.time)} – ${h12(endHM(s.time, s.duration))}<small>${esc(s.duration || 60)} min</small></span>
+          return `<li class="tp-slot ${s.status}"><span class="tp-slot-t">${h12(s.time)} – ${h12(endHM(s.time, s.duration))}<small>50 min</small></span>
             ${s.status === 'free' ? `<span class="tp-st free">Libre</span><button class="tp-del" data-del="${esc(s.id)}" title="Borrar espacio" aria-label="Borrar espacio de las ${esc(s.time)}">🗑</button>`
               : `<span class="tp-st booked">Reservado</span><span class="tp-slot-who">👤 ${c ? esc(studentName(c.students[0] || '')) : 'Estudiante'}</span>`}</li>`; }).join('')}</ul></div>`).join('')
           : `<div class="tp-empty"><img src="mra-point.webp" alt="" width="110" height="110"><p>Aún no tienes espacios publicados. Agrega tus horarios con el formulario.</p></div>`}

@@ -180,11 +180,11 @@
       ${pl ? `<div class="sect-title"><h2>📝 Mi prueba de clasificación</h2></div><div class="card pt-plres"><div><b>Resultado:</b> ${esc(P.mod(pl.module).name)} · ${esc(P.mod(pl.module).es)}<br><span class="muted">${new Date(pl.date).toLocaleDateString('es-CO')}${pl.mods ? ' · ' + [1, 2, 3, 4].map(k => `${P.mod(k).id}: ${pl.mods[k]}%`).join(' · ') : ''}</span></div>${(pst.attempts < pst.max || (pst.round || 1) < (pst.rounds || 1)) ? '<button class="btn w sm" id="pt2">🔁 Repetir prueba</button>' : ''}</div>` : ''}
       ${staff ? `<div class="sect-title"><h2>📝 Prueba de clasificación</h2></div><div class="card pt-plres"><div>Puedes presentar o revisar la prueba de clasificación como lo verá el estudiante.</div><button class="btn w sm" id="pt2">📝 Abrir prueba</button></div>` : ''}
       ${certs()}`}
-      ${staff ? '' : `<div class="center" style="margin-top:14px"><button class="btn w" id="pt-plans">💳 Ver planes${P.plan().eff !== 'free' ? ' · mi plan' : ''}</button></div>`}
+      <div class="center" style="margin-top:14px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">${staff ? '' : `<button class="btn w" id="pt-plans">💳 Ver planes${P.plan().eff !== 'free' ? ' · mi plan' : ''}</button>`}<button class="btn w" id="pt-tour">🧭 Ver el tour de Mr. Arrieta</button></div>
       <p class="center fx-foot" style="margin-top:22px;font-size:13.5px;font-weight:600">mrarrieta.com · ¡Aprende inglés HABLANDO! · WhatsApp ${esc(C.WHATSAPP.replace(/^57/, ''))}</p></div>`;
     if ($('#pt')) $('#pt').onclick = () => route('placement');
     const plans = (e) => { if (e) e.preventDefault(); M.modal(`<div class="pt-plmodal">${planSection()}</div>`, { x: true }); };
-    $$('.tb-up').forEach(x => x.onclick = plans); if ($('#pt-plans')) $('#pt-plans').onclick = plans;
+    $$('.tb-up').forEach(x => x.onclick = plans); if ($('#pt-tour')) $('#pt-tour').onclick = () => { window.scrollTo(0, 0); portalTour(true); }; if ($('#pt-plans')) $('#pt-plans').onclick = plans;
     wireBirth(); live(); birthdayParty();
     // bienvenida de regreso (una vez por sesión)
     try { if (P.isBirthday()) sessionStorage.setItem('mra_wb', '1'); // en su cumpleaños el saludo es la fiesta 🎂
@@ -237,8 +237,8 @@
     return `<div class="sect-title"><h2>🎓 Mis certificados</h2></div><div class="pt-certs">${course}${done.map(m => `<a class="card pt-cert" href="${m.url}#cert">🎓 <div><b>${esc(m.name)} · ${esc(m.level)}</b><small>Nota: ${(P.modState(m.id).final.score || 0).toFixed ? Number(P.modState(m.id).final.score).toFixed(1) : ''}/10 · Ver y descargar</small></div></a>`).join('')}</div>`;
   }
   /* ---------- tour guiado del perfil (primera vez de cualquier estudiante) ---------- */
-  function portalTour() {
-    if ($('#tour')) return; const p = P.get(); if (!p || p.tourDone) return;
+  function portalTour(force) {
+    if ($('#tour')) return; const p = P.get(); if (!p || (p.tourDone && !force)) return;
     if ($('.modal')) return setTimeout(portalTour, 800); // espera a que cierre el saludo (cumpleaños / welcome back)
     const fn = esc(P.look().nick || p.first || ''); const a = P.assigned();
     const all = [
@@ -257,7 +257,7 @@
     const steps = all.filter(x => !x.sel || $(x.sel));
     const ov = h(`<div id="tour"><div class="tour-hole"></div><div class="tour-card"></div></div>`); document.body.appendChild(ov);
     const hole = $('.tour-hole', ov), card = $('.tour-card', ov); let i = 0;
-    const end = (go) => { ov.remove(); window.removeEventListener('resize', place); window.removeEventListener('scroll', place); const q = P.get(); if (q) { q.tourDone = true; P.save(q); }
+    const end = (go) => { ov.remove(); window.removeEventListener('resize', place); window.removeEventListener('scroll', place); const q = P.get(); if (q) { q.tourDone = true; P.save(q); try { window.MRAC && MRAC.code() && MRAC.sync(true); } catch (e) { } }
       if (go) { M.confetti && M.confetti(1500); if (!q.module && q.type !== 'staff') route('placement'); else if (a && a.ready) location.href = a.url; } };
     function place() {
       const st = steps[i]; const el = st.sel && $(st.sel);

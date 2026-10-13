@@ -77,7 +77,7 @@
   }
   // 🧭 tour de Mr. Arrieta: la primera vez que el profe entra (por código, en este dispositivo y en la nube)
   const TKEY = () => 'mra_ttour_' + String((D && D.teacher && D.teacher.code) || '').toUpperCase();
-  function firstTour() { try { return !localStorage.getItem(TKEY()); } catch (e) { return false; } }
+  function firstTour() { if (D && D.teacher && D.teacher.tour) return false; try { return !localStorage.getItem(TKEY()); } catch (e) { return true; } }
   function tour() {
     const first = esc(String((D.teacher || {}).name || '').split(/\s+/)[0]);
     const steps = [
@@ -91,7 +91,7 @@
     ];
     let i = 0;
     const m = document.createElement('div'); m.className = 'tp-modal'; document.body.appendChild(m);
-    const end = (go) => { m.remove(); try { localStorage.setItem(TKEY(), '1'); } catch (e) { } if (go) { tab = 'avail'; ss.set(TABKEY, tab); shell(); } };
+    const end = (go) => { m.remove(); try { localStorage.setItem(TKEY(), '1'); } catch (e) { } if (D && D.teacher && !D.teacher.tour) { D.teacher.tour = '1'; api('tTour').catch(() => { }); } if (go) { tab = 'avail'; ss.set(TABKEY, tab); shell(); } };
     const draw = () => {
       const [mood, t, d, tb] = steps[i]; const last = i === steps.length - 1;
       if (tb && tab !== tb && !last) { tab = tb; ss.set(TABKEY, tab); shell(); document.body.appendChild(m); }
@@ -132,10 +132,11 @@
     const t = D.teacher;
     app.innerHTML = `<div class="tp-head">
         <div class="tp-head-txt"><h1>¡Hola, ${esc(String(t.name || '').split(' ')[0])}! 👋</h1><p class="muted">${dLabel(today(), true)} · <b>${h12(nowHM())}</b> hora Colombia · Código <b>${esc(t.code)}</b></p></div>
-        <a class="btn w sm tp-chat" href="docente.html">💬 Chat con estudiantes</a>
+        <a class="btn w sm tp-chat" href="docente.html">💬 Chat con estudiantes</a><button class="btn w sm" id="tp-tour" style="margin-top:6px">🧭 Ver el tour</button>
       </div>
       <nav class="tp-tabs" role="tablist">${TABS.map(([id, ic, tx]) => `<button class="tp-tab${tab === id ? ' on' : ''}" role="tab" aria-selected="${tab === id}" data-tab="${id}"><span aria-hidden="true">${ic}</span> ${tx}</button>`).join('')}</nav>
       <section id="tp-body"></section>`;
+    if ($('#tp-tour')) $('#tp-tour').onclick = () => tour();
     $$('.tp-tab').forEach((b) => b.onclick = () => { tab = b.dataset.tab; ss.set(TABKEY, tab); shell(); });
     ({ home, avail, classes, groups }[tab] || home)($('#tp-body'));
   }

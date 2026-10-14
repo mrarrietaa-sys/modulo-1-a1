@@ -24,10 +24,12 @@
   function render() {
     const n = unread().length;
     panel.innerHTML = `<div class="mr-bp-h"><b>🔔 Notificaciones</b>${n ? `<button type="button" class="mr-bp-all">Marcar leídas</button>` : ''}<button type="button" class="mr-bp-x" aria-label="Cerrar">✕</button></div>
-      <div class="mr-bp-list">${items.length ? items.slice(0, 40).map((x) => `<div class="mr-bp-i${x.read ? '' : ' new'}" data-id="${esc(x.id)}"><b>${esc(x.title)}</b>${x.body ? `<p>${esc(x.body)}</p>` : ''}<small>${when(x.date)}</small></div>`).join('') : '<p class="mr-bp-empty">No tienes notificaciones todavía.</p>'}</div>`;
+      <div class="mr-bp-list">${items.length ? items.slice(0, 40).map((x) => `<div class="mr-bp-i${x.read ? '' : ' new'}${x.type === 'chat' ? ' chat' : ''}" data-id="${esc(x.id)}"><b>${esc(x.title)}</b>${x.body ? `<p>${esc(x.body)}</p>` : ''}<small>${when(x.date)}</small></div>`).join('') : '<p class="mr-bp-empty">No tienes notificaciones todavía.</p>'}</div>`;
     panel.querySelector('.mr-bp-x').onclick = close;
     const all = panel.querySelector('.mr-bp-all'); if (all) all.onclick = () => { const ids = unread().map((x) => x.id); items.forEach((x) => x.read = true); paint(); try { O.markRead && O.markRead(ids, true); } catch (e) { } };
-    panel.querySelectorAll('.mr-bp-i.new').forEach((el) => el.onclick = () => { const x = items.find((i) => String(i.id) === el.dataset.id); if (x) { x.read = true; paint(); try { O.markRead && O.markRead([x.id], false); } catch (e) { } } });
+    panel.querySelectorAll('.mr-bp-i').forEach((el) => el.onclick = () => { const x = items.find((i) => String(i.id) === el.dataset.id); if (!x) return;
+      if (!x.read) { x.read = true; paint(); try { O.markRead && O.markRead([x.id], false); } catch (e) { } }
+      if (x.type === 'chat') { const room = x.data && x.data.room; close(); if (window.MRCHATOPEN) window.MRCHATOPEN(room); else if (window.MRLIVE && MRLIVE.openStudent) MRLIVE.openStudent({ room }); } });
   }
   function toggle() { panel ? close() : open(); }
   function open() {
@@ -51,7 +53,7 @@
   const go = () => {
     const A = window.MRAC; if (!A || !A.code || !A.code()) { if (++tries < 20) setTimeout(go, 1500); return; }
     MRBELL.set(A.notifications ? A.notifications() : []);
-    MRBELL.mount({ every: 180000, active: () => !!A.code(), fetch: async () => { const r = await A.me(true); return r && r.ok !== false ? (r.notifications || []) : null; }, markRead: (ids, all) => A.markRead && A.markRead(ids, all) });
+    MRBELL.mount({ every: 15000, active: () => !!A.code(), fetch: async () => { const r = await A.call('notifs', { code: A.code() }).catch(() => null); return r && r.ok ? (r.notifications || []) : null; }, markRead: (ids, all) => A.markRead && A.markRead(ids, all) });
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(go, 1200)); else setTimeout(go, 1200);
 })();

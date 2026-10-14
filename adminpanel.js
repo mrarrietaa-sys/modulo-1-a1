@@ -62,7 +62,7 @@
   // "Atrás": dentro del panel vuelve al Resumen (nunca saca a otra página por error)
   document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('.tb-back'); if (!b || !key()) return; if (document.querySelector('.modal, .wa-wrap')) return; e.preventDefault(); e.stopImmediatePropagation(); if (TAB !== 'home') go('home'); else window.scrollTo(0, 0); }, true);
   async function boot() {
-    if (window.MRBELL) MRBELL.mount({ active: () => !!key(), fetch: async () => { const r = await api('aNotifs'); return r.ok ? r.rows : null; }, markRead: (ids, all) => api('notifRead', all ? { all: true } : { ids }) });
+    if (window.MRBELL) MRBELL.mount({ every: 15000, active: () => !!key(), fetch: async () => { const r = await api('aNotifs'); return r.ok ? r.rows : null; }, markRead: (ids, all) => api('notifRead', all ? { all: true } : { ids }) });
     const out = $('#ad-out'); if (out) { out.classList.remove('hidden'); out.onclick = () => { try { sessionStorage.removeItem(KK); } catch (e) { } login(); }; }
     app.innerHTML = `<nav class="ad-tabs" id="tabs">${TABS.map(([k, i, n]) => `<button data-t="${k}"><span>${i}</span>${n}<i class="ad-badge" data-b="${k}"></i></button>`).join('')}</nav><div id="view" class="ad-view"><div class="ad-loading">⏳ Cargando…</div></div>`;
     $$('#tabs button').forEach(b => b.onclick = () => go(b.dataset.t));

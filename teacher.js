@@ -297,7 +297,8 @@
 
 
   // 📚 acceso de profe a TODO el material de los módulos (modo profe en la plataforma de estudiantes)
-  function openChat() { if (!window.MRLIVE) return; MRLIVE.open({ title: 'Chat con estudiantes', roomsAction: 'tChats', empty: 'Aquí aparecerán tus estudiantes cuando tengan clases contigo.', call: (a, d) => api(a, d) }); }
+  window.MRCHATOPEN = (room) => openChat(room);
+  function openChat(room) { if (!window.MRLIVE) return; MRLIVE.open({ room, title: 'Chat con estudiantes', roomsAction: 'tChats', empty: 'Aquí aparecerán tus estudiantes cuando tengan clases contigo.', call: (a, d) => api(a, d) }); }
   function material() {
     const t = D.teacher || {}; const info = { id: t.id || '', name: t.name || 'Profe', first: t.hello || String(t.name || 'Profe').split(' ')[0], at: Date.now() };
     try { sessionStorage.setItem('mra_teacher', JSON.stringify(info)); localStorage.setItem('mra_teacher_tmp', JSON.stringify(info)); } catch (e) { }
@@ -372,7 +373,7 @@
   let bellOn = false;
   function bell() { if (bellOn || !window.MRBELL) { if (window.MRBELL && D) MRBELL.set(D.notifications || []); return; } bellOn = true;
     MRBELL.set(D.notifications || []);
-    MRBELL.mount({ active: () => !!S, fetch: async () => { if (!S || !D) return null; const r = await api('tLogin').catch(() => null); if (!r || !r.ok) return null; const had = new Set((D.notifications || []).map(n => n.id)); D.notifications = r.notifications; D.pay = r.pay; if ((r.notifications || []).some(n => !had.has(n.id))) popNew(); return r.notifications; },
+    MRBELL.mount({ every: 15000, active: () => !!S, fetch: async () => { if (!S || !D) return null; const r = await api('notifs').catch(() => null); if (!r || !r.ok) return null; const had = new Set((D.notifications || []).map(n => n.id)); D.notifications = r.notifications; if ((r.notifications || []).some(n => !had.has(n.id))) popNew(); return r.notifications; },
       markRead: (ids, all) => api('notifRead', all ? { all: true } : { ids }).catch(() => { }) }); }
   /* ---------- inicio ---------- */
   async function start() {

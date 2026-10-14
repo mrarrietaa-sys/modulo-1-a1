@@ -57,7 +57,7 @@
   }
 
   /* ======================= ESTRUCTURA ======================= */
-  const TABS = [['home', '📊', 'Resumen'], ['students', '🎓', 'Estudiantes'], ['enroll', '📝', 'Inscripciones'], ['placement', '🧭', 'Placement'], ['recruit', '👩‍🏫', 'Reclutamiento'], ['teachers', '🧑‍🏫', 'Profesores'], ['classes', '📅', 'Clases'], ['requests', '🔁', 'Solicitudes'], ['settings', '⚙️', 'Ajustes']];
+  const TABS = [['home', '📊', 'Resumen'], ['students', '🎓', 'Estudiantes'], ['enroll', '📝', 'Inscripciones'], ['placement', '🧭', 'Placement'], ['recruit', '👩‍🏫', 'Reclutamiento'], ['teachers', '🧑‍🏫', 'Profesores'], ['classes', '📅', 'Clases'], ['requests', '🔁', 'Solicitudes'], ['chats', '💬', 'Chats'], ['settings', '⚙️', 'Ajustes']];
   let TAB = 'home', STATS = null;
   async function boot() {
     if (window.MRBELL) MRBELL.mount({ active: () => !!key(), fetch: async () => { const r = await api('aNotifs'); return r.ok ? r.rows : null; }, markRead: (ids, all) => api('notifRead', all ? { all: true } : { ids }) });
@@ -438,6 +438,11 @@
     $('#cf-sv').onclick = async () => { const b = $('#cf-sv'); b.disabled = true; let clubCh = false; for (const i of $$('[data-k]')) { if ((conf[i.dataset.k] || '') !== i.value.trim()) { await api('aSave', { table: 'Config', row: { key: i.dataset.k, value: i.value.trim() } }); if (/^club_/.test(i.dataset.k)) clubCh = true; } } if (clubCh) await api('aClubSync'); b.disabled = false; toast(clubCh ? '✅ Guardado · se actualizaron las sesiones de los clubs y se avisó a los estudiantes que ya habían confirmado' : '✅ Ajustes guardados'); settings(); };
   }
 
-  const VIEWS = { home, students, enroll, placement, recruit, teachers, classes, requests, settings };
+  function chats() {
+    view().innerHTML = `<div class="ad-head"><h1>💬 Chats profe ↔ estudiante</h1></div><div class="card"><p class="muted">Aquí puedes leer todas las conversaciones entre profes y estudiantes (solo lectura). En el chat se les informa que administración puede revisar las conversaciones.</p><button class="btn k lg" id="ch-open">💬 Abrir conversaciones</button></div>`;
+    const go = () => window.MRLIVE && MRLIVE.open({ title: 'Chats (solo lectura)', roomsAction: 'aChats', getAction: 'aChatGet', readOnly: true, empty: 'Todavía no hay conversaciones.', call: (a, d) => api(a, d) });
+    $('#ch-open').onclick = go; go();
+  }
+  const VIEWS = { home, students, enroll, placement, recruit, teachers, classes, requests, chats, settings };
   key() && MRAC.on ? boot() : login();
 })();

@@ -185,11 +185,13 @@
   }
 
   /* ---------- 2. Mi disponibilidad ---------- */
-  const HOURS = Array.from({ length: 16 }, (_, i) => String(6 + i).padStart(2, '0') + ':00');
+  // 🕒 horario laboral: L–V 7:00 a. m.–9:00 p. m. · sábado 7:00 a. m.–5:00 p. m. · domingos y festivos de Colombia NO (clases de 50 min)
+  const HOURS = Array.from({ length: 14 }, (_, i) => String(7 + i).padStart(2, '0') + ':00');
+  const workOK = (d, h) => { if (window.MRFEST && MRFEST.isOff(d)) return false; const dow = new Date(d + 'T12:00:00').getDay(); if (dow === 0) return false; const [a, b] = String(h).split(':').map(Number); const st = a * 60 + (b || 0); return st >= 420 && st + 50 <= (dow === 6 ? 1020 : 1260); };
   function planned() {
     if (!form.date || !form.hours.length) return [];
     const n = form.repeat ? Math.min(8, Math.max(1, +form.weeks || 1)) : 1, out = [], t0 = today(), hm = nowHM();
-    for (let w = 0; w < n; w++) { const d = addDays(form.date, 7 * w); form.hours.slice().sort().forEach((h) => { if ((d > t0 || (d === t0 && h > hm)) && !(window.MRFEST && MRFEST.isOff(d))) out.push({ date: d, time: h, duration: form.dur }); }); }
+    for (let w = 0; w < n; w++) { const d = addDays(form.date, 7 * w); form.hours.slice().sort().forEach((h) => { if ((d > t0 || (d === t0 && h > hm)) && workOK(d, h)) out.push({ date: d, time: h, duration: form.dur }); }); }
     return out;
   }
   function avail(el) {
@@ -207,7 +209,7 @@
         <label class="tp-l" for="tp-date">1. Fecha</label>
         <input class="inp tp-inp" type="date" id="tp-date" min="${t0}" value="${form.date}">
         <div class="tp-l">2. Hora(s) de inicio <small class="muted">(elige una o varias)</small></div>
-        <div class="tp-hours" role="group" aria-label="Horas">${HOURS.concat(extra).map((h) => `<button type="button" class="tp-hour${form.hours.indexOf(h) >= 0 ? ' on' : ''}${form.date === t0 && h <= nowHM() ? ' past' : ''}" data-h="${h}" aria-pressed="${form.hours.indexOf(h) >= 0}">${h12(h)}</button>`).join('')}</div>
+        <div class="tp-hours" role="group" aria-label="Horas">${HOURS.concat(extra).map((h) => `<button type="button" class="tp-hour${form.hours.indexOf(h) >= 0 ? ' on' : ''}${(form.date === t0 && h <= nowHM()) || !workOK(form.date, h) ? ' past' : ''}" data-h="${h}" aria-pressed="${form.hours.indexOf(h) >= 0}">${h12(h)}</button>`).join('')}</div>
         <div class="tp-other"><label for="tp-time">Otra hora:</label><input class="inp tp-inp" type="time" id="tp-time" step="300"><button type="button" class="btn w sm" id="tp-addh">Añadir</button></div>
         <div class="tp-l">3. Duración</div>
         <p class="tp-dur">⏱️ Todas las clases de la escuela duran <b>50 minutos</b>.</p>
@@ -235,7 +237,7 @@
     $('#tp-date', el).oninput = (e) => { const v = e.target.value; if (window.MRFEST && MRFEST.isOff(v)) toast('🚫 El ' + v + ' es ' + MRFEST.why(v) + ': no se dictan clases. Elige otro día.', true); };
     $('#tp-date', el).onchange = (e) => { form.date = e.target.value < t0 ? t0 : e.target.value; avail(el); };
     $$('.tp-hour', el).forEach((b) => b.onclick = () => { const h = b.dataset.h, i = form.hours.indexOf(h); i >= 0 ? form.hours.splice(i, 1) : form.hours.push(h); b.classList.toggle('on', i < 0); b.setAttribute('aria-pressed', i < 0); prev(); });
-    $('#tp-addh', el).onclick = () => { const v = $('#tp-time', el).value; if (!/^\d{2}:\d{2}$/.test(v)) { toast('Elige una hora válida.', true); return; } if (form.hours.indexOf(v) < 0) form.hours.push(v); avail(el); };
+    $('#tp-addh', el).onclick = () => { const v = $('#tp-time', el).value; if (!/^\d{2}:\d{2}$/.test(v)) { toast('Elige una hora válida.', true); return; } if (!workOK(form.date, v)) { toast('Fuera del horario laboral: L–V 7:00 a. m.–9:00 p. m. y sábados 7:00 a. m.–5:00 p. m. (la clase de 50 min debe terminar dentro del horario).', true); return; } if (form.hours.indexOf(v) < 0) form.hours.push(v); avail(el); };
     $$('.tp-segb', el).forEach((b) => b.onclick = () => { form.dur = b.dataset.d; $$('.tp-segb', el).forEach((x) => { x.classList.toggle('on', x === b); x.setAttribute('aria-checked', x === b); }); prev(); });
     $('#tp-rep', el).onchange = (e) => { form.repeat = e.target.checked; $('.tp-weeks', el).classList.toggle('hidden', !form.repeat); prev(); };
     $('#tp-weeks', el).onchange = (e) => { form.weeks = +e.target.value; prev(); };

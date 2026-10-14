@@ -16,6 +16,7 @@
     <li><b>Clases grupales ilimitadas:</b> asiste a todas las clases grupales de tu nivel que quieras, sin límite mensual, mientras tu plan <b>Premium</b> esté activo.</li>
     <li><b>Cupo máximo:</b> cada sesión admite máximo <b>10 estudiantes</b>; si se llena, se cierran las reservas y deberás elegir otro horario disponible de tu nivel.</li>
     <li>Es <b>obligatorio reservar con anticipación</b> para asistir a las clases grupales.</li></ul></section>
+  <section><h3>Horario de la escuela</h3><p><b>Lunes a viernes:</b> 7:00 a. m. a 9:00 p. m. (jornada continua) · <b>Sábados:</b> 7:00 a. m. a 5:00 p. m. · <b>Domingos y festivos de Colombia:</b> no hay clases ni atención por chat. (Hora Colombia)</p></section>
   <section><h3>4. Duración de las clases</h3><p>Todas las clases de la escuela (VIP y grupales) duran <b>50 minutos</b>.</p></section>
   <section><h3>5. Cancelaciones por parte de MRARRIETA.COM</h3>
     <p>Si MRARRIETA.COM cancela una clase, esta será reprogramada sin costo para el estudiante.</p></section>

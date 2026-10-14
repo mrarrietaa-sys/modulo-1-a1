@@ -151,7 +151,7 @@
         <p>Solo <b>10 minutos</b>. Se adapta a tu nivel y al terminar empiezas de una vez tu ruta de aprendizaje.</p>
         <p class="muted">⏱ Unos 10 minutos · ${pst.rounds || 1} oportunidades de 2 intentos${pst.attempts ? ` · Ya usaste ${pst.attempts}` : ''}${pst.inProgress ? ' · <b>Tienes una prueba en progreso</b>' : ''}</p>
         <button class="btn k lg" id="pt">📝 ${pst.inProgress ? 'Continuar' : 'Tomar'} mi prueba de clasificación</button></div></div>`;
-    } else if (a || staff) {
+    } else if (a) {
       const ready = a && a.ready;
       main = `<div class="card pt-mymod">${a ? `<div class="pt-mymod-img" style="background-image:url('${U(a.img)}')"><span>${a.n}</span></div>` : ''}<div><span class="lbl">${staff ? 'Modo profe' : '🧭 Tu ruta de aprendizaje'}</span>
         <h2>${staff ? 'Todos los módulos abiertos para revisión' : `<small class="pt-here">📍 Estás aquí</small>${esc(a.name)} · ${esc(a.es)}`}</h2>

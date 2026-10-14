@@ -441,7 +441,7 @@
       <div class="lv-stats"><div class="lv-st vip"><b>${cr.vipLeft}<small>/${cr.vipTotal}</small></b><span>Clases VIP</span><em>Se renuevan el ${fmtD(addDay(cr.cycleEnd, 1), { day: 'numeric', month: 'short' })}</em></div>
         <div class="lv-st grp"><b>${cr.groupDone}</b><span>Clases grupales</span><em>Este mes · sin límite</em></div>
         <div class="lv-st all"><b>${r.attendedTotal || 0}</b><span>Clases asistidas</span><em>En total</em></div></div>
-      <div class="card lv-card lv-vip"><div class="lv-h"><span class="lv-ic ic-vip">⭐</span><div><span class="lbl">Clases VIP · 1 a 1</span><h3>Reserva tu clase VIP</h3></div></div>
+      <div class="card lv-card lv-vip"><div class="lv-h"><span class="lv-ic ic-vip">💎</span><div><span class="lbl">Clases VIP · 1 a 1</span><h3>Reserva tu clase VIP</h3></div></div>
         <p class="muted">Elige <b>profesor, fecha y hora</b> entre los espacios disponibles. Reserva con mínimo <b>4 horas</b> de anticipación.</p><p class="lv-pol">📌 <b>Cancelación sin penalización:</b> mínimo <b>2 horas</b> antes. <b>Cancelación tardía o inasistencia:</b> la clase se descuenta de tu paquete y no será repuesta. <a href="#" class="lv-polk">Ver política completa</a></p><p class="lv-noacum">⚠️ Tus clases <b>no son acumulables</b>: resérvalas antes del <b>${fmtD(cr.cycleEnd, { day: 'numeric', month: 'long' })}</b> o se pierden.</p>
         <button class="btn k lg" id="lv-book" ${cr.vipLeft ? '' : 'disabled'}>${cr.vipLeft ? '📅 Reservar clase VIP' : '✅ Ya reservaste tus clases VIP de este mes'}</button></div>
       <div class="card lv-card lv-next"><div class="lv-h"><span class="lv-ic ic-cal">📅</span><div><span class="lbl">Agenda</span><h3>Mis próximas clases</h3></div></div>

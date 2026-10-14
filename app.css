@@ -3820,3 +3820,5 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--blue)!im
 .skills .skill:nth-child(1) .bar i,.skills .skill:nth-child(4) .bar i{background:var(--y)}
 .skills .skill:nth-child(2) .bar i{background:var(--blue)}.skills .skill:nth-child(3) .bar i{background:var(--k)}
 .pt-mymod{border-left:6px solid var(--y)!important}
+
+.nmw{white-space:nowrap}

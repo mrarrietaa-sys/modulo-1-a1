@@ -296,14 +296,9 @@
 
   // 📚 acceso de profe a TODO el material de los módulos (modo profe en la plataforma de estudiantes)
   function material() {
-    let p = null; try { p = JSON.parse(localStorage.getItem('mra_profile_v1') || 'null'); } catch (e) { }
-    if (p && p.cloud && p.type !== 'staff' && !confirm('En este navegador hay un estudiante con sesión abierta. Para entrar como profe se cerrará esa sesión en este navegador (su progreso sigue guardado en la nube). ¿Continuar?')) return;
-    const t = D.teacher || {}; const first = String(t.name || 'Profe').split(' ')[0];
-    try {
-      if (p && p.cloud && p.type !== 'staff') ['mra_owner', 'mra_sync_ts', 'mra_me_cache'].forEach((k) => localStorage.removeItem(k));
-      localStorage.setItem('mra_profile_v1', JSON.stringify({ type: 'staff', teacher: t.id || true, first, last: '', name: t.name || first, created: Date.now(), tourDone: true, tour1: true, tour2: true, pol1: Date.now() }));
-    } catch (e) { }
-    window.open('index.html', '_blank');
+    const t = D.teacher || {}; const info = { id: t.id || '', name: t.name || 'Profe', first: String(t.name || 'Profe').split(' ')[0], at: Date.now() };
+    try { sessionStorage.setItem('mra_teacher', JSON.stringify(info)); localStorage.setItem('mra_teacher_tmp', JSON.stringify(info)); } catch (e) { }
+    window.open('index.html?profe=1', '_blank');
   }
   /* ---------- 💰 Mis pagos ---------- */
   const COP = (n) => '$' + Math.round(+n || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');

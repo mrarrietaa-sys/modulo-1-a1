@@ -3687,3 +3687,6 @@ a.btn,a.btn:hover{text-decoration:none}
 .tp-pay-top{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:4px 0 6px}.tp-pay-top .tp-l{margin:0}.tp-pay-top select{flex:1 1 260px;max-width:420px}
 .tp-paid{justify-self:start;margin-top:6px;padding:6px 12px;border-radius:999px;font-weight:800;font-size:14px}.tp-paid.ok{background:#dcfce7;color:#166534}.tp-paid.pend{background:#fff3cd;color:#8a5a00}
 .ad-pay-row .btn.sm{white-space:nowrap}
+/* modo profe: solo material para dictar (sin recordatorios ni elementos de progreso del estudiante) */
+.mr-teach .remind-card,.mr-teach #rem-b,.mr-teach .pt-trialbar,.mr-teach .mr-bell{display:none!important}
+.mr-teach .hello .ringbox,.mr-teach .hello .skills,.mr-teach #prog,.mr-teach .topbar .pill.y,.mr-teach .topbar .streak,.mr-teach .card.final,.mr-teach .ce-revcard{display:none!important}

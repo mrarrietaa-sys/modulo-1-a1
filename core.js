@@ -30,8 +30,9 @@
   const KEY = MOD.stateKey;
   const fresh = () => ({ v: 1, name: '', created: Date.now(), xp: 0, streak: { last: '', n: 0 }, parts: {}, skills: { listening: [0, 0], reading: [0, 0], speaking: [0, 0], writing: [0, 0] }, weak: {}, unlocked: [], all: false, final: null, hw: {}, last: null, sound: true });
   let S;
-  try { S = Object.assign(fresh(), JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) { S = fresh(); }
-  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { } };
+  const TEACH = !!(window.MRTEACH && MRTEACH.on());
+  try { S = TEACH ? Object.assign(fresh(), { tourDone: true, review: true }) : Object.assign(fresh(), JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) { S = fresh(); }
+  const save = () => { if (TEACH) return; try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { } };
   function touchStreak() {
     const t = today(); if (S.streak.last === t) return;
     const y = new Date(Date.now() - 864e5).toISOString().slice(0, 10);

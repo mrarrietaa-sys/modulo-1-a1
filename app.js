@@ -237,6 +237,7 @@
     const cb = $('#chat-b', app); if (cb) cb.onclick = () => route('chat');
     const pt = $('#pend-t', app); if (pt) pt.onclick = () => { const l = $('#pend-l', app); const open = l.classList.toggle('hidden') === false; pt.innerHTML = `📋 ${open ? 'Ocultar' : 'Ver'} mis tareas pendientes (${pendingHW().length}) ${open ? '▴' : '▾'}`; sfx('tap'); };
     if ($('#rem-b')) $('#rem-b').onclick = reminderModal;
+    if (window.MRTEACH && MRTEACH.on()) return;
     if (!S.tourDone) setTimeout(tour, 700); else dailyReminder();
   }
 

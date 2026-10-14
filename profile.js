@@ -8,6 +8,11 @@
    ===================================================================== */
 (function () {
   const KEY = 'mra_profile_v1';
+  // 👩‍🏫 MODO PROFE: material abierto solo para dictar clases (no usa ni guarda el perfil/progreso del navegador, sin tours)
+  (function () { try { if (/[?&]profe=1/.test(location.search) && !sessionStorage.getItem('mra_teacher')) { const t = JSON.parse(localStorage.getItem('mra_teacher_tmp') || 'null'); if (t && Date.now() - t.at < 120000) sessionStorage.setItem('mra_teacher', JSON.stringify(t)); } } catch (e) { } })();
+  const TM = (() => { try { return JSON.parse(sessionStorage.getItem('mra_teacher') || 'null'); } catch (e) { return null; } })();
+  window.MRTEACH = { on: () => !!TM, info: TM, exit: () => { try { sessionStorage.removeItem('mra_teacher'); } catch (e) { } location.href = 'profesores.html'; } };
+  if (TM) document.documentElement.classList.add('mr-teach');
   const MODS = [
     { id: 'A1', n: 1, name: 'Módulo 1', level: 'Elementary A1', es: 'Elemental (A1)', url: 'modulo-a1.html', key: 'mra_m1_progress_v1', ready: true, classes: 28, topics: 14, img: 'photo-1491438590914-bc09fcaaf77a', desc: 'Saludos, alfabeto, números, verbo To Be, familia, comida, clima, la casa y más.' },
     { id: 'A2', n: 2, name: 'Módulo 2', level: 'Pre-intermediate A2', es: 'Básico (A2)', url: 'modulo-a2.html', key: 'mra_m2_progress_v1', ready: true, classes: 22, topics: 11, img: 'photo-1522202176988-66273c2fd55f', desc: 'La hora, presente y pasado simple, el cuerpo, apariencia, personalidad, modales y phrasal verbs.' },
@@ -15,14 +20,15 @@
     { id: 'B2+', n: 4, name: 'Módulo 4', level: 'Advanced B2+', es: 'Avanzado (B2+)', url: 'modulo-b2p.html', key: 'mra_m4_progress_v1', ready: true, classes: 35, topics: 21, img: 'photo-1552664730-d307ca884978', desc: 'Condicionales, gerundios e infinitivos, voz pasiva, reported speech, cláusulas relativas, futuro perfecto y debates de nivel C1.' },
   ];
   const read = (k) => { try { return JSON.parse(localStorage.getItem(k)) || null; } catch (e) { return null; } };
-  const get = () => read(KEY);
-  const save = (p) => { try { localStorage.setItem(KEY, JSON.stringify(p)); if (p && p.first) localStorage.setItem('mra_last_user', JSON.stringify({ first: p.look && p.look.nick || p.first, pic: p.look && (p.look.pic === 'photo' ? p.look.photo : p.look.pic === 'avatar' ? p.look.head : '') || '' })); } catch (e) { } return p; };
+  const get = () => TM ? { type: 'staff', teacher: true, first: TM.first || 'Profe', last: '', name: TM.name || 'Profe', tourDone: true, tour1: true, tour2: true, pol1: 1, created: TM.at || Date.now() } : read(KEY);
+  const save = (p) => { if (TM) return; try { localStorage.setItem(KEY, JSON.stringify(p)); if (p && p.first) localStorage.setItem('mra_last_user', JSON.stringify({ first: p.look && p.look.nick || p.first, pic: p.look && (p.look.pic === 'photo' ? p.look.photo : p.look.pic === 'avatar' ? p.look.head : '') || '' })); } catch (e) { } return p; };
   // ¿el estudiante vuelve? (ya había entrado antes) — se calcula una vez por sesión del navegador
   function isBack() {
+    if (TM) return true;
     try { let v = sessionStorage.getItem('mra_back'); if (v === null) { const p = read(KEY); v = p && p.first && p.lastSeen ? '1' : '0'; sessionStorage.setItem('mra_back', v); if (p && p.first) { p.lastSeen = Date.now(); localStorage.setItem(KEY, JSON.stringify(p)); } } return v === '1'; } catch (e) { return false; }
   }
   const lastUser = () => read('mra_last_user');
-  const clear = () => { try { localStorage.removeItem(KEY); } catch (e) { } };
+  const clear = () => { if (TM) return window.MRTEACH.exit(); try { localStorage.removeItem(KEY); } catch (e) { } };
   const mod = (id) => MODS.find(m => m.id === id || m.n === id);
   const modState = (id) => read(mod(id).key) || {};
   const passed = (id) => { const s = modState(id); return !!(s.final && s.final.passed); };

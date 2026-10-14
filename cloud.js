@@ -25,7 +25,7 @@
     } catch (e) { return { ok: false, err: 'network' }; } finally { clearTimeout(to); }
   }
   const prof = () => J(ls.get('mra_profile_v1'), null);
-  const code = () => { const p = prof(); return p && p.cloud && p.code ? p.code : ''; };
+  const code = () => { if (window.MRTEACH && MRTEACH.on()) return ''; const p = prof(); return p && p.cloud && p.code ? p.code : ''; };
 
   // ---------- perfil local a partir de los datos de la nube ----------
   function typeFor(st, state) { const eff = state ? state.eff : (st.plan || 'free'); return eff === 'membership' || eff === 'premium' ? 'student' : 'trial'; }
@@ -128,7 +128,7 @@
   // al abrir cualquier página con sesión: refresca plan, avisos e intentos extra (máx. 1 vez por minuto)
   setTimeout(() => { if (code()) me().catch(() => { }); }, 800);
   // cerrar sesión: guarda en la nube y deja el dispositivo limpio (el siguiente que entre no ve el progreso de otro)
-  async function signOut() { const ok = await sync(true); if (ok) { wipeLocal(true); ls.del(OWNER); ls.del(ME); try { sessionStorage.removeItem(ME); } catch (e) { } } return ok; }
+  async function signOut() { if (window.MRTEACH && MRTEACH.on()) { MRTEACH.exit(); return true; } const ok = await sync(true); if (ok) { wipeLocal(true); ls.del(OWNER); ls.del(ME); try { sessionStorage.removeItem(ME); } catch (e) { } } return ok; }
   window.MRAC = { signOut, flush: () => beacon(true), examResult, requestAttempt, homework, feedbackFor, evalSave, notifications, markRead, isPremium: premium, cachedMe: () => { const c = cachedMe(); return c && c.r; }, on: !!URL_, url: URL_, call, login, me, sync, upload, saveProfile, code, toB64, applyStudent, wipeLocal,
     planName: (p) => ({ free: 'Acceso gratuito', membership: 'Membership', premium: 'Premium' }[p] || 'Acceso gratuito') };
 })();

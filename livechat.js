@@ -1,0 +1,91 @@
+// 💬 Chat en vivo profe ↔ estudiante, con el estilo de WhatsApp. Los mensajes viven en la nube (hoja "Chat").
+(function () {
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const fmt = (t) => esc(t).replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>').replace(/\n/g, '<br>');
+  const hm = (ts) => new Date(ts).toLocaleTimeString('es-CO', { hour: 'numeric', minute: '2-digit' });
+  const dayKey = (ts) => new Date(ts).toDateString();
+  const dayLbl = (ts) => { const d = new Date(ts), t = new Date(), y = new Date(Date.now() - 864e5); if (d.toDateString() === t.toDateString()) return 'Hoy'; if (d.toDateString() === y.toDateString()) return 'Ayer'; return d.toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long' }); };
+  const ini = (n) => String(n || '?').replace(/^(Mrs?\.)\s*/, '').split(' ').map((x) => x[0]).slice(0, 2).join('').toUpperCase();
+  const TICK1 = '<svg viewBox="0 0 16 11" width="16" height="11"><path fill="currentColor" d="M11.07.66 4.4 7.33 1.93 4.86.52 6.27l3.88 3.88 8.08-8.08z"/></svg>';
+  const TICK2 = '<svg viewBox="0 0 16 11" width="16" height="11"><path fill="currentColor" d="M11.07.66 4.4 7.33 1.93 4.86.52 6.27l3.88 3.88 8.08-8.08zM15.48.66 8.81 7.33l-.6-.6-1.41 1.41 2.01 2.01 8.08-8.08z"/></svg>';
+  const SEND = '<svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M1.1 21.8 23 12 1.1 2.2 1 9.8l15.6 2.2L1 14.2z"/></svg>';
+  const BACK = '<svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M20 11H7.8l5.6-5.6L12 4l-8 8 8 8 1.4-1.4L7.8 13H20z"/></svg>';
+  let W = null;
+  function open(opts) {
+    if (W) close();
+    const o = Object.assign({ title: 'Chat', empty: '' }, opts || {});
+    const el = document.createElement('div'); el.className = 'wa-wrap'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'Chat');
+    el.innerHTML = `<div class="wa">
+      <aside class="wa-side"><header class="wa-h"><b>💬 ${esc(o.title)}</b><button class="wa-x" aria-label="Cerrar chat">✕</button></header><div class="wa-list"><p class="wa-note">⏳ Cargando…</p></div></aside>
+      <section class="wa-main"><div class="wa-blank"><div><b>mrarrieta.com</b><p>Elige una conversación para empezar a chatear.</p></div></div></section></div>`;
+    document.body.appendChild(el); document.documentElement.classList.add('wa-lock');
+    W = { el, o, room: null, me: '', msgs: [], timers: [], rooms: [] };
+    el.querySelector('.wa-x').onclick = close;
+    el.addEventListener('click', (e) => { if (e.target === el) close(); });
+    loadRooms(true);
+    W.timers.push(setInterval(() => !document.hidden && loadRooms(false), 12000));
+    W.timers.push(setInterval(() => !document.hidden && W.room && loadMsgs(), 4000));
+  }
+  function close() { if (!W) return; W.timers.forEach(clearInterval); W.el.remove(); document.documentElement.classList.remove('wa-lock'); W = null; }
+  async function loadRooms(first) {
+    const r = await W.o.call(W.o.roomsAction, {}).catch(() => null); if (!W) return;
+    const list = W.el.querySelector('.wa-list');
+    if (!r || !r.ok) { if (first) list.innerHTML = '<p class="wa-note">No se pudo cargar el chat. Revisa tu conexión.</p>'; return; }
+    W.me = r.me; W.rooms = r.rooms || [];
+    list.innerHTML = W.rooms.length ? W.rooms.map((x) => `<button class="wa-room${W.room === x.room ? ' on' : ''}" data-room="${esc(x.room)}"><span class="wa-av">${esc(ini(x.title))}</span><span class="wa-rt"><b>${esc(x.title)}</b><small>${x.last ? (x.last.from === W.me ? '✓ ' : '') + esc(String(x.last.text).slice(0, 60)) : esc(x.sub || 'Toca para escribir')}</small></span><span class="wa-rm">${x.last ? `<small>${hm(x.last.ts)}</small>` : ''}${x.unread ? `<i>${x.unread}</i>` : ''}</span></button>`).join('')
+      : `<p class="wa-note">${esc(W.o.empty || 'Todavía no tienes conversaciones.')}</p>`;
+    list.querySelectorAll('[data-room]').forEach((b) => b.onclick = () => openRoom(b.dataset.room));
+    if (first) { const want = W.o.room && W.rooms.find((x) => x.room === W.o.room); const one = W.rooms.length === 1 && W.o.autoOpenSingle; if (want) openRoom(want.room); else if (one) openRoom(W.rooms[0].room); }
+  }
+  function openRoom(room) {
+    const info = W.rooms.find((x) => x.room === room) || { title: '' }; W.room = room; W.msgs = [];
+    W.el.querySelector('.wa').classList.add('in-room');
+    W.el.querySelectorAll('.wa-room').forEach((b) => b.classList.toggle('on', b.dataset.room === room));
+    const main = W.el.querySelector('.wa-main');
+    main.innerHTML = `<header class="wa-h wa-ch"><button class="wa-back" aria-label="Volver">${BACK}</button><span class="wa-av">${esc(ini(info.title))}</span><span class="wa-rt"><b>${esc(info.title)}</b><small>${esc(info.sub || '')}</small></span><button class="wa-x wa-x2" aria-label="Cerrar chat">✕</button></header>
+      <div class="wa-msgs" aria-live="polite"><p class="wa-note">⏳ Cargando mensajes…</p></div>
+      <form class="wa-bar"><textarea rows="1" maxlength="1500" placeholder="Escribe un mensaje" aria-label="Mensaje"></textarea><button class="wa-send" aria-label="Enviar">${SEND}</button></form>`;
+    main.querySelector('.wa-back').onclick = () => { W.room = null; W.el.querySelector('.wa').classList.remove('in-room'); loadRooms(false); };
+    main.querySelector('.wa-x2').onclick = close;
+    const ta = main.querySelector('textarea'), form = main.querySelector('form');
+    ta.oninput = () => { ta.style.height = 'auto'; ta.style.height = Math.min(120, ta.scrollHeight) + 'px'; };
+    ta.onkeydown = (e) => { if (e.key === 'Enter' && !e.shiftKey && window.innerWidth > 700) { e.preventDefault(); form.requestSubmit(); } };
+    form.onsubmit = (e) => { e.preventDefault(); const t = ta.value.trim(); if (!t) return; ta.value = ''; ta.oninput(); send(t); ta.focus(); };
+    setTimeout(() => ta.focus(), 50);
+    loadMsgs(true).then(() => W && loadRooms(false));
+  }
+  async function loadMsgs(first) {
+    const room = W.room; const r = await W.o.call('chatGet', { room }).catch(() => null); if (!W || W.room !== room) return;
+    if (!r || !r.ok) { if (first) W.el.querySelector('.wa-msgs').innerHTML = '<p class="wa-note">No se pudieron cargar los mensajes.</p>'; return; }
+    W.me = r.me || W.me; const pend = W.msgs.filter((m) => m.pending);
+    const sig = JSON.stringify(r.msgs.map((m) => [m.id, m.read]));
+    if (!first && sig === W.sig && !pend.length) return; W.sig = sig;
+    W.msgs = r.msgs.concat(pend.filter((p) => !r.msgs.some((m) => m.text === p.text && m.from === p.from && Math.abs(m.ts - p.ts) < 60000)));
+    render(first);
+  }
+  function render(forceBottom) {
+    const box = W.el.querySelector('.wa-msgs'); if (!box) return;
+    const atBottom = forceBottom || box.scrollHeight - box.scrollTop - box.clientHeight < 80;
+    let last = '';
+    box.innerHTML = W.msgs.length ? W.msgs.map((m) => { const mine = m.from === W.me; const dk = dayKey(m.ts); const sep = dk !== last ? `<div class="wa-day"><span>${esc(dayLbl(m.ts))}</span></div>` : ''; last = dk;
+      return `${sep}<div class="wa-m ${mine ? 'me' : 'them'}"><div class="wa-b">${fmt(m.text)}<span class="wa-meta">${hm(m.ts)}${mine ? `<i class="wa-tk${m.read ? ' read' : ''}">${m.pending ? '🕓' : m.read ? TICK2 : TICK1}</i>` : ''}</span></div></div>`; }).join('')
+      : '<div class="wa-day"><span>🔒 Escribe tu primer mensaje. Solo tú y tu profe ven esta conversación.</span></div>';
+    if (atBottom) box.scrollTop = box.scrollHeight;
+  }
+  async function send(text) {
+    const room = W.room; const tmp = { id: 'tmp' + Date.now(), from: W.me, text, ts: Date.now(), pending: true }; W.msgs.push(tmp); render(true);
+    const r = await W.o.call('chatSend', { room, text }).catch(() => null); if (!W || W.room !== room) return;
+    const i = W.msgs.indexOf(tmp);
+    if (r && r.ok) { if (i >= 0) W.msgs[i] = r.msg; } else { if (i >= 0) W.msgs.splice(i, 1); const ta = W.el.querySelector('textarea'); if (ta) ta.value = text; alertBar('No se pudo enviar. Revisa tu conexión e inténtalo de nuevo.'); }
+    render(true);
+  }
+  function alertBar(t) { const box = W && W.el.querySelector('.wa-msgs'); if (box) box.insertAdjacentHTML('beforeend', `<div class="wa-day err"><span>${esc(t)}</span></div>`); }
+  // estudiante: chat con su(s) profe(s)
+  function openStudent(extra) {
+    const A = window.MRAC; if (!A || !A.code || !A.code()) { alert('Entra con tu código para chatear con tu profe.'); return; }
+    open(Object.assign({ title: 'Chat con mi profe', roomsAction: 'chatRooms', autoOpenSingle: true, empty: 'Cuando tengas tu primera clase con un profe, podrás chatear con él o ella aquí.', call: (a, d) => A.call(a, Object.assign({ code: A.code() }, d || {})) }, extra || {}));
+  }
+  window.MRLIVE = { open, close, openStudent };
+  // abrir directo desde el enlace del correo (#chat)
+  if (/#chat\b/.test(location.hash) && !/profesores/.test(location.pathname)) { const go = (n) => { if (window.MRAC && MRAC.code && MRAC.code()) { history.replaceState(null, '', location.pathname + location.search); openStudent(); } else if (n < 15) setTimeout(() => go(n + 1), 800); }; setTimeout(() => go(0), 1200); }
+})();

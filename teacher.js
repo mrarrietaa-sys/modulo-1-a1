@@ -134,12 +134,14 @@
     const t = D.teacher;
     app.innerHTML = `<div class="tp-head">
         <div class="tp-head-txt"><h1>¡Hola, ${esc(t.hello || String(t.name || '').split(' ')[0])}! 👋</h1><p class="muted">${dLabel(today(), true)} · <b>${h12(nowHM())}</b> hora Colombia · Código <b>${esc(t.code)}</b></p></div>
-        <button class="btn k sm" id="tp-mat">📚 Material de clases</button><a class="btn w sm tp-chat" href="docente.html">💬 Chat con estudiantes</a><button class="btn w sm" id="tp-tour" style="margin-top:6px">🧭 Ver el tour</button>
+        <button class="btn k sm" id="tp-mat">📚 Material de clases</button><button class="btn w sm tp-chat" id="tp-chat">💬 Chat con estudiantes</button><button class="btn w sm" id="tp-tour" style="margin-top:6px">🧭 Ver el tour</button>
       </div>
       <nav class="tp-tabs" role="tablist">${TABS.map(([id, ic, tx]) => `<button class="tp-tab${tab === id ? ' on' : ''}" role="tab" aria-selected="${tab === id}" data-tab="${id}"><span aria-hidden="true">${ic}</span> ${tx}</button>`).join('')}</nav>
       <section id="tp-body"></section>`;
     if ($('#tp-tour')) $('#tp-tour').onclick = () => tour();
     if ($('#tp-mat')) $('#tp-mat').onclick = material;
+    if ($('#tp-chat')) $('#tp-chat').onclick = () => openChat();
+    if (/#chat\b/.test(location.hash)) { history.replaceState(null, '', location.pathname); setTimeout(() => openChat(), 300); }
     $$('.tp-tab').forEach((b) => b.onclick = () => { tab = b.dataset.tab; ss.set(TABKEY, tab); shell(); });
     ({ home, avail, classes, groups, pay }[tab] || home)($('#tp-body'));
   }
@@ -295,6 +297,7 @@
 
 
   // 📚 acceso de profe a TODO el material de los módulos (modo profe en la plataforma de estudiantes)
+  function openChat() { if (!window.MRLIVE) return; MRLIVE.open({ title: 'Chat con estudiantes', roomsAction: 'tChats', empty: 'Aquí aparecerán tus estudiantes cuando tengan clases contigo.', call: (a, d) => api(a, d) }); }
   function material() {
     const t = D.teacher || {}; const info = { id: t.id || '', name: t.name || 'Profe', first: t.hello || String(t.name || 'Profe').split(' ')[0], at: Date.now() };
     try { sessionStorage.setItem('mra_teacher', JSON.stringify(info)); localStorage.setItem('mra_teacher_tmp', JSON.stringify(info)); } catch (e) { }

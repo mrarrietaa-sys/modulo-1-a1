@@ -456,7 +456,7 @@
         <ul class="lv-rules"><li><span>✅</span><div><b>Clases grupales ilimitadas:</b> asiste a todas las clases grupales de tu nivel que quieras, sin límite mensual, mientras tu plan Premium esté activo.</div></li><li><span>📅</span><div><b>Reserva tu cupo:</b> en <b>Mis próximas clases</b>, mínimo <b>3 horas antes</b>. Cada sesión admite máximo <b>10 estudiantes</b>; si se llena, deberás elegir otro horario disponible.</div></li><li><span>🔄</span><div><b>Cancelaciones:</b> puedes cancelar hasta <b>2 horas antes</b> de la clase. Si cancelas después o no asistes, no recibirás ninguna penalización ni perderás el acceso a futuras clases grupales.</div></li></ul><p class="lv-noacum">⚠️ Los clubs y las clases VIP <b>no son acumulables</b>: aprovéchalos durante la vigencia de tu plan.</p>
         <a class="btn k" href="clubes.html">${ICO.mic} Ir a mis clubs</a></div>
       <div class="card lv-card lv-msg"><div class="lv-h"><span class="lv-ic">✉️</span><div><span class="lbl">Tu profe</span><h3>Escríbele a tu profe</h3></div></div>
-        <p class="muted">Envíale un mensaje a tu profe desde aquí. Le llega a su perfil y a su correo.</p><button class="btn w" id="lv-msg">✉️ Escribir a mi profe</button></div>
+        <p class="muted">Chatea en vivo con tu profe, como en WhatsApp. Le avisamos cuando le escribas.</p><button class="btn w" id="lv-msg">💬 Abrir chat con mi profe</button></div>
       ${(pr.history || []).length ? `<details class="card lv-card lv-hist"><summary>📜 Historial de clases (${pr.history.length})</summary><div class="lv-list">${pr.history.map(c => `<div class="lv-cl ${c.type}"><div class="grow"><b>${c.type === 'vip' ? '⭐ VIP' : '👥 Clase grupal'} · ${fmtD(c.date)} ${fmtT(c.time)}</b><small>${esc(c.teacher || '')} · ${c.type === 'vip' ? (c.status === 'done' ? (c.attended ? '✅ Dictada · 1 clase descontada de tu paquete' : '❌ No asististe · 1 clase descontada de tu paquete') : c.status === 'noshow' ? '❌ No asististe · 1 clase descontada de tu paquete' : c.status === 'latecancel' ? 'Cancelación tardía · 1 clase descontada de tu paquete' : c.status === 'cancelled' ? 'Cancelada a tiempo · sin descuento' : esc(c.status)) : (c.status === 'done' && c.attended ? '✅ Asististe' : c.status === 'cancelled' ? 'Cancelada' : 'No asististe · sin penalización')}</small></div></div>`).join('')}</div></details>` : ''}
     </div>`;
     if ($('#lv-book')) $('#lv-book').onclick = vipBooking;
@@ -466,7 +466,7 @@
       if (res.ok) { M.toast('✅ ¡Cupo reservado! Tu profe ya sabe que vas.'); live(); }
       else { b.disabled = false; b.textContent = '✅ Reservar cupo'; M.toast(res.err === 'too_late' ? '⏰ Ya pasó el límite: se reserva mínimo 3 horas antes.' : res.err === 'full' ? '🚫 Esta sesión ya tiene 10 estudiantes. Reserva en el siguiente horario de tu nivel.' : 'No se pudo reservar. Intenta de nuevo.'); if (res.err === 'full') live(); } });
     $$('.lv-polk', box).forEach(a => a.onclick = (e) => { e.preventDefault(); window.MRPOLICY && MRPOLICY.show(); });
-    if ($('#lv-msg')) $('#lv-msg').onclick = teacherMsg;
+    if ($('#lv-msg')) $('#lv-msg').onclick = () => window.MRLIVE ? MRLIVE.openStudent() : teacherMsg();
   }
   function teacherMsg() {
     const m = M.modal(`<div class="vb"><h3>✉️ Escribir a mi profe</h3><textarea class="inp" id="tm-t" rows="5" maxlength="1500" placeholder="Hola profe, …" style="width:100%"></textarea><button class="btn k block lg" id="tm-ok" style="margin-top:10px">📨 Enviar</button></div>`, { x: true });

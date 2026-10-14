@@ -59,6 +59,8 @@
   /* ======================= ESTRUCTURA ======================= */
   const TABS = [['home', '📊', 'Resumen'], ['students', '🎓', 'Estudiantes'], ['enroll', '📝', 'Inscripciones'], ['placement', '🧭', 'Placement'], ['recruit', '👩‍🏫', 'Reclutamiento'], ['teachers', '🧑‍🏫', 'Profesores'], ['classes', '📅', 'Clases'], ['requests', '🔁', 'Solicitudes'], ['chats', '💬', 'Chats'], ['settings', '⚙️', 'Ajustes']];
   let TAB = 'home', STATS = null;
+  // "Atrás": dentro del panel vuelve al Resumen (nunca saca a otra página por error)
+  document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('.tb-back'); if (!b || !key()) return; if (document.querySelector('.modal, .wa-wrap')) return; e.preventDefault(); e.stopImmediatePropagation(); if (TAB !== 'home') go('home'); else window.scrollTo(0, 0); }, true);
   async function boot() {
     if (window.MRBELL) MRBELL.mount({ active: () => !!key(), fetch: async () => { const r = await api('aNotifs'); return r.ok ? r.rows : null; }, markRead: (ids, all) => api('notifRead', all ? { all: true } : { ids }) });
     const out = $('#ad-out'); if (out) { out.classList.remove('hidden'); out.onclick = () => { try { sessionStorage.removeItem(KK); } catch (e) { } login(); }; }

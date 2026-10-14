@@ -134,7 +134,7 @@
     const t = D.teacher;
     app.innerHTML = `<div class="tp-head">
         <div class="tp-head-txt"><h1>¡Hola, ${esc(t.hello || String(t.name || '').split(' ')[0])}! 👋</h1><p class="muted">${dLabel(today(), true)} · <b>${h12(nowHM())}</b> hora Colombia · Código <b>${esc(t.code)}</b></p></div>
-        <button class="btn k sm" id="tp-mat">📚 Material de clases</button><button class="btn w sm tp-chat" id="tp-chat">💬 Chat con estudiantes</button><button class="btn w sm" id="tp-tour" style="margin-top:6px">🧭 Ver el tour</button>
+        <button class="btn k sm" id="tp-mat">📚 Material de clases</button><button class="btn sm wa-btn tp-chat" id="tp-chat"><span class="wa-dot"><svg viewBox="0 0 32 32" width="18" height="18" aria-hidden="true"><path fill="#fff" d="M16 3C8.8 3 3 8.6 3 15.6c0 2.5.8 4.9 2.1 6.9L3.6 28l5.7-1.5c2 1.1 4.3 1.7 6.7 1.7 7.2 0 13-5.6 13-12.6S23.2 3 16 3zm6.3 17.6c-.3.8-1.6 1.5-2.2 1.6-.6.1-1.3.1-2.1-.1-.5-.2-1.1-.4-1.9-.7-3.3-1.4-5.5-4.7-5.6-4.9-.2-.2-1.3-1.8-1.3-3.4s.8-2.4 1.1-2.7c.3-.3.6-.4.8-.4h.6c.2 0 .5-.1.7.6.3.7.9 2.3 1 2.5.1.2.1.4 0 .6-.1.2-.2.4-.3.6l-.5.6c-.2.2-.3.4-.1.7.2.3.9 1.5 2 2.4 1.4 1.2 2.5 1.6 2.9 1.8.4.2.6.1.8-.1.2-.2.9-1 1.1-1.4.2-.4.5-.3.8-.2.3.1 2 .9 2.3 1.1.3.2.6.3.7.4.1.3.1 1-.2 1.8z"/></svg></span> Chat con estudiantes</button><button class="btn w sm" id="tp-tour" style="margin-top:6px">🧭 Ver el tour</button>
       </div>
       <nav class="tp-tabs" role="tablist">${TABS.map(([id, ic, tx]) => `<button class="tp-tab${tab === id ? ' on' : ''}" role="tab" aria-selected="${tab === id}" data-tab="${id}"><span aria-hidden="true">${ic}</span> ${tx}</button>`).join('')}</nav>
       <section id="tp-body"></section>`;
@@ -367,6 +367,8 @@
     const m = modal(`<h3>🔔 ${nw.length === 1 ? 'Tienes una novedad' : 'Tienes ' + nw.length + ' novedades'}</h3><div class="tp-pop-list">${nw.map(n => `<div><b>${esc(n.title)}</b><small>${esc(n.body || '')}</small></div>`).join('')}</div><button class="btn k block" id="tp-pok">Entendido</button>`);
     $('#tp-pok', m).onclick = () => { m.remove(); api('notifRead', { ids: nw.map(n => n.id) }).catch(() => { }); nw.forEach(n => n.read = true); if (tab === 'home') shell(); };
   }
+  // "Atrás": dentro del portal vuelve al Resumen; nunca saca al profe a otra página por error
+  document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('.tb-back'); if (!b || !S || !D) return; e.preventDefault(); e.stopImmediatePropagation(); const wa = document.querySelector('.wa-wrap'); if (wa && window.MRLIVE) return MRLIVE.close(); if (tab !== 'home') { tab = 'home'; ss.set(TABKEY, tab); shell(); } window.scrollTo(0, 0); }, true);
   let bellOn = false;
   function bell() { if (bellOn || !window.MRBELL) { if (window.MRBELL && D) MRBELL.set(D.notifications || []); return; } bellOn = true;
     MRBELL.set(D.notifications || []);

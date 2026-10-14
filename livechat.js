@@ -114,6 +114,8 @@
     const A = window.MRAC; if (!A || !A.code || !A.code()) { alert('Entra con tu código para chatear con tu profe.'); return; }
     open(Object.assign({ title: 'Chat con mi profe', roomsAction: 'chatRooms', autoOpenSingle: true, empty: 'Cuando tengas tu primera clase con un profe, podrás chatear con él o ella aquí.', call: (a, d) => A.call(a, Object.assign({ code: A.code() }, d || {})) }, extra || {}));
   }
+  // "Atrás" con el chat abierto: solo cierra el chat
+  document.addEventListener('click', (e) => { if (!W) return; const b = e.target.closest && e.target.closest('.tb-back'); if (!b) return; e.preventDefault(); e.stopImmediatePropagation(); close(); }, true);
   window.MRLIVE = { open, close, openStudent };
   // abrir directo desde el enlace del correo (#chat)
   if (/#chat\b/.test(location.hash) && !/profesores/.test(location.pathname)) { const go = (n) => { if (window.MRAC && MRAC.code && MRAC.code()) { history.replaceState(null, '', location.pathname + location.search); openStudent(); } else if (n < 15) setTimeout(() => go(n + 1), 800); }; setTimeout(() => go(0), 1200); }

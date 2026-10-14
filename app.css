@@ -3728,3 +3728,21 @@ a.btn,a.btn:hover{text-decoration:none}
 .wa-doc span{font-size:26px}.wa-doc b{flex:1;font-size:14px;font-weight:600;word-break:break-word}.wa-doc small{color:#027eb5;font-weight:700}
 .wa-who{display:block;font-size:12.5px;font-weight:700;color:#008069;margin-bottom:2px}.wa-m.me .wa-who{color:#1f7a4d}
 .wa-ro{background:#f0f2f5;color:#54656f;text-align:center;padding:14px;font-size:14px}
+/* WhatsApp: íconos y botones del chat */
+.iconbtn.chat-ic{background:#25D366!important;border-color:#128C7E!important}
+.btn.wa-btn{background:#25D366;color:#fff;border-color:#128C7E}.btn.wa-btn:hover{background:#1ebe5a;color:#fff}
+.wa-dot{display:inline-grid;place-items:center}
+.lv-ic.ic-wa{background:#25D366!important;border-color:#128C7E!important}
+/* íconos de las tarjetas: flotan suavemente */
+.lv-ic{display:grid;place-items:center;width:58px;height:58px;border-radius:16px;font-size:28px;animation:mrFloat 3.2s ease-in-out infinite;box-shadow:0 6px 14px rgba(11,42,91,.16)}
+.lv-ic.ic-vip{background:linear-gradient(135deg,#fff3c4,#ffd43b)}.lv-ic.ic-cal{background:linear-gradient(135deg,#e7efff,#bcd2ff);animation-delay:.4s}.lv-ic.ic-club{background:linear-gradient(135deg,#ffe4e6,#fbb6c1);animation-delay:.8s}.lv-ic.ic-wa{animation-delay:1.2s}
+@keyframes mrFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@media (prefers-reduced-motion:reduce){.lv-ic{animation:none}}
+/* estadísticas de clases con color */
+.lv-stats .lv-st{border-width:2px;position:relative;overflow:hidden}
+.lv-stats .lv-st b{font-size:44px;line-height:1}
+.lv-st.vip{background:linear-gradient(135deg,#fff1f2,#ffe0e3)!important;border-color:#E3242B!important}.lv-st.vip b{color:#E3242B}.lv-st.vip b small{color:#f08a8e}
+.lv-st.grp{background:linear-gradient(135deg,#eef4ff,#dbe7ff)!important;border-color:#2457c5!important}.lv-st.grp b{color:#2457c5}
+.lv-st.all{background:linear-gradient(135deg,#ecfdf3,#d3f5e1)!important;border-color:#16a34a!important}.lv-st.all b{color:#15803d}
+.lv-st span{font-weight:800;color:#0B2A5B}.lv-st em{font-style:normal;font-weight:600;color:#475569}
+@media (max-width:520px){.lv-stats .lv-st b{font-size:32px}.lv-ic{width:48px;height:48px;font-size:24px}}

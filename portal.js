@@ -432,7 +432,7 @@
     if (r.ok === false && (r.err === 'notfound' || r.err === 'inactive')) { M.toast('Tu acceso ya no está activo. Escríbenos por WhatsApp.'); return; }
     if (before !== sig()) { topbar(); return home(); } // el plan cambió en la nube → actualizar perfil
     const ann = r.conf && r.conf.announcement; if (ann && $('#pt-ann')) $('#pt-ann').innerHTML = `<div class="pt-ann">📣 ${esc(ann)}</div>`;
-    if (r.trialLeft != null && r.trialLeft > 0 && $('#pt-ann')) $('#pt-ann').insertAdjacentHTML('afterbegin', `<div class="pt-ann pt-trial">🎁 ${r.trialLeft === 1 ? '<b>Hoy es tu último día</b> de acceso gratuito.' : 'Te quedan <b>' + r.trialLeft + ' días</b> de acceso gratuito.'} <a class="btn k sm" target="_blank" rel="noopener" href="${WA('¡Hola! Soy ' + (P.get().first || '') + ' (código ' + MRAC.code() + ') y quiero inscribirme en mrarrieta.com 🚀')}">💬 Quiero inscribirme</a></div>`);
+    if (r.trialLeft != null && r.trialLeft > 0 && $('#pt-ann')) $('#pt-ann').insertAdjacentHTML('afterbegin', `<div class="pt-ann pt-trial"><span>🎁 ${r.trialLeft === 1 ? '<b>Hoy es tu último día</b> de acceso gratuito.' : 'Te quedan <b>' + r.trialLeft + ' días</b> de acceso gratuito.'}</span><a class="btn k sm" target="_blank" rel="noopener" href="${WA('¡Hola! Soy ' + (P.get().first || '') + ' ' + (P.get().last || '') + ' (código ' + MRAC.code() + ' · plan Gratuito) y quiero inscribirme en mrarrieta.com 🚀')}">💬 Quiero inscribirme</a></div>`);
     if (!r.premium) { if (box) box.innerHTML = ''; return; }
     if (box) renderLive(box, r);
   }

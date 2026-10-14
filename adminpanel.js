@@ -167,7 +167,7 @@
       if (w) w.document.write('<p style="font:18px sans-serif;text-align:center;margin-top:40px">⏳ Preparando el mensaje de WhatsApp…</p>');
       $('#np-ok', m).disabled = true; $('#np-ok', m).textContent = 'Creando…';
       const r = await api('aSave', { table: 'Estudiantes', row: Object.assign(d, { code: d.code ? d.code.toUpperCase() : '', source: 'admin' }) });
-      if (!r.ok) { if (w) w.close(); $('#np-ok', m).disabled = false; $('#np-ok', m).textContent = 'Crear estudiante'; return toast(r.err === 'code_exists' ? 'Ese código ya existe' : 'No se pudo crear'); }
+      if (!r.ok) { if (w) w.close(); $('#np-ok', m).disabled = false; $('#np-ok', m).textContent = 'Crear estudiante'; return toast(r.err === 'code_exists' ? '⚠️ Ese código ya está en uso por otro estudiante o profe. Escribe otro.' : 'No se pudo crear'); }
       if (plan !== 'free') await api('aPlan', { code: r.row.code, plan, months: +$('#np-mo', m).value, amount: $('#np-amt', m).value.replace(/\D/g, '') || undefined });
       m.remove(); if (TAB === 'students') students();
       if (!send) return shareCode(r.row);
@@ -355,8 +355,9 @@
       <label>Saludo<select class="inp" name="gender"><option value="" ${!t.gender ? 'selected' : ''}>Automático (por el nombre)</option><option value="f" ${t.gender === 'f' ? 'selected' : ''}>Mrs. (mujer)</option><option value="m" ${t.gender === 'm' ? 'selected' : ''}>Mr. (hombre)</option></select></label><label>Activo<select class="inp" name="active"><option value="sí" ${t.active !== 'no' ? 'selected' : ''}>sí</option><option value="no" ${t.active === 'no' ? 'selected' : ''}>no</option></select></label></div>
       <button class="btn k block lg" id="te-ok">💾 Guardar</button>`);
     $('#te-ok', m).onclick = async () => { const d = formData(m); if (!d.name) return toast('Escribe el nombre'); d.meet = [d.meet0, d.meet1, d.meet2].map(x => (x || '').trim()).filter(Boolean).join('\n'); delete d.meet0; delete d.meet1; delete d.meet2; if (t.id) d.id = t.id; d.code = (d.code || '').toUpperCase();
-      $('#te-ok', m).disabled = true; const r = await api('aSave', { table: 'Profesores', row: d }); m.remove();
-      if (!r.ok) return toast('No se pudo guardar'); await loadRef(); after && after(r.row);
+      $('#te-ok', m).disabled = true; const r = await api('aSave', { table: 'Profesores', row: d });
+      if (!r.ok) { $('#te-ok', m).disabled = false; return toast(r.err === 'code_exists' ? '⚠️ Ese código ya está en uso por otro profe o estudiante. Escribe otro (o déjalo vacío para crearlo automático).' : 'No se pudo guardar'); }
+      m.remove(); await loadRef(); after && after(r.row);
       if (!t.id) modal(`<div class="center"><h2>✅ Profesor creado</h2><div class="ad-code">${esc(r.row.code)} · PIN ${esc(r.row.pin)}</div><p>${r.row.mailed ? '📧 Se le envió un correo automático de bienvenida a <b>' + esc(r.row.email) + '</b> con su código, PIN y el enlace al portal de profesores.' : (r.row.email ? '⚠️ No se pudo enviar el correo de bienvenida. Revisa el correo del profe.' : '⚠️ Agrega el correo del profe para enviarle la bienvenida automática.')}</p></div>`);
       else toast('✅ Guardado');
       if (TAB === 'teachers') { if (t.id) teacherDetail(t.id); else teachers(); } };

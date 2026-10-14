@@ -3753,3 +3753,4 @@ a.btn,a.btn:hover{text-decoration:none}
 .mr-bp-i.chat{cursor:pointer;border-left:4px solid #25D366}
 .wa-room.locked{opacity:.55;cursor:not-allowed}.wa-room.locked .wa-av{background:#eceff1}
 .wa-room.shake{animation:waShake .4s}@keyframes waShake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.wa-closed{background:#fff8e1;color:#7a5a00;text-align:center;padding:14px 16px;font-size:14.5px;line-height:1.45;border-top:1px solid #f1e3b0}

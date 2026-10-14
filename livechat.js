@@ -33,10 +33,10 @@
     const list = W.el.querySelector('.wa-list');
     if (!r || !r.ok) { if (first) list.innerHTML = '<p class="wa-note">No se pudo cargar el chat. Revisa tu conexión.</p>'; return; }
     W.me = r.me; W.rooms = r.rooms || [];
-    list.innerHTML = W.rooms.length ? W.rooms.map((x) => `<button class="wa-room${W.room === x.room ? ' on' : ''}" data-room="${esc(x.room)}"><span class="wa-av">${esc(ini(x.title))}</span><span class="wa-rt"><b>${esc(x.title)}</b><small>${x.last ? (x.last.from === W.me ? '✓ ' : '') + esc(String(x.last.text).slice(0, 60)) : esc(x.sub || 'Toca para escribir')}</small></span><span class="wa-rm">${x.last ? `<small>${hm(x.last.ts)}</small>` : ''}${x.unread ? `<i>${x.unread}</i>` : ''}</span></button>`).join('')
+    list.innerHTML = W.rooms.length ? W.rooms.map((x) => `<button class="wa-room${W.room === x.room ? ' on' : ''}${x.locked ? ' locked' : ''}" data-room="${esc(x.room)}"${x.locked ? ' data-locked="1"' : ''}><span class="wa-av">${esc(ini(x.title))}</span><span class="wa-rt"><b>${esc(x.title)}</b><small>${x.last ? (x.last.from === W.me ? '✓ ' : '') + esc(String(x.last.text).slice(0, 60)) : esc(x.sub || 'Toca para escribir')}</small></span><span class="wa-rm">${x.last ? `<small>${hm(x.last.ts)}</small>` : ''}${x.unread ? `<i>${x.unread}</i>` : ''}</span></button>`).join('')
       : `<p class="wa-note">${esc(W.o.empty || 'Todavía no tienes conversaciones.')}</p>`;
-    list.querySelectorAll('[data-room]').forEach((b) => b.onclick = () => openRoom(b.dataset.room));
-    if (first) { const want = W.o.room && W.rooms.find((x) => x.room === W.o.room); const one = W.rooms.length === 1 && W.o.autoOpenSingle; if (want) openRoom(want.room); else if (one) openRoom(W.rooms[0].room); }
+    list.querySelectorAll('[data-room]').forEach((b) => b.onclick = () => { if (b.dataset.locked) { const n = b.querySelector('small'); if (n) { n.textContent = '🔒 Solo puedes chatear con el profe con quien reservaste tu clase'; b.classList.add('shake'); setTimeout(() => b.classList.remove('shake'), 500); } return; } openRoom(b.dataset.room); });
+    if (first) { const want = W.o.room && W.rooms.find((x) => x.room === W.o.room); const open1 = W.rooms.filter((x) => !x.locked); const one = open1.length === 1 && W.o.autoOpenSingle && window.innerWidth > 700; if (want && !want.locked) openRoom(want.room); else if (one) openRoom(open1[0].room); }
   }
   function openRoom(room) {
     const info = W.rooms.find((x) => x.room === room) || { title: '' }; W.room = room; W.msgs = [];

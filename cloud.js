@@ -31,7 +31,7 @@
   function typeFor(st, state) { const eff = state ? state.eff : (st.plan || 'free'); return eff === 'membership' || eff === 'premium' ? 'student' : 'trial'; }
   function applyStudent(st, state, base) {
     const p = Object.assign({ created: Date.now() }, base || prof() || {});
-    Object.assign(p, { cloud: true, code: st.code, plan: st.plan || 'free', planStart: st.planStart || '', planEnd: st.planEnd || '', type: typeFor(st, state), expired: !!(state && state.expired), groupId: st.groupId || '' });
+    Object.assign(p, { cloud: true, code: st.code, plan: st.plan || 'free', planStart: st.planStart || '', planEnd: st.planEnd || '', paceStart: st.paceStart || '', paceMod: +st.paceMod || 0, type: typeFor(st, state), expired: !!(state && state.expired), groupId: st.groupId || '' });
     ['first', 'last', 'email', 'whatsapp', 'birth'].forEach(k => { if (st[k] && !p[k]) p[k] = st[k]; });
     if (p.first && !p.name) p.name = (p.first + ' ' + (p.last || '')).trim();
     if (!st.module && st.moduleSet && (+st.moduleSet || 0) > (+p.moduleSet || 0)) { p.module = null; p.placement = null; p.moduleSet = +st.moduleSet; p.assignedBy = null; } // administración reinició su progreso

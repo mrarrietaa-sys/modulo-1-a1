@@ -29,6 +29,7 @@
     const all = panel.querySelector('.mr-bp-all'); if (all) all.onclick = () => { const ids = unread().map((x) => x.id); items.forEach((x) => x.read = true); paint(); try { O.markRead && O.markRead(ids, true); } catch (e) { } };
     panel.querySelectorAll('.mr-bp-i').forEach((el) => el.onclick = () => { const x = items.find((i) => String(i.id) === el.dataset.id); if (!x) return;
       if (!x.read) { x.read = true; paint(); try { O.markRead && O.markRead([x.id], false); } catch (e) { } }
+      if (x.type === 'tema' && window.MRAP && x.data && x.data.m) { const md = MRAP.mod(+x.data.m); if (md) { close(); location.href = md.url; return; } }
       if (x.type === 'chat') { const room = x.data && x.data.room; close(); if (window.MRCHATOPEN) window.MRCHATOPEN(room); else if (window.MRLIVE && MRLIVE.openStudent) MRLIVE.openStudent({ room }); } });
   }
   function toggle() { panel ? close() : open(); }

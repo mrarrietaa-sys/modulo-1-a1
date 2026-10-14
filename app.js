@@ -331,7 +331,26 @@
     $('#cl', m).onclick = () => m.remove();
     $('#gp', m).onclick = () => { m.remove(); const p = prev.parts.find(x => !(S.parts[x.id] && S.parts[x.id].done)) || prev.parts[0]; if (M.isUnlocked(prev.n)) route('class', p.id); else lockGate(prev.n); };
   }
-  function lockGate(n) { const r = M.lockReason(n); if (r === 'progress') progressModal(n); else if (r === 'trial') trialModal(); else if (r === 'access') unlockModal(); else if (r === 'module') location.href = 'index.html'; }
+  function paceModal(n) {
+    const d = M.paceDate(n), t = D.topics.find(x => x.n === n); const dt = new Date(d + 'T00:00:00');
+    const f = dt.toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long' });
+    const m = M.modal(`<div class="center">${M.mascot('mascot', 'watch')}</div><h3 class="center">📅 Tu próximo tema se abre pronto</h3>
+      <p class="center" style="font-size:17px"><b>Topic ${n} · ${esc(t ? t.title : '')}</b> se abre el <b>${esc(f)}</b>.</p>
+      <p class="center">Tu curso avanza paso a paso para que aprendas de verdad. Mientras tanto, repasa los temas que ya viste, practica en la zona de juegos y, si eres Premium, aprovecha tus clases y clubs. 💪</p>
+      <p class="center muted" style="font-size:14px">Te avisaremos por correo y en tu campanita 🔔 el día que se abra.</p>
+      <button class="btn k block lg" id="cl">Entendido</button>`, { x: true });
+    $('#cl', m).onclick = () => m.remove();
+  }
+  function masteryModal(n) {
+    const weak = M.weakParts(n), prev = D.topics.find(x => x.n === n - 1);
+    const m = M.modal(`<div class="center">${M.mascot('mascot', 'think')}</div><h3 class="center">🎯 ¡Casi! Necesitas ${MRAP.PACE_MIN}% para avanzar</h3>
+      <p class="center" style="font-size:17px">Para abrir el Topic ${n}, aprueba el <b>Topic ${prev.n} · ${esc(prev.title)}</b> con ${MRAP.PACE_MIN}% o más en sus dos partes.</p>
+      <div style="display:grid;gap:8px;margin:12px 0">${weak.map(p => `<button class="btn w block" data-p="${p.id}">🔁 Repetir ${PL(p)}: ${esc(p.title)} · tu mejor: ${S.parts[p.id].best}%</button>`).join('')}</div>
+      <button class="btn k block" id="cl">Cerrar</button>`, { x: true });
+    $('#cl', m).onclick = () => m.remove();
+    m.querySelectorAll('[data-p]').forEach(b => b.onclick = () => { m.remove(); route('class', b.dataset.p); });
+  }
+  function lockGate(n) { const r = M.lockReason(n); if (r === 'pace') paceModal(n); else if (r === 'mastery') masteryModal(n); else if (r === 'progress') progressModal(n); else if (r === 'trial') trialModal(); else if (r === 'access') unlockModal(); else if (r === 'module') location.href = 'index.html'; }
   function trialModal() {
     if (window.MRPLANS) return MRPLANS.modal(M);
     const m = M.modal(`<div class="center">${M.mascot('mascot', 'present')}</div><h3 class="center">🟢 Fin de tu acceso gratuito</h3>

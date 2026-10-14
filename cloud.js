@@ -43,7 +43,7 @@
   function wipeLocal(block) { try { const ks = []; for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (SYNC_RX.test(k) && k !== 'mra_profile_v1') ks.push(k); } ks.forEach(k => localStorage.removeItem(k)); } catch (e) { } ls.del(TS); if (block) { window.__mraWiped = true; ls.set('mra_wipe', String(Date.now())); } }
   function applyData(data, profileOnly) { if (!data || !data.keys) return; if (!profileOnly) wipeLocal(); if (!profileOnly) Object.keys(data.keys).forEach(k => { if (SYNC_RX.test(k) && k !== 'mra_profile_v1') ls.set(k, data.keys[k]); });
     const rp = J(data.keys.mra_profile_v1, null); const p = prof();
-    if (rp && p) { ['look', 'tourDone', 'tour1', 'tour2', 'pol1', 'first', 'last', 'name', 'birth', 'email', 'placement', 'lastSeen', 'module', 'moduleSet', 'assignedBy'].forEach(k => { if (rp[k] !== undefined && (p[k] === undefined || p[k] === null || p[k] === '' || (k === 'module' && (+rp.moduleSet || 0) > (+p.moduleSet || 0)) || k === 'look' || k === 'tourDone' || k === 'tour1' || k === 'tour2' || k === 'pol1')) p[k] = rp[k]; }); ls.set('mra_profile_v1', JSON.stringify(p)); }
+    if (rp && p) { ['look', 'tourDone', 'tour1', 'tour2', 'pol1', 'bdY', 'first', 'last', 'name', 'birth', 'email', 'placement', 'lastSeen', 'module', 'moduleSet', 'assignedBy'].forEach(k => { if (rp[k] !== undefined && (p[k] === undefined || p[k] === null || p[k] === '' || (k === 'module' && (+rp.moduleSet || 0) > (+p.moduleSet || 0)) || k === 'look' || k === 'tourDone' || k === 'tour1' || k === 'tour2' || k === 'pol1' || k === 'bdY')) p[k] = rp[k]; }); ls.set('mra_profile_v1', JSON.stringify(p)); }
     if (!profileOnly) ls.set(TS, String(data.ts || Date.now())); }
 
   // ---------- inicio de sesión ----------

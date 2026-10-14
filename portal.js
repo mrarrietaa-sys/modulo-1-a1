@@ -533,8 +533,26 @@
   const bdaySeen = () => { try { return !!localStorage.getItem(bdKey()); } catch (e) { return true; } };
   let BD_FIRST = null; const bdFirst = () => { if (BD_FIRST === null) BD_FIRST = !bdaySeen(); return BD_FIRST; }; // el saludo sale solo la primera vez que entra ese día
   function birthdayBanner() { const p = P.get(); if (!P.isBirthday() || !bdFirst()) return ''; return `<div class="pt-bday" id="pt-bday"><span class="bd-cake">🎂</span><div><b>Happy Birthday, ${esc(P.look().nick || p.first)}! 🎉</b><small>¡Feliz cumpleaños! Todo el equipo de mrarrieta.com te desea un año increíble.</small></div><button class="btn w sm" id="bd-again">🎉</button></div>`; }
+  // 🎂 cumpleaños: se marca por año (también en la nube) para no repetir el saludo atrasado
+  const bdYear = () => P.todayISO().slice(0, 4);
+  const bdMark = () => { try { localStorage.setItem('mra_bday_y_' + bdYear(), '1'); } catch (e) { } const p = P.get(); if (p && p.bdY !== bdYear()) { p.bdY = bdYear(); P.save(p); try { window.MRAC && MRAC.code() && MRAC.sync(true); } catch (e) { } } };
+  const bdYearSeen = () => { const p = P.get() || {}; if (p.bdY === bdYear()) return true; try { return !!localStorage.getItem('mra_bday_y_' + bdYear()); } catch (e) { return true; } };
+  // si no entró el día de su cumpleaños, lo felicitamos cuando entre en los 7 días siguientes (una sola vez)
+  function belatedBirthday() {
+    const p = P.get(); if (!p || !p.birth || p.type === 'staff' || bdYearSeen()) return;
+    const y = bdYear(), bd = y + '-' + p.birth.slice(5, 10), t = P.todayISO(); if (bd >= t) return;
+    const days = Math.round((new Date(t + 'T12:00:00') - new Date(bd + 'T12:00:00')) / 864e5); if (days < 1 || days > 7) return;
+    bdMark(); const when = new Date(bd + 'T12:00:00').toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long' });
+    setTimeout(() => { M.confetti(3500); sfx('win');
+      const m = M.modal(`<div class="center bd-modal"><img src="mra-bday.webp" alt="Mr. Arrieta" class="bd-mra"><h2>Happy belated birthday, ${esc(P.look().nick || p.first)}! 🎂</h2>
+        <p style="font-size:18px">Sabemos que ${days === 1 ? '<b>ayer</b>' : 'el'} <b>${esc(when)}</b> cumpliste años. ¡Muchas felicidades! Todo el equipo de mrarrieta.com te desea un año lleno de alegría, salud y muchos logros… ¡también en inglés! 🥳</p>
+        <button class="btn k block lg" id="bd-ok">Thank you! 💛</button></div>`, { x: true });
+      $('#bd-ok', m).onclick = () => m.remove(); }, 600);
+  }
   function birthdayParty(force) {
-    if (!P.isBirthday() || (bdaySeen() && !force)) { const b = $('#bd-again'); if (b) b.onclick = () => birthdayParty(true); return; }
+    if (!P.isBirthday()) { belatedBirthday(); const b = $('#bd-again'); if (b) b.onclick = () => birthdayParty(true); return; }
+    bdMark();
+    if (bdaySeen() && !force) { const b = $('#bd-again'); if (b) b.onclick = () => birthdayParty(true); return; }
     try { localStorage.setItem(bdKey(), '1'); } catch (e) { }
     const p = P.get(); const age = p.birth ? (+P.todayISO().slice(0, 4) - +p.birth.slice(0, 4)) : 0;
     setTimeout(() => { M.confetti(5000); sfx('win');

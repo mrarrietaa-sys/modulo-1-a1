@@ -46,7 +46,7 @@
         <p>Por seguridad, tu sesión se cerrará por inactividad en <b id="iw-s">60</b> segundos.<br><small>Tu progreso queda guardado.</small></p>
         <button class="btn k lg" id="iw-ok">Sí, sigo aquí 👋</button></div>`;
       const st = document.createElement('style'); st.textContent = `#idle-warn{position:fixed;inset:0;z-index:10000;background:rgba(11,42,91,.6);display:grid;place-items:center;padding:16px}
-#idle-warn .iw-card{background:#fff;border:3px solid #0B2A5B;border-radius:20px;box-shadow:6px 6px 0 #0B2A5B;max-width:380px;width:100%;padding:22px;text-align:center;font-family:Inter,system-ui,sans-serif;color:#0B2A5B}
+#idle-warn .iw-card{background:#fff;border:2px solid #0B2A5B;border-radius:20px;box-shadow:3px 3px 0 #0B2A5B;max-width:380px;width:100%;padding:22px;text-align:center;font-family:Inter,system-ui,sans-serif;color:#0B2A5B}
 #idle-warn h3{margin:6px 0;font:800 24px Poppins,sans-serif}#idle-warn .iw-ic{font-size:44px}#idle-warn p{font-size:16px;margin:8px 0 16px}#idle-warn small{color:#4a5568}
 #idle-warn #iw-s{color:#E3242B;font-size:20px}#idle-warn button{width:100%}`;
       warnEl.appendChild(st); document.body.appendChild(warnEl);

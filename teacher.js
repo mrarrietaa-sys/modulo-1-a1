@@ -134,11 +134,12 @@
     const t = D.teacher;
     app.innerHTML = `<div class="tp-head">
         <div class="tp-head-txt"><h1>¡Hola, ${esc(String(t.name || '').split(' ')[0])}! 👋</h1><p class="muted">${dLabel(today(), true)} · <b>${h12(nowHM())}</b> hora Colombia · Código <b>${esc(t.code)}</b></p></div>
-        <a class="btn w sm tp-chat" href="docente.html">💬 Chat con estudiantes</a><button class="btn w sm" id="tp-tour" style="margin-top:6px">🧭 Ver el tour</button>
+        <button class="btn k sm" id="tp-mat">📚 Material de clases</button><a class="btn w sm tp-chat" href="docente.html">💬 Chat con estudiantes</a><button class="btn w sm" id="tp-tour" style="margin-top:6px">🧭 Ver el tour</button>
       </div>
       <nav class="tp-tabs" role="tablist">${TABS.map(([id, ic, tx]) => `<button class="tp-tab${tab === id ? ' on' : ''}" role="tab" aria-selected="${tab === id}" data-tab="${id}"><span aria-hidden="true">${ic}</span> ${tx}</button>`).join('')}</nav>
       <section id="tp-body"></section>`;
     if ($('#tp-tour')) $('#tp-tour').onclick = () => tour();
+    if ($('#tp-mat')) $('#tp-mat').onclick = material;
     $$('.tp-tab').forEach((b) => b.onclick = () => { tab = b.dataset.tab; ss.set(TABKEY, tab); shell(); });
     ({ home, avail, classes, groups, pay }[tab] || home)($('#tp-body'));
   }
@@ -293,20 +294,56 @@
   }
 
 
+  // 📚 acceso de profe a TODO el material de los módulos (modo profe en la plataforma de estudiantes)
+  function material() {
+    let p = null; try { p = JSON.parse(localStorage.getItem('mra_profile_v1') || 'null'); } catch (e) { }
+    if (p && p.cloud && p.type !== 'staff' && !confirm('En este navegador hay un estudiante con sesión abierta. Para entrar como profe se cerrará esa sesión en este navegador (su progreso sigue guardado en la nube). ¿Continuar?')) return;
+    const t = D.teacher || {}; const first = String(t.name || 'Profe').split(' ')[0];
+    try {
+      if (p && p.cloud && p.type !== 'staff') ['mra_owner', 'mra_sync_ts', 'mra_me_cache'].forEach((k) => localStorage.removeItem(k));
+      localStorage.setItem('mra_profile_v1', JSON.stringify({ type: 'staff', teacher: t.id || true, first, last: '', name: t.name || first, created: Date.now(), tourDone: true, tour1: true, tour2: true, pol1: Date.now() }));
+    } catch (e) { }
+    window.open('index.html', '_blank');
+  }
   /* ---------- 💰 Mis pagos ---------- */
   const COP = (n) => '$' + Math.round(+n || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
   const MES = (ym) => { const [y, m] = String(ym).split('-').map(Number); return new Date(y, m - 1, 15).toLocaleDateString('es-CO', { month: 'long', year: 'numeric' }); };
   const PST = { done: ['ok', 'Dictada'], noshow: ['warn', 'Te conectaste · el estudiante no asistió'], cancelled: ['off', 'Cancelada a tiempo'], latecancel: ['off', 'Cancelada fuera de tiempo'], 'sin-asistentes': ['off', 'Sin reservas'] };
-  let payView = 'cur';
-  function pay(el) {
-    const P = (D.pay || {})[payView]; if (!P) { el.innerHTML = '<div class="card tp-card"><p class="muted">Aún no hay información de pagos.</p></div>'; return; }
-    el.innerHTML = `<div class="tp-subtabs tp-seg" role="tablist"><button class="tp-segb${payView === 'cur' ? ' on' : ''}" data-pv="cur">Este mes</button><button class="tp-segb${payView === 'prev' ? ' on' : ''}" data-pv="prev">Mes anterior</button></div>
-      <div class="tp-pay-hero card"><span class="lbl">Total a pagar · ${esc(MES(P.month))}</span><b>${COP(P.total)}</b>
-        <div class="tp-pay-k"><span><b>${P.done}</b> clase${P.done === 1 ? '' : 's'} dictada${P.done === 1 ? '' : 's'} × ${COP(P.rate)}</span><span><b>${P.noshow}</b> inasistencia${P.noshow === 1 ? '' : 's'} del estudiante × ${COP(P.noshowRate)}</span></div></div>
+  let payMonth = '', payCache = {};
+  async function pay(el) {
+    const months = (D.pay && D.pay.months) || []; if (!payMonth) payMonth = (D.pay && D.pay.cur && D.pay.cur.month) || (months[0] && months[0].month) || '';
+    if (D.pay && D.pay.cur) payCache[D.pay.cur.month] = D.pay.cur;
+    let P = payCache[payMonth];
+    if (!P) { el.innerHTML = '<div class="card tp-card"><p class="muted">⏳ Cargando…</p></div>'; const r = await api('tPay', { month: payMonth }); if (!r.ok) { el.innerHTML = '<div class="card tp-card"><p class="muted">No se pudo cargar. Intenta de nuevo.</p></div>'; return; } P = payCache[payMonth] = r; }
+    const mm = months.find((x) => x.month === payMonth) || {}; const paid = P.paid || mm.paid; const paidAt = P.paidAt || mm.paidAt;
+    el.innerHTML = `<div class="tp-pay-top"><label class="tp-l" for="tp-pm">Mes</label><select class="inp tp-inp" id="tp-pm">${months.map((x) => `<option value="${x.month}"${x.month === payMonth ? ' selected' : ''}>${esc(MES(x.month))} · ${COP(x.total)} · ${x.paid ? '✅ Pagado' : '⏳ Pendiente'}</option>`).join('')}</select>
+        <button class="btn w sm" id="tp-pdf">⬇️ Descargar volante (PDF)</button></div>
+      <div class="tp-pay-hero card"><span class="lbl">Total · ${esc(MES(P.month))}</span><b>${COP(P.total)}</b>
+        <div class="tp-pay-k"><span><b>${P.done}</b> clase${P.done === 1 ? '' : 's'} dictada${P.done === 1 ? '' : 's'} × ${COP(P.rate)}</span><span><b>${P.noshow}</b> inasistencia${P.noshow === 1 ? '' : 's'} del estudiante × ${COP(P.noshowRate)}</span></div>
+        <span class="tp-paid ${paid ? 'ok' : 'pend'}">${paid ? '✅ Pagado' + (paidAt ? ' el ' + esc(dLabel(String(paidAt).slice(0, 10))) : '') : '⏳ Pendiente por pagar'}</span></div>
       <div class="tp-alert"><b>¿Cómo se calcula?</b> Se paga cada clase <b>dictada</b> (${COP(P.rate)} por clase de 50 min). Si <b>te conectas y el estudiante no asiste</b>, se pagan ${COP(P.noshowRate)}. Las clases canceladas (a tiempo o fuera de tiempo) y las no dictadas no se pagan. El pago es mensual. Recuerda <b>marcar cada clase</b> en Mis clases.</div>
       <div class="card tp-card"><div class="tp-card-h"><h2>Detalle</h2><small class="muted">hora Colombia</small></div>
       ${P.items.length ? `<ul class="tp-list tp-pay-list">${P.items.map((x) => { const st = PST[x.status] || ['off', x.status]; return `<li class="tp-pay-row"><div><b>${dLabel(x.date)} · ${h12(x.time)}</b><small>${x.type === 'vip' ? 'VIP' : esc(x.club || 'Clase grupal')}${x.who ? ' · ' + esc(x.who) : ''}</small></div><span class="tp-pst ${st[0]}">${esc(st[1])}</span><b class="tp-amt">${COP(x.amount)}</b></li>`; }).join('')}</ul>` : '<p class="muted">No hay clases registradas en este mes.</p>'}</div>`;
-    $$('[data-pv]', el).forEach((b) => b.onclick = () => { payView = b.dataset.pv; pay(el); });
+    $('#tp-pm', el).onchange = (e) => { payMonth = e.target.value; pay(el); };
+    $('#tp-pdf', el).onclick = () => payPdf(P, paid, paidAt);
+  }
+  // volante de pago imprimible → "Guardar como PDF"
+  function payPdf(P, paid, paidAt) {
+    const t = D.teacher || {}; const w = window.open('', '_blank'); if (!w) { toast('Permite las ventanas emergentes para descargar el PDF', true); return; }
+    const rows = P.items.map((x) => `<tr><td>${esc(dLabel(x.date))}</td><td>${esc(h12(x.time))}</td><td>${x.type === 'vip' ? 'VIP' : esc(x.club || 'Clase grupal')}</td><td>${esc(x.who || '')}</td><td>${esc((PST[x.status] || ['', x.status])[1])}</td><td class="r">${COP(x.amount)}</td></tr>`).join('');
+    w.document.write(`<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Volante de pago ${esc(t.name)} ${esc(P.month)}</title><style>
+      body{font-family:Arial,Helvetica,sans-serif;color:#1a202c;margin:32px}h1{color:#0B2A5B;font-size:22px;margin:16px 0 4px}.top{display:flex;justify-content:space-between;align-items:center;border-bottom:4px solid #E3242B;padding-bottom:12px}
+      .top img{height:60px}.meta{font-size:14px;line-height:1.6}table{width:100%;border-collapse:collapse;margin-top:16px;font-size:13px}th,td{border:1px solid #dfe3ea;padding:7px 8px;text-align:left}th{background:#0B2A5B;color:#fff}
+      .r{text-align:right}.sum{margin-top:16px;width:340px;margin-left:auto}.sum td{font-size:14px}.tot td{font-weight:800;font-size:16px;background:#f4f6fa}.st{display:inline-block;margin-top:10px;padding:6px 12px;border-radius:999px;font-weight:700;background:${paid ? '#dcfce7;color:#166534' : '#fff3cd;color:#8a5a00'}}
+      .foot{margin-top:28px;font-size:12px;color:#4a5568}@media print{body{margin:14mm}}</style></head><body>
+      <div class="top"><img src="${location.href.replace(/[^/]*$/, '')}mra-brand.png" alt="mrarrieta.com"><div class="meta" style="text-align:right"><b>VOLANTE DE PAGO</b><br>${esc(MES(P.month))}</div></div>
+      <h1>${esc(t.name || '')}</h1><div class="meta">Código: ${esc(t.code || '')}${t.email ? ' · ' + esc(t.email) : ''}<br>Periodo: ${esc(MES(P.month))} · Valor por clase dictada: ${COP(P.rate)} · Inasistencia del estudiante: ${COP(P.noshowRate)}</div>
+      <span class="st">${paid ? 'PAGADO' + (paidAt ? ' · ' + esc(dLabel(String(paidAt).slice(0, 10))) : '') : 'PENDIENTE POR PAGAR'}</span>
+      <table><thead><tr><th>Fecha</th><th>Hora</th><th>Clase</th><th>Estudiante(s)</th><th>Estado</th><th class="r">Valor</th></tr></thead><tbody>${rows || '<tr><td colspan="6">Sin clases registradas</td></tr>'}</tbody></table>
+      <table class="sum"><tr><td>Clases dictadas (${P.done} × ${COP(P.rate)})</td><td class="r">${COP(P.done * P.rate)}</td></tr><tr><td>Inasistencias (${P.noshow} × ${COP(P.noshowRate)})</td><td class="r">${COP(P.noshow * P.noshowRate)}</td></tr><tr class="tot"><td>TOTAL</td><td class="r">${COP(P.total)}</td></tr></table>
+      <p class="foot">mrarrieta.com · ¡Aprende inglés HABLANDO! · Generado el ${esc(dLabel(today(), true))}. Las clases canceladas y las no dictadas no generan pago.</p>
+      <script>window.onload=function(){setTimeout(function(){window.print()},400)}<\/script></body></html>`);
+    w.document.close();
   }
   /* ---------- 4. Mis grupos ---------- */
   function groups(el) {

@@ -3750,3 +3750,6 @@ a.btn,a.btn:hover{text-decoration:none}
 .lv-ic,.lv-ic.ic-vip,.lv-ic.ic-cal,.lv-ic.ic-club{background:none!important;border:0!important;box-shadow:none!important;width:auto;min-width:52px;height:52px;font-size:42px;line-height:1;filter:drop-shadow(0 4px 6px rgba(11,42,91,.18))}
 .lv-ic.ic-wa{width:50px;height:50px;min-width:50px;border-radius:50%!important;border:0!important;box-shadow:0 4px 10px rgba(18,140,126,.35)!important;filter:none}
 @media (max-width:520px){.lv-ic,.lv-ic.ic-vip,.lv-ic.ic-cal,.lv-ic.ic-club{font-size:34px;min-width:42px;height:42px}.lv-ic.ic-wa{width:42px;height:42px;min-width:42px}}
+.mr-bp-i.chat{cursor:pointer;border-left:4px solid #25D366}
+.wa-room.locked{opacity:.55;cursor:not-allowed}.wa-room.locked .wa-av{background:#eceff1}
+.wa-room.shake{animation:waShake .4s}@keyframes waShake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}

@@ -438,7 +438,7 @@
     const today = P.todayISO();
     const pend = (pr.requests || []).find(q => q.status === 'pendiente');
     box.innerHTML = `<div class="sect-title"><h2>👩‍🏫 Mis clases con profes</h2></div><div class="lv-wrap">
-      <div class="lv-stats"><div class="lv-st vip"><b>${cr.vipLeft}<small>/${cr.vipTotal}</small></b><span>Clases VIP</span><em>Se renuevan el ${fmtD(addDay(cr.cycleEnd, 1), { day: 'numeric', month: 'short' })}</em></div>
+      <div class="lv-stats"><div class="lv-st vip"><b>${cr.vipLeft}<small>/${cr.vipTotal}</small></b><span>Clases VIP</span><em>${cr.vipBonus ? `🎁 Incluye ${cr.vipBonus} de regalo · ` : ''}Se renuevan el ${fmtD(addDay(cr.cycleEnd, 1), { day: 'numeric', month: 'short' })}</em></div>
         <div class="lv-st grp"><b>${cr.groupDone}</b><span>Clases grupales</span><em>Este mes · sin límite</em></div>
         <div class="lv-st all"><b>${r.attendedTotal || 0}</b><span>Clases asistidas</span><em>En total</em></div></div>
       <div class="card lv-card lv-vip"><div class="lv-h"><span class="lv-ic ic-vip">💎</span><div><span class="lbl">Clases VIP · 1 a 1</span><h3>Reserva tu clase VIP</h3></div></div>

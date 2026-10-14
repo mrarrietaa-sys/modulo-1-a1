@@ -8,7 +8,7 @@
 (function () {
   'use strict';
   const M = window.M1, P = window.MRAP, AD = window.ARCADE_DATA;
-  if (!P || !P.get()) { location.replace('index.html'); return; }
+  if (!P || !P.get() || (P.isExpired && P.isExpired())) { location.replace('index.html'); return; }
   const { $, $$, h, esc, shuffle, sample } = M;
   const app = $('#app');
 

@@ -385,7 +385,7 @@
   /* ---------------- vitrina (sin Premium) ---------------- */
   function showcase(S) {
     const { root, opts, band } = S;
-    const wa = txt => (typeof opts.waLink === 'function' ? opts.waLink(txt) : 'https://wa.me/573017810841?text=' + encodeURIComponent(txt));
+    const wa = txt => (typeof opts.waLink === 'function' ? opts.waLink(txt) : 'https://wa.me/573017810841?text=' + encodeURIComponent((window.MRNE || String)(txt)));
     const posters = ['conv', 'fon'].map(key => {
       const d = data(key), m = META[key], c = clubCfg(opts, key);
       const ss = d && d[band] ? d[band].sessions.slice(0, 4) : [];

@@ -309,7 +309,7 @@
 
   /* ---------------- unlock ---------------- */
   function unlockModal() {
-    const wa = `https://wa.me/${C.WHATSAPP}?text=${encodeURIComponent(C.BUY_MESSAGE + (S.name ? ` (Soy ${S.name})` : ''))}`;
+    const wa = `https://wa.me/${C.WHATSAPP}?text=${encodeURIComponent((window.MRNE || String)(C.BUY_MESSAGE + (S.name ? ` (Soy ${S.name})` : '')))}`;
     const m = M.modal(`<div class="center">${M.mascot('mascot', 'present')}</div><h3 class="center">🔓 Desbloquea el ${M.MOD.es}</h3>
       <p class="muted center">Ingresa el código de acceso que te dio tu profe.</p>
       <input class="inp" id="cd" placeholder="Ej: ABC-123" autocapitalize="characters" style="margin:8px 0 12px">
@@ -355,7 +355,7 @@
     if (window.MRPLANS) return MRPLANS.modal(M);
     const m = M.modal(`<div class="center">${M.mascot('mascot', 'present')}</div><h3 class="center">🟢 Fin de tu acceso gratuito</h3>
       <p class="center" style="font-size:17px">Tu acceso gratuito incluye los <b>2 primeros temas</b> de tu ruta. ¿Te gustó la experiencia? <b>Inscríbete</b> y sigue aprendiendo con todos los temas, el examen final y tu certificado 🎓</p>
-      <a class="btn block" style="text-decoration:none;background:#25D366;color:#fff" target="_blank" rel="noopener" href="https://wa.me/${C.WHATSAPP}?text=${encodeURIComponent(`¡Hola! Soy ${S.name}. Empecé gratis en la plataforma y quiero inscribirme 🚀`)}">💬 Quiero inscribirme</a>
+      <a class="btn block" style="text-decoration:none;background:#25D366;color:#fff" target="_blank" rel="noopener" href="https://wa.me/${C.WHATSAPP}?text=${encodeURIComponent((window.MRNE || String)(`¡Hola! Soy ${S.name}. Empecé gratis en la plataforma y quiero inscribirme 🚀`))}">💬 Quiero inscribirme</a>
       <button class="btn w block" style="margin-top:8px" id="cl">Seguir explorando</button>`, { x: true });
     $('#cl', m).onclick = () => m.remove();
   }

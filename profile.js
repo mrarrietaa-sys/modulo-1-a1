@@ -13,6 +13,8 @@
   const TM = (() => { try { return JSON.parse(sessionStorage.getItem('mra_teacher') || 'null'); } catch (e) { return null; } })();
   window.MRTEACH = { on: () => !!TM, info: TM, exit: () => { try { sessionStorage.removeItem('mra_teacher'); } catch (e) { } location.href = 'profesores.html'; } };
   if (TM) document.documentElement.classList.add('mr-teach');
+  // modo profe: en el perfil, "Atrás" lleva de vuelta al portal de profesores
+  if (TM && /(\/|index\.html)$/.test(location.pathname)) document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('.tb-back'); if (!b) return; e.preventDefault(); e.stopImmediatePropagation(); location.href = 'profesores.html'; }, true);
   const MODS = [
     { id: 'A1', n: 1, name: 'Módulo 1', level: 'Elementary A1', es: 'Elemental (A1)', url: 'modulo-a1.html', key: 'mra_m1_progress_v1', ready: true, classes: 28, topics: 14, img: 'photo-1491438590914-bc09fcaaf77a', desc: 'Saludos, alfabeto, números, verbo To Be, familia, comida, clima, la casa y más.' },
     { id: 'A2', n: 2, name: 'Módulo 2', level: 'Pre-intermediate A2', es: 'Básico (A2)', url: 'modulo-a2.html', key: 'mra_m2_progress_v1', ready: true, classes: 22, topics: 11, img: 'photo-1522202176988-66273c2fd55f', desc: 'La hora, presente y pasado simple, el cuerpo, apariencia, personalidad, modales y phrasal verbs.' },

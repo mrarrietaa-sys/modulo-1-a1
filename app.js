@@ -136,6 +136,7 @@
       <button class="btn k sm" id="chat-b">${S.teacher ? 'Abrir chat →' : 'Conectar con mi docente →'}</button></div></div>`;
   }
   function openChat() {
+    if (window.MRLIVE && window.MRAC && MRAC.code && MRAC.code()) return MRLIVE.openStudent();
     if ($('.player', app)) {
       const m = M.modal(`<div class="center">${M.mascot('mascot', 'present')}</div><h3 class="center">¿Ir al chat con tu profe?</h3><p class="muted center">Saldrás de la clase. Tu avance queda guardado y podrás continuar donde ibas.</p><div class="row" style="justify-content:center"><button class="btn k" id="cy">Ir al chat</button><button class="btn w" id="cn">Seguir en la clase</button></div>`);
       $('#cy', m).onclick = () => { m.remove(); route('chat'); }; $('#cn', m).onclick = () => m.remove(); return;

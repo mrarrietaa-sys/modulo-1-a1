@@ -66,6 +66,32 @@
     const old = (C.ACCESS_CODES || []).find(x => x.hash === hh); if (old) return { type: 'student', module: null };
     return null;
   }
+  // 📣 visitante nuevo: "¿Vienes por primera vez?" → guarda nombre y correo en Interesados (una sola vez)
+  function leadPop() {
+    let seen = null; try { seen = localStorage.getItem('mra_lead'); } catch (e) { }
+    if (seen || P.lastUser() || !(window.MRAC && MRAC.on)) return;
+    setTimeout(() => {
+      if (document.querySelector('.modal') || P.get()) return;
+      const m = M.modal(`<div class="center">${M.mascot('mascot', 'welcome')}</div><h3 class="center">¿Vienes por primera vez? 👋</h3>
+        <p class="center" style="font-size:16px">Déjanos tu nombre y tu correo y conoce cómo aprender inglés <b>HABLANDO</b> con mrarrieta.com.</p>
+        <input class="inp" id="ld-n" placeholder="Tu nombre" autocomplete="name" style="margin:6px 0 8px"><input class="inp" id="ld-e" type="email" placeholder="Tu correo" autocomplete="email">
+        <label style="display:flex;gap:8px;align-items:flex-start;font-size:13px;margin:10px 0;color:#4A5B78"><input type="checkbox" id="ld-c" checked style="margin-top:3px">Acepto recibir correos de mrarrieta.com con información de la escuela. Puedo darme de baja cuando quiera.</label>
+        <button class="btn k block lg" id="ld-ok">Quiero conocerlos →</button><button class="btn w block" id="ld-no" style="margin-top:8px">Ahora no</button>`, { x: true });
+      const mark = (v) => { try { localStorage.setItem('mra_lead', v); } catch (e) { } };
+      const no = () => { mark('no'); m.remove(); };
+      $('#ld-no', m).onclick = no; const mx = $('.mx', m); if (mx) mx.addEventListener('click', () => mark('no'));
+      $('#ld-ok', m).onclick = async () => {
+        const name = $('#ld-n', m).value.trim(), email = $('#ld-e', m).value.trim();
+        if (!name) return M.toast('Escribe tu nombre 🙂'); if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return M.toast('Revisa tu correo 🙂');
+        if (!$('#ld-c', m).checked) return M.toast('Marca la casilla para poder enviarte la información');
+        const b = $('#ld-ok', m); b.disabled = true; b.textContent = 'Guardando…';
+        const r = await MRAC.call('leadAdd', { name, email, consent: true }).catch(() => ({ ok: false }));
+        if (!r || !r.ok) { b.disabled = false; b.textContent = 'Quiero conocerlos →'; return M.toast('No se pudo guardar. Revisa tu conexión e inténtalo de nuevo.'); }
+        mark('ok'); m.querySelector('.card').innerHTML = `<div class="center">${M.mascot('mascot', 'celebrate')}</div><h3 class="center">¡Gracias, ${esc(name.split(' ')[0])}! 🎉</h3><p class="center" style="font-size:16px">Revisa tu correo: te enviamos la bienvenida. Si quieres empezar ya, pide tu acceso gratuito.</p><a class="btn block lg pt-wa" target="_blank" rel="noopener" href="${WA('¡Hola! Soy ' + name + ' y quiero mi acceso gratuito a la plataforma de mrarrieta.com (plan Gratuito)')}">🎁 Pedir mi acceso gratuito</a><button class="btn w block" style="margin-top:8px" id="ld-x">Cerrar</button>`;
+        $('#ld-x', m).onclick = () => m.remove();
+      };
+    }, 3500);
+  }
   function login() {
     app.innerHTML = `<div class="wrap pt-wrap"><div class="card pt-login">
       
@@ -82,6 +108,7 @@
         <a class="btn w block pt-insc" href="inscripcion.html">📝 Formulario de inscripción</a></div></div>
       <p class="center pt-links"><a href="reclutamiento.html">👩‍🏫 Trabaja con nosotros</a> · <a href="profesores.html">🧑‍🏫 Soy profesor</a> · <a href="administracion.html">🔐 Administración</a></p></div>`;
     const i = $('#cd'); setTimeout(() => i.focus(), 200);
+    leadPop();
     const bad = (msg) => { i.classList.add('wrong'); sfx('bad'); setTimeout(() => i.classList.remove('wrong'), 500); M.toast(msg || 'Código no válido 😕'); };
     const go = async () => { try { if (window.speechSynthesis) { const w = new SpeechSynthesisUtterance(' '); w.volume = 0; speechSynthesis.speak(w); } } catch (e) { } // desbloquea la voz en iPhone
       const v = i.value.trim(); if (!v) return bad('Escribe tu código 🙂');

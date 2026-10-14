@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>mrarrieta.com</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css?v=119">
+</head>
+<body>
+<header class="topbar"><a class="brand" href="index.html"><span class="logo-pill"><img class="logo" src="mra-brand.png" alt="mrarrieta.com"></span></a><div class="sp"></div></header>
+<main class="wrap" style="max-width:560px"><div class="card center" id="box" style="margin-top:30px"><img src="mra-welcome.webp" alt="" style="height:170px"><h2 style="margin:10px 0">Un momento… ⏳</h2></div></main>
+<script src="config.js?v=119"></script>
+<script src="cloud.js?v=119"></script>
+<script>
+(async function () {
+  const q = new URLSearchParams(location.search), l = q.get('l') || '', a = q.get('a') === 'baja' ? 'baja' : 'click', box = document.getElementById('box');
+  const C = window.M1CONFIG || {}, WA = C.WHATSAPP || '573017810841';
+  const esc = (s) => String(s || '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  let r = { ok: false };
+  try { if (l && window.MRAC) r = await MRAC.call(a === 'baja' ? 'leadUnsub' : 'leadClick', { l, m: q.get('m') || '' }); } catch (e) { }
+  const name = r && r.name ? String(r.name).trim() : '';
+  if (a === 'baja') { box.innerHTML = `<img src="mra-smile.webp" alt="" style="height:170px"><h2 style="margin:10px 0">Listo${name ? ', ' + esc(name.split(' ')[0]) : ''} 👋</h2><p class="muted">Ya no te enviaremos más correos. Si algún día quieres aprender inglés HABLANDO, aquí estaremos.</p><a class="btn k" href="index.html">Ir a mrarrieta.com</a>`; return; }
+  const msg = (name ? '¡Hola! Soy ' + name + ' y quiero' : '¡Hola! Quiero') + ' mi acceso gratuito a la plataforma de mrarrieta.com (plan Gratuito)';
+  const url = 'https://wa.me/' + WA + '?text=' + encodeURIComponent((window.MRNE || String)(msg));
+  box.innerHTML = `<img src="mra-thumbs.webp" alt="" style="height:170px"><h2 style="margin:10px 0">¡Excelente decisión${name ? ', ' + esc(name.split(' ')[0]) : ''}! 🎁</h2><p class="muted">Te estamos llevando a WhatsApp para enviarte tu código de acceso gratuito.</p><a class="btn block lg pt-wa" href="${url}">💬 Abrir WhatsApp</a>`;
+  setTimeout(() => { location.href = url; }, 1200);
+})();
+</script>
+</body>
+</html>

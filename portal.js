@@ -6,7 +6,7 @@
   const M = window.M1, P = window.MRAP, C = window.M1CONFIG;
   const { $, $$, h, esc, sfx } = M;
   const app = $('#app');
-  const WA = (t) => `https://wa.me/${C.WHATSAPP}?text=${encodeURIComponent(t)}`;
+  const WA = (t) => `https://wa.me/${C.WHATSAPP}?text=${encodeURIComponent((window.MRNE || String)(t))}`;
   const U = (id, w = 800, hh = 450) => `https://images.unsplash.com/${id}?w=${w}&h=${hh}&fit=crop&crop=entropy&q=80&auto=format`;
 
   function topbar() {

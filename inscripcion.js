@@ -118,7 +118,7 @@
 
         <div class="in-summary" id="in-summary"></div>
         <button class="btn k lg block" id="in-send" type="submit">Enviar mi inscripción 🚀</button>
-        <p class="muted center in-small">¿Prefieres hablar con alguien? <a href="https://wa.me/${WA}?text=${encodeURIComponent('¡Hola! Quiero información sobre los planes de mrarrieta.com')}" target="_blank" rel="noopener">Escríbenos por WhatsApp</a></p>
+        <p class="muted center in-small">¿Prefieres hablar con alguien? <a href="https://wa.me/${WA}?text=${encodeURIComponent((window.MRNE || String)('¡Hola! Quiero información sobre los planes de mrarrieta.com'))}" target="_blank" rel="noopener">Escríbenos por WhatsApp</a></p>
       </div>
     </form>`;
     bind(); syncPlan();
@@ -196,7 +196,7 @@
     const why = err === 'offline' ? 'En este momento el formulario no puede guardar tu inscripción en línea.' : 'No pudimos enviar tu inscripción (revisa tu conexión a internet).';
     box.innerHTML = `<div class="in-modal-card card center"><img src="mra-shrug.webp" alt="" class="in-modal-img"><h3>¡Ups! Algo no salió bien</h3>
       <p>${why} <b>No pierdas tus datos:</b> envíanoslos por WhatsApp con un clic y te inscribimos de inmediato.</p>
-      <a class="btn k block" href="https://wa.me/${WA}?text=${encodeURIComponent(waText(d))}" target="_blank" rel="noopener">💬 Enviar mis datos por WhatsApp</a>
+      <a class="btn k block" href="https://wa.me/${WA}?text=${encodeURIComponent((window.MRNE || String)(waText(d)))}" target="_blank" rel="noopener">💬 Enviar mis datos por WhatsApp</a>
       <div class="row" style="justify-content:center;margin-top:10px">${err !== 'offline' ? '<button class="btn w sm" data-a="retry">Intentar de nuevo</button>' : ''}<button class="btn w sm" data-a="close">Cerrar</button></div></div>`;
     document.body.appendChild(box);
     box.onclick = (e) => { const a = e.target.closest('[data-a]'); if (e.target === box || (a && a.dataset.a === 'close')) box.remove(); if (a && a.dataset.a === 'retry') { box.remove(); send(); } };
@@ -210,7 +210,7 @@
       <h1>¡Bienvenido(a), ${esc(d.first)}! 🎉</h1>
       <p>Recibimos tus datos para el plan <b>${esc(p.name)}</b>. Te enviamos un correo de confirmación a <b>${esc(d.email)}</b> y muy pronto te escribiremos por WhatsApp con tu <b>código de acceso</b>.</p>
       <ol class="in-next"><li><b>Recibe tu código</b> por WhatsApp.</li><li><b>Toma tu prueba de clasificación</b> y conoce tu nivel.</li><li><b>Empieza tu ruta</b> de aprendizaje${d.plan === 'premium' ? ' y reserva tus clases VIP' : ''}.</li></ol>
-      <a class="btn k lg block in-wa" href="https://wa.me/${WA}?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">💬 ${paid ? 'Escríbenos para activar tu plan' : 'Escríbenos para recibir tu código'}</a>
+      <a class="btn k lg block in-wa" href="https://wa.me/${WA}?text=${encodeURIComponent((window.MRNE || String)(msg))}" target="_blank" rel="noopener">💬 ${paid ? 'Escríbenos para activar tu plan' : 'Escríbenos para recibir tu código'}</a>
       <a class="btn w block" href="index.html" style="margin-top:12px">Ir a la plataforma</a>
     </section>`;
     window.scrollTo({ top: 0, behavior: 'smooth' });

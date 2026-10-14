@@ -53,7 +53,7 @@
       <span class="lbl">Portal de profesores</span>
       <h1>¡Hola, profe! 👋</h1>
       <p class="muted">Entra con tu código de profesor y tu PIN para ver tus clases, tu disponibilidad y tus grupos.</p>
-      ${off ? `<div class="tp-alert">⚠️ El portal todavía no está conectado a la nube de la escuela. Escribe a administración para recibir ayuda.<br><a class="btn w sm" style="margin-top:10px" target="_blank" rel="noopener" href="https://wa.me/${WA}?text=${encodeURIComponent('Hola, soy profe de mrarrieta.com y no puedo entrar al portal de profesores.')}">💬 Escribir por WhatsApp</a></div>` : ''}
+      ${off ? `<div class="tp-alert">⚠️ El portal todavía no está conectado a la nube de la escuela. Escribe a administración para recibir ayuda.<br><a class="btn w sm" style="margin-top:10px" target="_blank" rel="noopener" href="https://wa.me/${WA}?text=${encodeURIComponent((window.MRNE || String)('Hola, soy profe de mrarrieta.com y no puedo entrar al portal de profesores.'))}">💬 Escribir por WhatsApp</a></div>` : ''}
       <form id="tp-lf" class="tp-lform" novalidate>
         <label for="tp-code">Código de profesor</label>
         <input class="inp" id="tp-code" autocomplete="username" autocapitalize="characters" placeholder="Ej: PROFE-ANA" required>

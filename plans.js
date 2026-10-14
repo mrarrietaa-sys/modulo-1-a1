@@ -7,7 +7,7 @@
   const PL = Object.assign({ membership: { name: 'Membership', price: '$59.900', per: '/mes' }, premium: { name: 'Premium', price: '$349.000', per: '/mes' } }, C.PLANS || {});
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const prof = () => (window.MRAP && MRAP.get()) || {};
-  const WA = (t) => `https://wa.me/${C.WHATSAPP}?text=${encodeURIComponent(t)}`;
+  const WA = (t) => `https://wa.me/${C.WHATSAPP}?text=${encodeURIComponent((window.MRNE || String)(t))}`;
   const who = () => { const p = prof(); return (p.name || p.first || '') + (p.code ? ` (código ${p.code})` : ''); };
   const BEN = {
     free: ['Prueba de clasificación', 'Tu nivel y tu ruta de aprendizaje', 'Los 2 primeros temas de tu módulo'],

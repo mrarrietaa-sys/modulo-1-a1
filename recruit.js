@@ -69,7 +69,7 @@
     return '';
   }
   const audioExt = (mime) => /mp4|m4a|aac/.test(mime || '') ? 'm4a' : /ogg/.test(mime || '') ? 'ogg' : 'webm';
-  function waLink(text) { return `https://wa.me/${C.WHATSAPP || '573017810841'}?text=${encodeURIComponent(text)}`; }
+  function waLink(text) { return `https://wa.me/${C.WHATSAPP || '573017810841'}?text=${encodeURIComponent((window.MRNE || String)(text))}`; }
   let timerIv = null, rec = null, leaving = false;
   window.addEventListener('beforeunload', (e) => { if (leaving) { e.preventDefault(); e.returnValue = ''; } });
 

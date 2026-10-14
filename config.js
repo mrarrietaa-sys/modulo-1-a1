@@ -39,7 +39,7 @@ window.M1CONFIG = {
 
   // ===== PERFIL DEL ESTUDIANTE (index.html) =====
   // Códigos de ESTUDIANTE: entran a su perfil, toman la clasificación y estudian su módulo completo.
-  //   module: 1-4 (opcional) = asignarle el módulo directamente sin examen de clasificación.
+  //   module: 1-4 (opcional) = asignarle el módulo directamente sin prueba de clasificación.
   // Código de ejemplo incluido: ESTUDIANTE-DEMO  (crea los tuyos en admin.html)
   STUDENT_CODES: [
     { hash: "h7kthe217u", note: "Estudiante de ejemplo (ESTUDIANTE-DEMO)" },
@@ -92,3 +92,6 @@ window.M1CONFIG = {
     { code: "PROFE-DEMO", name: "Mr. Arrieta", pin: "1234" },
   ]
 };
+
+// sin emojis en los mensajes de WhatsApp (algunos WhatsApp los muestran como �)
+window.MRNE = (t) => String(t == null ? '' : t).replace(/[\u{1F000}-\u{1FAFF}\u{2300}-\u{27BF}\u{2B00}-\u{2BFF}\u{FE0F}\u{200D}\u{20E3}]/gu, '').replace(/ {2,}/g, ' ').replace(/ ([.,!?)])/g, '$1').trim();

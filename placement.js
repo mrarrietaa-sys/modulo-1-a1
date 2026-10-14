@@ -349,7 +349,7 @@
   function firstUrl() { const a = P.assigned(); if (a && a.ready) return a.url; const t = P.isTrial() && P.trialMod && P.trialMod(); return t && t.url ? t.url : ''; }
   function results() {
     const r = last_; const m = P.mod(r.ms.rec); const left = maxAttempts() - ST.attempts; const trial = P.isTrial();
-    const waMsg = encodeURIComponent(`Hola, soy ${r.name}. Acabo de hacer el Placement Test en mrarrieta.com y me ubicó en el ${m.name} (${m.es}). Me interesa: ${COURSE[r.course] || 'un curso'}. Quiero más información 😊`);
+    const waMsg = encodeURIComponent((window.MRNE || String)(`Hola, soy ${r.name}. Acabo de hacer el Placement Test en mrarrieta.com y me ubicó en el ${m.name} (${m.es}). Me interesa: ${COURSE[r.course] || 'un curso'}. Quiero más información 😊`));
     shell(`${top()}<div class="card center fx-res"><div class="row" style="justify-content:center;align-items:center;gap:16px">${M.mascot('mascot bounce', 'celebrate')}
       <div><span class="lbl">🧭 Tu ruta de aprendizaje empieza en</span><div class="pt-level">${esc(m.name.toUpperCase())}</div><div class="fx-band alto">${esc(m.es)} · ${esc(m.level)}</div></div></div>
       <p class="muted">${esc(r.name)} — ${esc(r.attemptLabel)}</p>
@@ -445,7 +445,7 @@
       wireExit(); $('#hm').onclick = () => ctx.route('home'); $('#sc').onclick = secondChance; return;
     }
     if (cloud()) return lockedCloud();
-    const msg = encodeURIComponent(`Hola 👋 Soy ${name()}. Usé mis ${CFG.ATTEMPTS} intentos de la prueba de clasificación y quiero solicitar una oportunidad adicional.`);
+    const msg = encodeURIComponent((window.MRNE || String)(`Hola 👋 Soy ${name()}. Usé mis ${CFG.ATTEMPTS} intentos de la prueba de clasificación y quiero solicitar una oportunidad adicional.`));
     shell(`${top()}<div class="card center fx-form">${M.mascot('mascot', 'watch')}<h2>🔒 Sin intentos disponibles</h2>
       <p class="muted">Ya usaste tus ${ROUNDS} oportunidades (${maxAttempts()} intentos) de la prueba de clasificación. Para un intento adicional, <b>pide un código a administración</b>.</p>
       <a class="btn" style="text-decoration:none;background:#25D366;color:#fff" target="_blank" rel="noopener" href="https://wa.me/${C.WHATSAPP}?text=${msg}">💬 Solicitar otra oportunidad</a>

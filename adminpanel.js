@@ -57,7 +57,7 @@
   }
 
   /* ======================= ESTRUCTURA ======================= */
-  const TABS = [['home', '📊', 'Resumen'], ['students', '🎓', 'Estudiantes'], ['enroll', '📝', 'Inscripciones'], ['placement', '🧭', 'Placement'], ['recruit', '👩‍🏫', 'Reclutamiento'], ['teachers', '🧑‍🏫', 'Profesores'], ['classes', '📅', 'Clases'], ['requests', '🔁', 'Solicitudes'], ['chats', '💬', 'Chats'], ['settings', '⚙️', 'Ajustes']];
+  const TABS = [['home', '📊', 'Resumen'], ['students', '🎓', 'Estudiantes'], ['enroll', '📝', 'Inscripciones'], ['leads', '📣', 'Interesados'], ['placement', '🧭', 'Placement'], ['recruit', '👩‍🏫', 'Reclutamiento'], ['teachers', '🧑‍🏫', 'Profesores'], ['classes', '📅', 'Clases'], ['requests', '🔁', 'Solicitudes'], ['chats', '💬', 'Chats'], ['settings', '⚙️', 'Ajustes']];
   let TAB = 'home', STATS = null;
   // "Atrás": dentro del panel vuelve al Resumen (nunca saca a otra página por error)
   document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('.tb-back'); if (!b || !key()) return; if (document.querySelector('.modal, .wa-wrap')) return; e.preventDefault(); e.stopImmediatePropagation(); if (TAB !== 'home') go('home'); else window.scrollTo(0, 0); }, true);
@@ -460,11 +460,30 @@
       const b = $('#cf-sv'); b.disabled = true; let clubCh = false; for (const i of $$('[data-k]')) { if ((conf[i.dataset.k] || '') !== i.value.trim()) { await api('aSave', { table: 'Config', row: { key: i.dataset.k, value: i.value.trim() } }); if (/^club_/.test(i.dataset.k)) clubCh = true; } } if (clubCh) await api('aClubSync'); b.disabled = false; toast(clubCh ? '✅ Guardado · se actualizaron las sesiones de los clubs y se avisó a los estudiantes que ya habían confirmado' : '✅ Ajustes guardados'); settings(); };
   }
 
+  /* ======================= 📣 INTERESADOS ======================= */
+  async function leads() {
+    view().innerHTML = '<div class="ad-loading">⏳ Cargando interesados…</div>';
+    const r = await api('aLeads'); if (!r.ok) return view().innerHTML = '<p class="ad-err">No se pudieron cargar los interesados.</p>';
+    const S = r.stats, ST = { activo: ['🟢', 'Recibiendo correos'], pausado: ['⏸️', 'Pausado'], baja: ['🚫', 'Se dio de baja'], estudiante: ['🎓', 'Ya es estudiante'] };
+    const kpi = (n, l, sub, cls) => `<div class="ad-kpi ${cls || ''}"><b>${n}</b><span>${l}</span>${sub ? `<em>${sub}</em>` : ''}</div>`;
+    view().innerHTML = `<div class="ad-head"><h1>📣 Interesados</h1></div>
+      <div class="card"><p class="muted" style="margin-top:0">Cada interesado recibe un correo con los beneficios de la escuela a las 8 a. m.: <b>el primer mes los lunes y jueves</b> (8 correos) y <b>después uno cada lunes</b>, sin copia a administración, con el botón <b>"Pedir mi acceso gratuito"</b>. Los correos se detienen solos cuando la persona se vuelve estudiante o se da de baja. Los lunes recibes el resumen semanal con estadísticas.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:8px"><input class="inp" id="ld-n" placeholder="Nombre" style="flex:1 1 180px"><input class="inp" id="ld-e" type="email" placeholder="Correo" style="flex:1 1 220px"><button class="btn k" id="ld-add">➕ Agregar</button></div></div>
+      <div class="ad-kpis">${kpi(S.active, '🟢 Recibiendo correos')}${kpi(S.newWeek, '🆕 Nuevos', 'últimos 7 días')}${kpi(S.clickersWeek, '🔥 Dieron clic', S.clicksWeek + ' clics esta semana', 'prem')}${kpi(S.students, '🎓 Ya son estudiantes', '', 'free')}${kpi(S.unsub, '🚫 Se dieron de baja', '', 'exp')}${kpi(S.total, 'Total registrados')}</div>
+      <div class="card"><h3 style="margin-top:0">Lista (${r.leads.length})</h3>${r.leads.length ? `<div class="ad-mini">${r.leads.map(l => `<div class="ad-mrow" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><div style="flex:1;min-width:200px"><b>${esc(l.name)}</b> <span class="muted">${esc(l.email)}</span><br><small class="muted">${(ST[l.status] || ['', l.status]).join(' ')} · ${l.source === 'popup' ? 'Se registró en la plataforma' : 'Agregado por administración'} · ${esc(String(l.date).slice(0, 10))} · ✉️ ${l.sent} enviados · 👆 ${l.clicks} clic(s)</small></div>
+        ${l.status === 'activo' ? `<button class="btn w sm" data-ls="${l.id}" data-st="pausado">⏸️ Pausar</button>` : l.status === 'pausado' || l.status === 'baja' ? `<button class="btn w sm" data-ls="${l.id}" data-st="activo">▶️ Activar</button>` : ''}<button class="btn w sm" data-ld="${l.id}" title="Borrar">🗑️</button></div>`).join('')}</div>` : '<p class="muted">Todavía no hay interesados. Agrega el primero arriba 👆</p>'}</div>`;
+    $('#ld-add').onclick = async () => { const name = $('#ld-n').value.trim(), email = $('#ld-e').value.trim(); if (!name || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return toast('Escribe un nombre y un correo válido');
+      $('#ld-add').disabled = true; const x = await api('aLeadAdd', { name, email }); $('#ld-add').disabled = false;
+      if (!x.ok) return toast('No se pudo agregar'); toast(x.student ? '🎓 Ese correo ya es de un estudiante' : x.exists ? 'Ese correo ya estaba en la lista' : '✅ Agregado · le enviamos el correo de bienvenida'); leads(); };
+    $$('[data-ls]').forEach(b => b.onclick = async () => { await api('aLeadSet', { id: b.dataset.ls, status: b.dataset.st }); leads(); });
+    $$('[data-ld]').forEach(b => b.onclick = async () => { if (!confirm('¿Borrar este interesado?')) return; await api('aLeadSet', { id: b.dataset.ld, del: true }); leads(); });
+  }
+
   function chats() {
     view().innerHTML = `<div class="ad-head"><h1>💬 Chats profe ↔ estudiante</h1></div><div class="card"><p class="muted">Aquí puedes leer todas las conversaciones entre profes y estudiantes (solo lectura). En el chat se les informa que administración puede revisar las conversaciones.</p><button class="btn k lg" id="ch-open">💬 Abrir conversaciones</button></div>`;
     const go = () => window.MRLIVE && MRLIVE.open({ title: 'Chats (solo lectura)', roomsAction: 'aChats', getAction: 'aChatGet', readOnly: true, empty: 'Todavía no hay conversaciones.', call: (a, d) => api(a, d) });
     $('#ch-open').onclick = go; go();
   }
-  const VIEWS = { home, students, enroll, placement, recruit, teachers, classes, requests, chats, settings };
+  const VIEWS = { home, students, enroll, leads, placement, recruit, teachers, classes, requests, chats, settings };
   key() && MRAC.on ? boot() : login();
 })();

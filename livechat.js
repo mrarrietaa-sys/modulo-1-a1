@@ -32,9 +32,10 @@
     const r = await W.o.call(W.o.roomsAction, {}).catch(() => null); if (!W) return;
     const list = W.el.querySelector('.wa-list');
     if (!r || !r.ok) { if (first) list.innerHTML = '<p class="wa-note">No se pudo cargar el chat. Revisa tu conexión.</p>'; return; }
-    W.me = r.me; W.rooms = r.rooms || [];
+    W.me = r.me; W.rooms = r.rooms || []; W.chat = r.chat || null; applyClosed();
     list.innerHTML = W.rooms.length ? W.rooms.map((x) => `<button class="wa-room${W.room === x.room ? ' on' : ''}${x.locked ? ' locked' : ''}" data-room="${esc(x.room)}"${x.locked ? ' data-locked="1"' : ''}><span class="wa-av">${esc(ini(x.title))}</span><span class="wa-rt"><b>${esc(x.title)}</b><small>${x.last ? (x.last.from === W.me ? '✓ ' : '') + esc(String(x.last.text).slice(0, 60)) : esc(x.sub || 'Toca para escribir')}</small></span><span class="wa-rm">${x.last ? `<small>${hm(x.last.ts)}</small>` : ''}${x.unread ? `<i>${x.unread}</i>` : ''}</span></button>`).join('')
       : `<p class="wa-note">${esc(W.o.empty || 'Todavía no tienes conversaciones.')}</p>`;
+    if (W.chat && W.chat.open === false) list.insertAdjacentHTML('afterbegin', `<div class="wa-closed">${esc(W.chat.msg)}</div>`);
     list.querySelectorAll('[data-room]').forEach((b) => b.onclick = () => { if (b.dataset.locked) { const n = b.querySelector('small'); if (n) { n.textContent = '🔒 Solo puedes chatear con el profe con quien reservaste tu clase'; b.classList.add('shake'); setTimeout(() => b.classList.remove('shake'), 500); } return; } openRoom(b.dataset.room); });
     if (first) { const want = W.o.room && W.rooms.find((x) => x.room === W.o.room); const open1 = W.rooms.filter((x) => !x.locked); const one = open1.length === 1 && W.o.autoOpenSingle && window.innerWidth > 700; if (want && !want.locked) openRoom(want.room); else if (one) openRoom(open1[0].room); }
   }
@@ -45,7 +46,7 @@
     const main = W.el.querySelector('.wa-main');
     main.innerHTML = `<header class="wa-h wa-ch"><button class="wa-back" aria-label="Volver">${BACK}</button><span class="wa-av">${esc(ini(info.title))}</span><span class="wa-rt"><b>${esc(info.title)}</b><small>${esc(info.sub || '')}</small></span><button class="wa-x wa-x2" aria-label="Cerrar chat">✕</button></header>
       <div class="wa-msgs" aria-live="polite"><p class="wa-note">⏳ Cargando mensajes…</p></div>
-      ${W.o.readOnly ? '<div class="wa-ro">👁️ Solo lectura · administración</div>' : `<form class="wa-bar"><button type="button" class="wa-clip" aria-label="Adjuntar imagen o documento">${CLIP}</button><input type="file" class="wa-file" hidden accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"><textarea rows="1" maxlength="1500" placeholder="Escribe un mensaje" aria-label="Mensaje"></textarea><button class="wa-send" aria-label="Enviar">${SEND}</button></form>`}`;
+      ${W.o.readOnly ? '<div class="wa-ro">👁️ Solo lectura · administración</div>' : `<div class="wa-closed" hidden></div><form class="wa-bar"><button type="button" class="wa-clip" aria-label="Adjuntar imagen o documento">${CLIP}</button><input type="file" class="wa-file" hidden accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"><textarea rows="1" maxlength="1500" placeholder="Escribe un mensaje" aria-label="Mensaje"></textarea><button class="wa-send" aria-label="Enviar">${SEND}</button></form>`}`;
     main.querySelector('.wa-back').onclick = () => { W.room = null; W.el.querySelector('.wa').classList.remove('in-room'); loadRooms(false); };
     main.querySelector('.wa-x2').onclick = close;
     if (W.o.readOnly) { loadMsgs(true); return; }
@@ -55,9 +56,12 @@
     ta.oninput = () => { ta.style.height = 'auto'; ta.style.height = Math.min(120, ta.scrollHeight) + 'px'; };
     ta.onkeydown = (e) => { if (e.key === 'Enter' && !e.shiftKey && window.innerWidth > 700) { e.preventDefault(); form.requestSubmit(); } };
     form.onsubmit = (e) => { e.preventDefault(); const t = ta.value.trim(); if (!t) return; ta.value = ''; ta.oninput(); send(t); ta.focus(); };
+    applyClosed();
     setTimeout(() => ta.focus(), 50);
     loadMsgs(true).then(() => W && loadRooms(false));
   }
+  // 🕒 fuera del horario laboral: se puede leer, pero no escribir
+  function applyClosed() { if (!W) return; const c = W.chat, box = W.el.querySelector('.wa-closed'), bar = W.el.querySelector('.wa-bar'); if (!box || !bar) return; const closed = c && c.open === false; box.hidden = !closed; bar.style.display = closed ? 'none' : ''; if (closed) box.textContent = c.msg; }
   async function loadMsgs(first) {
     const room = W.room; const r = await W.o.call(W.o.getAction || 'chatGet', { room }).catch(() => null); if (!W || W.room !== room) return;
     if (!r || !r.ok) { if (first) W.el.querySelector('.wa-msgs').innerHTML = '<p class="wa-note">No se pudieron cargar los mensajes.</p>'; return; }
@@ -98,14 +102,14 @@
     W.msgs.push(tmp); render(true);
     const r = await W.o.call('chatSend', { room, text: caption, b64: data.split(',')[1], mime, fname }).catch(() => null); if (!W || W.room !== room) return;
     const i = W.msgs.indexOf(tmp);
-    if (r && r.ok) { if (i >= 0) W.msgs[i] = r.msg; } else { if (i >= 0) W.msgs.splice(i, 1); alertBar(r && r.err === 'type' ? 'Ese tipo de archivo no se permite. Envía imágenes, PDF, Word, Excel o PowerPoint.' : r && r.err === 'size' ? 'El archivo es muy pesado.' : 'No se pudo enviar el archivo. Inténtalo de nuevo.'); }
+    if (r && r.ok) { if (i >= 0) W.msgs[i] = r.msg; } else { if (i >= 0) W.msgs.splice(i, 1); if (r && r.err === 'closed') { W.chat = { open: false, msg: r.msg }; applyClosed(); return render(true); } alertBar(r && r.err === 'type' ? 'Ese tipo de archivo no se permite. Envía imágenes, PDF, Word, Excel o PowerPoint.' : r && r.err === 'size' ? 'El archivo es muy pesado.' : 'No se pudo enviar el archivo. Inténtalo de nuevo.'); }
     render(true);
   }
   async function send(text) {
     const room = W.room; const tmp = { id: 'tmp' + Date.now(), from: W.me, text, ts: Date.now(), pending: true }; W.msgs.push(tmp); render(true);
     const r = await W.o.call('chatSend', { room, text }).catch(() => null); if (!W || W.room !== room) return;
     const i = W.msgs.indexOf(tmp);
-    if (r && r.ok) { if (i >= 0) W.msgs[i] = r.msg; } else { if (i >= 0) W.msgs.splice(i, 1); const ta = W.el.querySelector('textarea'); if (ta) ta.value = text; alertBar('No se pudo enviar. Revisa tu conexión e inténtalo de nuevo.'); }
+    if (r && r.ok) { if (i >= 0) W.msgs[i] = r.msg; } else { if (i >= 0) W.msgs.splice(i, 1); const ta = W.el.querySelector('textarea'); if (ta) ta.value = text; if (r && r.err === 'closed') { W.chat = { open: false, msg: r.msg }; applyClosed(); } else alertBar('No se pudo enviar. Revisa tu conexión e inténtalo de nuevo.'); }
     render(true);
   }
   function alertBar(t) { const box = W && W.el.querySelector('.wa-msgs'); if (box) box.insertAdjacentHTML('beforeend', `<div class="wa-day err"><span>${esc(t)}</span></div>`); }

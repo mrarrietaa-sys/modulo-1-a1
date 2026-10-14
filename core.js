@@ -54,8 +54,17 @@
   function lockReason(n) {
     if (review()) return null;
     if (hasProfile()) { const r = PF.role(MID); if (r === 'review') return null; if (r !== 'current') return 'module';
-      if (PF.isTrial() && n > PF.TRIAL_TOPICS) return 'trial'; if (!progressOpen(n)) return 'progress'; return null; }
+      if (PF.isTrial() && n > PF.TRIAL_TOPICS) return 'trial'; if (!progressOpen(n)) return 'progress'; return paceReason(n); }
     if (!progressOpen(n)) return 'progress'; if (!hasAccess(n)) return 'access'; return null; }
+  // 📅 ritmo del curso: el tema se abre en su fecha y si aprobó el anterior con 80% (lo que ya empezó nunca se bloquea)
+  const topicStarted = (n) => { const t = D.topics.find(x => x.n === n); return !!(t && t.parts.some(p => S.parts[p.id] && (S.parts[p.id].done || S.parts[p.id].step))); };
+  function paceDate(n) { return PF && PF.paceDate ? PF.paceDate(PF.mod(MID).n, n) : null; }
+  function weakParts(n) { const t = D.topics.find(x => x.n === n - 1); if (!t) return []; return t.parts.filter(p => { const r = S.parts[p.id]; return r && r.done && r.best != null && r.best < PF.PACE_MIN; }); }
+  function paceReason(n) {
+    const paced = !!(PF.paceOn && PF.paceOn()), trial = PF.isTrial(); // gratuitos: sin fechas, pero también necesitan 80% para abrir el tema 2
+    if ((!paced && !trial) || topicStarted(n)) return null;
+    if (paced) { const d = paceDate(n); if (d && d > PF.todayISO()) return 'pace'; }
+    if (n > 1 && weakParts(n).length) return 'mastery'; return null; }
   function isUnlocked(topicN) { return !lockReason(topicN); }
   const doneCount = () => D.topics.reduce((a, t) => a + t.parts.filter(p => partDone(p.id)).length, 0);
   const totalParts = () => D.topics.reduce((a, t) => a + t.parts.length, 0);
@@ -390,7 +399,7 @@
     const start = () => { try { new MutationObserver(sched).observe(document.body, { childList: true, subtree: true }); } catch (e) { } sched(); };
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
   })();
-  window.M1 = { face, D, C, MOD, S, $, $$, h, esc, shuffle, sample, sleep, save, touchStreak, addSkill, addWeak, okWeak, skillPct, isUnlocked, finalUnlocked, reviewMode, revCount, PTS_TIP, hasAccess, progressOpen, lockReason, review, hasProfile, doneCount, totalParts, redeem, codeHash,
+  window.M1 = { face, D, C, MOD, S, $, $$, h, esc, shuffle, sample, sleep, save, touchStreak, addSkill, addWeak, okWeak, skillPct, isUnlocked, finalUnlocked, paceDate, weakParts, reviewMode, revCount, PTS_TIP, hasAccess, progressOpen, lockReason, review, hasProfile, doneCount, totalParts, redeem, codeHash,
     allParts, partById, trackAudio, audioUI, floatStop, recordScore, letterScorer, voiceResult, floatBubble, setBubbleHidden, prevPart, nextPart, partStars, overallPct, imgURL, photo, play, playSeq, loadAudio, stop, sfx, praise, encourage, canSR, listen, recordVoice,
     norm, words, lev, speechScore, sheet, good, bad, toast, modal, xpFly, confetti, mascot, audioSrc };
 })();

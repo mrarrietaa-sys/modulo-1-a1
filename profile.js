@@ -82,5 +82,15 @@
   const initials = () => { const p = get() || {}; return (((p.first || '?')[0] || '') + ((p.last || '')[0] || '')).toUpperCase(); };
   const avHTML = (cls) => { const u = pic(), l = look(); return `<span class="${cls || 'pt-av'}${u ? ' has' : ''}">${u ? `<img src="${u}" alt="">` : initials()}${l.av && l.av.sticker && l.pic === 'avatar' ? `<i class="stk">${l.av.sticker}</i>` : ''}</span>`; };
   const setLook = (o) => { const p = get(); if (!p) return; p.look = Object.assign({}, p.look || {}, o); save(p); return p.look; };
-  window.MRAP = { KEY, MODS, get, save, clear, mod, modState, passed, assigned, role, progress, isStaff, isTrial, plan, isBirthday, todayISO, setPlacement, trialMod, TRIAL_TOPICS: 2, look, pic, avHTML, setLook, initials, isBack, lastUser };
+  // 📅 RITMO DEL CURSO (plan pago): los temas que le faltan se abren poco a poco durante 4 meses desde su primer plan pago
+  const PACE_MONTHS = 4, PACE_MIN = 80;
+  const isoD = (d) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  function paceOn() { const p = get(); return !!(p && p.cloud && p.paceStart && !p.demo && p.type !== 'staff' && plan().paid); }
+  function paceDate(modN, topicN) {
+    if (!paceOn()) return null; const p = get(); const m0 = Math.max(1, +p.paceMod || 1); if (modN < m0) return null;
+    let k = topicN - 1, N = 0; for (let n = m0; n < modN; n++) k += mod(n).topics; for (let n = m0; n <= 4; n++) N += mod(n).topics;
+    const st = new Date(p.paceStart.slice(0, 10) + 'T00:00:00'), en = new Date(st); en.setMonth(en.getMonth() + PACE_MONTHS);
+    const span = Math.round((en - st) / 864e5), d = new Date(st); d.setDate(d.getDate() + Math.floor(k * span / N)); return isoD(d);
+  }
+  window.MRAP = { KEY, MODS, get, save, clear, mod, modState, passed, assigned, role, progress, isStaff, isTrial, plan, isBirthday, todayISO, setPlacement, trialMod, TRIAL_TOPICS: 2, look, pic, avHTML, setLook, initials, isBack, lastUser, paceOn, paceDate, PACE_MIN };
 })();

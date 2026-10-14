@@ -46,7 +46,9 @@
     const daysLeft = paidPlan && p.planEnd ? Math.round((new Date(p.planEnd + 'T00:00:00') - new Date(todayISO() + 'T00:00:00')) / 864e5) : null;
     return { plan: pl, eff, paid: eff !== 'free', expired, end: p.planEnd || '', daysLeft, premium: eff === 'premium' };
   }
-  const isTrial = () => { const p = get(); if (!p) return false; if (p.type === 'trial') return true; return !!(p.cloud && plan().eff === 'free'); };
+  const isTrial = () => { const p = get(); if (!p) return false; if (p.type === 'trial') return true; return !!(p.cloud && plan().eff === 'free' && !plan().expired); };
+  // ⏰ plan vencido: puede entrar a su perfil, pero TODO queda bloqueado hasta que administración registre la renovación
+  const isExpired = () => { const p = get(); return !!(p && p.cloud && p.type !== 'staff' && !p.demo && plan().expired); };
   const isBirthday = () => { const p = get(); return !!(p && p.birth && p.birth.slice(5, 10) === todayISO().slice(5)); };
   // módulo asignado: el de la clasificación, y sube solo cuando aprueba el examen final
   function assigned() {
@@ -64,6 +66,7 @@
     if (!p) return 'locked';
     if (p.type === 'staff') return 'review';
     if (p.demo) return 'current'; // estudiante de revisión: todo abierto
+    if (isExpired()) return 'locked';
     if (isTrial()) { const t = trialMod(); return t && t.id === m.id ? 'current' : 'locked'; }
     const a = assigned(); if (!a) return 'locked';
     if (m.n === a.n) return 'current';
@@ -92,5 +95,5 @@
     const st = new Date(p.paceStart.slice(0, 10) + 'T00:00:00'), en = new Date(st); en.setMonth(en.getMonth() + PACE_MONTHS);
     const span = Math.round((en - st) / 864e5), d = new Date(st); d.setDate(d.getDate() + Math.floor(k * span / N)); return isoD(d);
   }
-  window.MRAP = { KEY, MODS, get, save, clear, mod, modState, passed, assigned, role, progress, isStaff, isTrial, plan, isBirthday, todayISO, setPlacement, trialMod, TRIAL_TOPICS: 2, look, pic, avHTML, setLook, initials, isBack, lastUser, paceOn, paceDate, PACE_MIN };
+  window.MRAP = { KEY, MODS, get, save, clear, mod, modState, passed, assigned, role, progress, isStaff, isTrial, plan, isBirthday, todayISO, setPlacement, trialMod, TRIAL_TOPICS: 2, look, pic, avHTML, setLook, initials, isBack, lastUser, paceOn, paceDate, PACE_MIN, isExpired };
 })();

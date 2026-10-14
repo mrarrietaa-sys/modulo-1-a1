@@ -151,6 +151,11 @@
         <p>Solo <b>10 minutos</b>. Se adapta a tu nivel y al terminar empiezas de una vez tu ruta de aprendizaje.</p>
         <p class="muted">⏱ Unos 10 minutos · ${pst.rounds || 1} oportunidades de 2 intentos${pst.attempts ? ` · Ya usaste ${pst.attempts}` : ''}${pst.inProgress ? ' · <b>Tienes una prueba en progreso</b>' : ''}</p>
         <button class="btn k lg" id="pt">📝 ${pst.inProgress ? 'Continuar' : 'Tomar'} mi prueba de clasificación</button></div></div>`;
+    } else if (a && P.isExpired()) {
+      main = `<div class="card pt-mymod"><div class="pt-mymod-img" style="background-image:url('${U(a.img)}')"><span>🔒</span></div><div><span class="lbl">⏰ Plan vencido</span>
+        <h2>Tu contenido está bloqueado</h2><p>Tu plan venció el <b>${esc(new Date(P.plan().end + 'T00:00:00').toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' }))}</b>. Tus módulos, juegos y clases quedan bloqueados hasta que renueves.</p>
+        <p class="muted">Tranquilo: tu progreso está guardado. Cuando administración confirme tu renovación, todo se desbloquea solo y sigues justo donde ibas.</p>
+        <a class="btn block pt-wa" target="_blank" rel="noopener" href="${WA('¡Hola! Soy ' + (p.first || '') + ' ' + (p.last || '') + ' (código ' + (p.code || '') + ') y quiero renovar mi plan 🚀')}">💬 Renovar mi plan</a></div></div>`;
     } else if (a) {
       const ready = a && a.ready;
       main = `<div class="card pt-mymod">${a ? `<div class="pt-mymod-img" style="background-image:url('${U(a.img)}')"><span>${a.n}</span></div>` : ''}<div><span class="lbl">${staff ? 'Modo profe' : '🧭 Tu ruta de aprendizaje'}</span>
@@ -166,7 +171,7 @@
         <p class="muted">${staff ? '👨‍🏫 Perfil de profesor — puedes revisar todo.' : trial ? '🟢 Acceso gratuito — descubre tu ruta de aprendizaje.' : '🎓 Estudiante de mrarrieta.com'}</p></div>${M.mascot('pt-headmra', 'welcome')}</section>
       ${birthdayBanner()}
       <div id="pt-ann"></div>
-      ${trial && (P.plan().expired || !(window.MRAC && MRAC.code())) ? `<div class="pt-trialbar">${P.plan().expired ? `⏰ <div><b>Tu plan venció.</b> Tu progreso sigue guardado. Renuévalo para seguir con toda tu ruta. <a href="#" class="tb-up">Ver planes →</a></div>` : `🟢 <div><b>Acceso gratuito:</b> la prueba de clasificación y los <b>2 primeros temas</b> de tu módulo. <a href="#" class="tb-up">Ver planes →</a></div>`}</div>` : ''}
+      ${P.isExpired() || (trial && !(window.MRAC && MRAC.code())) ? `<div class="pt-trialbar">${P.isExpired() ? `⏰ <div><b>Tu plan venció.</b> Todo tu contenido está bloqueado, pero tu progreso sigue guardado. Apenas renueves, se desbloquea todo. <a href="#" class="tb-up">Ver planes →</a></div>` : `🟢 <div><b>Acceso gratuito:</b> la prueba de clasificación y los <b>2 primeros temas</b> de tu módulo. <a href="#" class="tb-up">Ver planes →</a></div>`}</div>` : ''}
       ${main}
       ${newbie ? '' : `
       <div id="pt-live"></div>
@@ -176,7 +181,7 @@
       ${courseCard()}
       ${birthAsk()}
       ${P.look().pic || !(a && a.ready && P.progress(a.id).done) ? '' : `<div class="card pt-perso"><div class="pt-perso-img">${M.mascot('', 'wink')}</div><div><h2>Personaliza tu perfil</h2><p class="muted">Tómate una foto o crea <b>tu propio Mr. Arrieta</b>: vístelo, ponle sombrero y elige su fondo. ¡Haz tu plataforma más tuya!</p><button class="btn k" id="me-go">🎨 Personalizar ahora</button></div></div>`}
-      ${pl ? `<div class="sect-title"><h2>📝 Mi prueba de clasificación</h2></div><div class="card pt-plres"><div><b>Resultado:</b> ${esc(P.mod(pl.module).name)} · ${esc(P.mod(pl.module).es)}<br><span class="muted">${new Date(pl.date).toLocaleDateString('es-CO')}${pl.mods ? ' · ' + [1, 2, 3, 4].map(k => `${P.mod(k).id}: ${pl.mods[k]}%`).join(' · ') : ''}</span></div>${(pst.attempts < pst.max || (pst.round || 1) < (pst.rounds || 1)) ? '<button class="btn w sm" id="pt2">🔁 Repetir prueba</button>' : ''}</div>` : ''}
+      ${pl ? `<div class="sect-title"><h2>📝 Mi prueba de clasificación</h2></div><div class="card pt-plres"><div><b>Resultado:</b> ${esc(P.mod(pl.module).name)} · ${esc(P.mod(pl.module).es)}<br><span class="muted">${new Date(pl.date).toLocaleDateString('es-CO')}${pl.mods ? ' · ' + [1, 2, 3, 4].map(k => `${P.mod(k).id}: ${pl.mods[k]}%`).join(' · ') : ''}</span></div>${!P.isExpired() && (pst.attempts < pst.max || (pst.round || 1) < (pst.rounds || 1)) ? '<button class="btn w sm" id="pt2">🔁 Repetir prueba</button>' : ''}</div>` : ''}
       ${staff ? `<div class="sect-title"><h2>📝 Prueba de clasificación</h2></div><div class="card pt-plres"><div>Puedes presentar o revisar la prueba de clasificación como lo verá el estudiante.</div><button class="btn w sm" id="pt2">📝 Abrir prueba</button></div>` : ''}
       ${certs()}`}
       <div class="center" style="margin-top:14px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">${staff ? '' : `<button class="btn w" id="pt-plans">💳 Ver planes${P.plan().eff !== 'free' ? ' · mi plan' : ''}</button>`}<button class="btn w" id="pt-tour">🧭 Ver el tour de Mr. Arrieta</button>${!staff && P.plan().eff === 'premium' ? '<button class="btn w pt-polb">📌 Política de reservas</button>' : ''}</div>
@@ -190,8 +195,8 @@
     // bienvenida de regreso (una vez por sesión)
     try { if (P.isBirthday()) sessionStorage.setItem('mra_wb', '1'); // en su cumpleaños el saludo es la fiesta 🎂
       if (back && !sessionStorage.getItem('mra_wb')) { sessionStorage.setItem('mra_wb', '1'); const pr = a && a.ready ? P.progress(a.id) : null;
-      const wm = M.modal(`<div class="center wb">${P.pic() ? P.avHTML('pt-av big') : M.mascot('mascot bounce', 'wink')}<h2>Welcome, ${esc(P.look().nick || p.first)}! 👋</h2><p style="font-size:17px">¡Qué bueno verte de nuevo! ${pr && pr.done ? `Llevas <b>${pr.done} clase(s)</b> en tu ruta. ¡Sigamos!` : 'Hoy es un gran día para avanzar en tu ruta de aprendizaje.'}</p>
-        ${a && a.ready && !staff ? `<a class="btn k block lg" style="text-decoration:none" href="${a.url}">▶ Continuar mi ruta</a>` : ''}<button class="btn w block" id="wbx" style="margin-top:8px">Ir a mi perfil</button></div>`, { x: true });
+      const wm = M.modal(`<div class="center wb">${P.pic() ? P.avHTML('pt-av big') : M.mascot('mascot bounce', 'wink')}<h2>Welcome, ${esc(P.look().nick || p.first)}! 👋</h2><p style="font-size:17px">¡Qué bueno verte de nuevo! ${P.isExpired() ? '' : pr && pr.done ? `Llevas <b>${pr.done} clase(s)</b> en tu ruta. ¡Sigamos!` : 'Hoy es un gran día para avanzar en tu ruta de aprendizaje.'}</p>
+        ${P.isExpired() ? `<p style="font-size:16px">⏰ Tu plan venció y tu contenido está bloqueado. Renuévalo para seguir justo donde ibas.</p><a class="btn block lg pt-wa" target="_blank" rel="noopener" style="text-decoration:none" href="${WA('¡Hola! Quiero renovar mi plan en mrarrieta.com 🚀')}">💬 Renovar mi plan</a>` : a && a.ready && !staff ? `<a class="btn k block lg" style="text-decoration:none" href="${a.url}">▶ Continuar mi ruta</a>` : ''}<button class="btn w block" id="wbx" style="margin-top:8px">Ir a mi perfil</button></div>`, { x: true });
       $('#wbx', wm).onclick = () => wm.remove(); M.confetti && M.confetti(900); } } catch (e) { }
     if (!tourSeenK(tourKind())) setTimeout(portalTour, 900);
     $('#me-av').onclick = () => route('me'); if ($('#me-go')) $('#me-go').onclick = () => route('me');
@@ -205,16 +210,17 @@
   }
   function modCard(m) {
     const r = P.role(m.id); const pr = P.progress(m.id); const trial = P.isTrial();
-    const chip = { current: '📍 ESTÁS AQUÍ', review: P.passed(m.id) ? '✅ SUPERADO' : '🔁 REPASO', locked: '🔒 PRÓXIMA ETAPA', soon: '🚧 PRÓXIMAMENTE' }[r];
+    const chip = { current: '📍 ESTÁS AQUÍ', review: P.passed(m.id) ? '✅ SUPERADO' : '🔁 REPASO', locked: P.isExpired() ? '🔒 BLOQUEADO' : '🔒 PRÓXIMA ETAPA', soon: '🚧 PRÓXIMAMENTE' }[r];
     const showBar = (r === 'current' || r === 'review') && m.ready;
     return `<button class="pt-mod ${r}" data-id="${m.id}"><div class="pt-mod-img" style="background-image:url('${U(m.img, 640, 360)}')"><span class="pt-mod-n">${m.n}</span><span class="pt-chip ${r}">${chip}</span></div>
       <div class="pt-mod-bd"><h3>${esc(m.name)} · ${esc(m.id)}</h3><div class="es">${esc(m.es)}</div><p>${esc(m.desc)}</p>
       ${showBar ? `<div class="pt-bar"><i style="width:${pr.pct}%"></i></div><small class="muted">${pr.done} de ${r === 'current' && trial ? 4 : m.classes} clases${P.passed(m.id) ? ' · 🎓 Aprobado' : ''}</small>` : ''}
-      ${r === 'locked' ? `<small class="muted">${trial ? 'Disponible con Membership o Premium' : 'Se abre cuando avances en tu ruta'}</small>` : ''}</div></button>`;
+      ${r === 'locked' ? `<small class="muted">${P.isExpired() ? '🔒 Se abre al renovar tu plan' : trial ? 'Disponible con Membership o Premium' : 'Se abre cuando avances en tu ruta'}</small>` : ''}</div></button>`;
   }
   function openMod(id) {
     const m = P.mod(id), r = P.role(id), a = P.assigned();
     if (r === 'current' || r === 'review') { location.href = m.url; return; }
+    if (P.isExpired()) { const mm = M.modal(`<div class="center">${M.mascot('mascot', 'pointside')}</div><h3 class="center">⏰ Tu plan venció</h3><p class="center" style="font-size:17px">Todo tu contenido está bloqueado hasta que renueves. Tu progreso está guardado y se desbloquea apenas administración confirme tu renovación.</p><a class="btn block pt-wa" target="_blank" rel="noopener" href="${WA('¡Hola! Quiero renovar mi plan en mrarrieta.com 🚀')}">💬 Renovar mi plan</a>`, { x: true }); return; }
     if (r === 'soon') return M.modal(`<div class="center">${M.mascot('mascot', 'think')}</div><h3 class="center">🚧 ${esc(m.name)} · ${esc(m.es)}</h3><p class="center">Este módulo está en construcción. ¡Muy pronto estará disponible en tu perfil!</p>`, { x: true });
     if (P.isTrial() && window.MRPLANS && a) return MRPLANS.modal(M);
     const msg = P.isTrial() ? `Tu acceso gratuito incluye solo el inicio de tu ruta. ¡Inscríbete para estudiar todos los módulos!`
@@ -225,7 +231,7 @@
     if ($('#cl', mm)) $('#cl', mm).onclick = () => mm.remove();
   }
   const courseState = () => { try { return JSON.parse(localStorage.getItem('mra_final_progress_v1') || '{}'); } catch (e) { return {}; } };
-  const courseOpen = () => { const p = P.get(); return !!p && (p.type === 'staff' || p.demo || ['A1', 'A2', 'B2', 'B2+'].every(id => P.passed(id))); };
+  const courseOpen = () => { const p = P.get(); return !!p && !P.isExpired() && (p.type === 'staff' || p.demo || ['A1', 'A2', 'B2', 'B2+'].every(id => P.passed(id))); };
   function courseCard() {
     const p = P.get(); if (!p || P.isTrial()) return '';
     const open = courseOpen(), st = courseState(), passed = !!(st.final && st.final.passed);

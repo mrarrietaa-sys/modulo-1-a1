@@ -382,11 +382,27 @@
 
   /* ======================= CLASES ======================= */
   function classes() {
-    list('classes', { title: '📅 Clases', sub: 'VIP (las reservan los estudiantes Premium) y clubs (se crean solos según el horario de Ajustes)', desc: false,
+    list('classes', { title: '📅 Clases', sub: 'VIP (las reservan los estudiantes Premium) y clubs (se crean solos según el horario de Ajustes)', desc: false, add: '🎁 Clase VIP adicional', onAdd: bonusModal,
       filters: [{ k: 'status', opts: [['scheduled', '📅 Programadas'], ['done', '✅ Dictadas'], ['noshow', '❌ No asistió'], ['cancelled', 'Canceladas'], ['', 'Todas']] }, { k: 'type', opts: [['', 'VIP y clubs'], ['vip', '⭐ VIP'], ['club', '🎙️ Clubs']] }],
       row: c => { const st = J(c.students, []); const att = J(c.attendance, {}); return `<div class="card ad-row ad-cl ${c.type}" data-open="${esc(c.id)}"><div class="ad-cdate"><b>${fD(c.date, { day: 'numeric' })}</b><small>${fD(c.date, { month: 'short' })}</small></div><div class="grow"><b>${c.type === 'vip' ? '⭐ VIP' : c.type === 'club' ? '🎙️ Club' : '👥 Grupal'} · ${fT(c.time)} · ${esc(tName(c.teacherId))}</b> ${chip({ scheduled: '📅 programada', done: '✅ dictada', noshow: '❌ no asistió', cancelled: 'cancelada' }[c.status] || esc(c.status), 'st-' + c.status)}
         <small>${st.length} estudiante(s)${c.status === 'done' ? ' · asistieron ' + Object.values(att).filter(Boolean).length : ''}${c.topic ? ' · ' + esc(c.topic) : ''}</small></div></div>`; },
       open: (id, c) => classMark(c), empty: 'No hay clases con este filtro.' });
+  }
+  // 🎁 regalar clases VIP adicionales (por un inconveniente o como regalo); valen solo para el ciclo actual del plan
+  async function bonusModal() {
+    const m = modal(`<h2>🎁 Agregar clase VIP adicional</h2><p class="muted">El estudiante podrá reservarla desde su perfil. Vale solo para su ciclo actual (no es acumulable) y le llega un aviso y un correo.</p>
+      <div class="ad-form"><label class="full">Estudiante Premium<input class="inp" id="bo-s" list="bo-list" placeholder="⏳ Cargando estudiantes…" autocomplete="off"><datalist id="bo-list"></datalist></label>
+      <label>Cantidad<select class="inp" id="bo-n">${[1, 2, 3, 4, 5].map(n => `<option value="${n}">${n} clase${n > 1 ? 's' : ''}</option>`).join('')}</select></label>
+      <label>Motivo<select class="inp" id="bo-r"><option>Regalo de la escuela 🎁</option><option>Compensación por un inconveniente</option><option>Otro</option></select></label>
+      <label class="full">Detalle <small>(opcional, lo ve el estudiante)</small><input class="inp" id="bo-d" maxlength="120" placeholder="Ej: por tu cumpleaños"></label></div>
+      <button class="btn k block lg" id="bo-ok">🎁 Agregar</button>`);
+    const r = await api('aList', { table: 'Estudiantes', size: 500 }); const list = (r.rows || []).filter(x => x.plan === 'premium' && (!x.planEnd || x.planEnd >= todayISO()));
+    $('#bo-list', m).innerHTML = list.map(x => `<option value="${esc(x.code)} · ${esc((x.first + ' ' + x.last).trim())}">`).join(''); $('#bo-s', m).placeholder = list.length ? 'Escribe el nombre o el código' : 'No hay estudiantes Premium activos';
+    $('#bo-ok', m).onclick = async () => { const code = $('#bo-s', m).value.split('·')[0].trim().toUpperCase(); if (!code) return toast('Elige un estudiante');
+      const why = $('#bo-r', m).value + ($('#bo-d', m).value.trim() ? ': ' + $('#bo-d', m).value.trim() : '');
+      const b = $('#bo-ok', m); b.disabled = true; const res = await api('aBonus', { code, n: +$('#bo-n', m).value, reason: why });
+      if (res.ok) { m.remove(); toast(`✅ Listo: ahora tiene ${res.credits.vipLeft} clase(s) VIP disponibles este ciclo. Ya le avisamos.`); }
+      else { b.disabled = false; toast(res.err === 'not_premium' ? 'Ese estudiante no tiene plan Premium activo' : res.err === 'notfound' ? 'No encontramos ese código' : 'No se pudo agregar'); } };
   }
   function classMark(c) {
     const st = J(c.students, []); const att = J(c.attendance, {});

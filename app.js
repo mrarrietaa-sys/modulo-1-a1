@@ -411,16 +411,21 @@
 
   /* ---------- transición divertida entre secciones de la clase ---------- */
   const SCENES = { rocket: { a: 'up', say: 'Blast off!' }, broom: { a: 'fly', say: 'Abracadabra!' }, drums: { a: 'stage', say: 'Rock on!' }, guitar: { a: 'stage', say: "Let's rock!" },
-    surf: { a: 'surf', say: 'Catch the wave!' }, hero: { a: 'fly', say: 'Super English!' }, books: { a: 'pop', say: "Let's read!" }, laptop: { a: 'pop', say: 'Homework time!' }, travel: { a: 'walk', say: "Let's go!" }, wave: { a: 'pop', say: 'Hello!' } };
+    surf: { a: 'surf', say: 'Catch the wave!' }, hero: { a: 'fly', say: 'Super English!' }, books: { a: 'pop', say: "Let's read!" }, laptop: { a: 'pop', say: 'Homework time!' }, travel: { a: 'walk', say: "Let's go!" },
+    point: { a: 'pop', say: "You're next!" }, jump: { a: 'pop', say: 'Woo-hoo!' }, board: { a: 'pop', say: 'Class time!' }, headphones: { a: 'pop', say: 'Listen up!' }, magnifier: { a: 'pop', say: "Let's take a closer look!" },
+    think: { a: 'pop', say: 'Think in English!' }, megaphone: { a: 'pop', say: 'Speak up!' }, thumbs: { a: 'pop', say: 'Great job!' }, shrug: { a: 'pop', say: 'Ready?' } };
   const SEC_IC = { Goal: '🎯', Speaking: '🗣️', Reading: '📖', Review: '🔁', Explanation: '💡', 'Listen & practice': '🎧', Practice: '🎮', 'Oral task': '🎤', Music: '🎵', Homework: '📝' };
-  const SEC_SC = { Reading: 'books', Homework: 'laptop', Music: 'guitar', Review: 'travel' };
-  const FREE = ['rocket', 'broom', 'drums', 'surf', 'hero'];
+  // cada sección tiene varios Mr. Arrieta posibles (y también los "libres"), así no siempre aparece el mismo
+  const SEC_SC = { Reading: ['books', 'magnifier'], Homework: ['laptop', 'think'], Music: ['guitar', 'drums', 'headphones'], Review: ['travel', 'magnifier', 'think'], Explanation: ['board', 'point'], 'Listen & practice': ['headphones', 'point'],
+    'Oral task': ['megaphone', 'shrug'], Speaking: ['megaphone', 'shrug'], Practice: ['jump', 'thumbs'], Goal: ['point', 'thumbs'] };
+  const FREE = ['rocket', 'broom', 'surf', 'hero', 'jump', 'thumbs', 'travel'];
   const ITL_ON = true;
-  let sceneN = Math.floor(Math.random() * FREE.length);
+  let lastScene = '';
+  const pickScene = (next) => { const pool = (SEC_SC[next] || []).concat(FREE).filter(k => k !== lastScene); const k = pool[Math.floor(Math.random() * pool.length)]; lastScene = k; return k; };
   const preloadScenes = () => Object.keys(SCENES).forEach(k => { const i = new Image(); i.src = 'mra-x-' + k + '.webp'; });
   function interlude(next) {
     return new Promise(res => {
-      const k = SEC_SC[next] || FREE[sceneN++ % FREE.length], sc = SCENES[k];
+      const k = pickScene(next), sc = SCENES[k];
       const ov = h(`<div class="itl itl-${sc.a}" role="status">${sc.a === 'stage' ? '<div class="itl-lights"></div><span class="itl-notes">🎵 🎶 🎵</span>' : ''}${sc.a === 'up' || sc.a === 'fly' ? '<span class="itl-stars">✨ ⭐ ✨ ⭐</span>' : ''}
         <div class="itl-actor"><b class="itl-say">${esc(sc.say)}</b><img class="itl-img" src="mra-x-${k}.webp" alt="Mr. Arrieta"></div>
         <div class="itl-next"><small>NEXT</small><b>${SEC_IC[next] || '➡️'} ${esc(next.toUpperCase())}</b><i>Toca para continuar</i></div></div>`);

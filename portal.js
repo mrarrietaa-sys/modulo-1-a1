@@ -72,7 +72,7 @@
     if (seen || P.lastUser() || !(window.MRAC && MRAC.on)) return;
     setTimeout(() => {
       if (document.querySelector('.modal') || P.get()) return;
-      const m = M.modal(`<div class="center"><img class="mascot bounce mra" src="mra-x-wave.webp" alt="Mr. Arrieta" draggable="false" style="height:170px;width:auto"></div><h3 class="center">¿Vienes por primera vez? 👋</h3>
+      const m = M.modal(`<div class="center"><img class="mascot bounce mra" src="mra-x-shrug.webp" alt="Mr. Arrieta" draggable="false" style="height:170px;width:auto"></div><h3 class="center">¿Vienes por primera vez? 👋</h3>
         <p class="center" style="font-size:16px">Déjanos tu nombre y tu correo y conoce cómo aprender inglés <b>HABLANDO</b> con mrarrieta.com.</p>
         <input class="inp" id="ld-n" placeholder="Tu nombre" autocomplete="name" style="margin:6px 0 8px"><input class="inp" id="ld-e" type="email" placeholder="Tu correo" autocomplete="email">
         <label style="display:flex;gap:8px;align-items:flex-start;font-size:13px;margin:10px 0;color:#4A5B78"><input type="checkbox" id="ld-c" checked style="margin-top:3px">Acepto recibir correos de mrarrieta.com con información de la escuela. Puedo darme de baja cuando quiera.</label>

@@ -75,11 +75,23 @@
     // mini lesson + tips
     if (p.tip) body.appendChild(h(`<div class="lesson lesson-mra">${M.mascot('lesson-img', 'idea')}<div><h3>📘 Mini lección de Mr. Arrieta</h3>${p.tip}</div></div>`));
     if (p.tips && p.tips.length) { const tb = h(`<div class="lesson" style="background:#fff"><h3>🗣️ Tips de pronunciación del profe</h3></div>`); p.tips.forEach(t => tb.appendChild(h(`<div class="tipbox"><span>💡</span><span>${t}</span></div>`))); body.appendChild(tb); }
-    await waitNext(stage, 'Ya practiqué, ¡continuar!');
+    // 🎙️ obligatorio: repetir con su voz al menos 3 palabras antes de continuar (no aplica en modo profe)
+    const need = canRec && !(window.MRTEACH && MRTEACH.on()) ? Math.min(3, n) : 0;
+    await waitNext(stage, 'Ya practiqué, ¡continuar!', () => {
+      if (said.size >= need) return true;
+      const falta = need - said.size;
+      const m = M.modal(`<div class="center">${M.mascot('mascot', 'point')}</div><h3 class="center">🎙️ ¡Primero practica con tu voz!</h3>
+        <p class="center" style="font-size:17px">Para continuar, <b>repite con tu voz al menos ${need} palabras</b> tocando <b>🎙️ Repetir</b> en las tarjetas.</p>
+        <p class="center muted">Llevas <b>${said.size} de ${need}</b>. ${falta === 1 ? '¡Te falta solo 1!' : 'Te faltan ' + falta + '.'} Aquí aprendes inglés HABLANDO 💪</p>
+        <p class="center muted" style="font-size:13px">Si no te deja grabar, permite el uso del micrófono en tu navegador (ícono 🔒 junto a la dirección).</p>
+        <button class="btn k block lg" id="mk">¡Entendido, voy a repetir!</button>`, { x: true });
+      $('#mk', m).onclick = () => { m.remove(); const w = Array.from(grid.querySelectorAll('.ce-lw')).find(x => !x.querySelector('.ce-said')), b = (w || grid).querySelector('.ce-mic'); if (b) b.scrollIntoView({ block: 'center', behavior: 'smooth' }); };
+      return false;
+    });
     return null; // not scored
   }
-  function waitNext(stage, txt = 'Continuar') {
-    return new Promise(res => { const bar = h(`<div class="actionbar"><button class="btn k lg">${txt} →</button></div>`); stage.appendChild(bar); $('button', bar).onclick = () => { stop(); res(); }; });
+  function waitNext(stage, txt = 'Continuar', guard) {
+    return new Promise(res => { const bar = h(`<div class="actionbar"><button class="btn k lg">${txt} →</button></div>`); stage.appendChild(bar); $('button', bar).onclick = () => { if (guard && !guard()) return; stop(); res(); }; });
   }
 
   /* ---------- generic question loop ---------- */

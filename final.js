@@ -353,7 +353,7 @@
     // 2 y 3) correos
     const ok = await loadScript('https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js', () => !!window.emailjs);
     if (ok) { try { emailjs.init({ publicKey: CFG.EMAILJS_PUBLIC_KEY }); } catch (e) { } }
-    const send = async (to) => { if (!ok) return false; try { await emailjs.send(CFG.EMAILJS_SERVICE_ID, CFG.EMAILJS_TEMPLATE_ID, Object.assign({ to_email: to }, params)); return true; } catch (e) { return false; } };
+    const send = async (to) => { if (!ok) return false; try { await (window.MRMAILX ? emailjs.send(CFG.EMAILJS_SERVICE_ID, window.MRMAIL_TEMPLATE, Object.assign({ to_email: to }, window.MRMAILX(params))) : emailjs.send(CFG.EMAILJS_SERVICE_ID, CFG.EMAILJS_TEMPLATE_ID, Object.assign({ to_email: to }, params))); return true; } catch (e) { return false; } };
     setN('n2', await send(r.temail), '');
     const e2 = $('#n2'); if (e2) e2.textContent = e2.className === 'ok' ? `✓ Correo enviado al profesor (${r.temail}).` : '✗ No se pudo enviar el correo al profesor. Usa “Copiar resumen”.';
     setN('n3', await send(CFG.ADMIN_EMAIL), ''); const e3 = $('#n3'); if (e3) e3.textContent = e3.className === 'ok' ? '✓ Copia enviada a administración.' : '✗ No se pudo enviar la copia a administración.';

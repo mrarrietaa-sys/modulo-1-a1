@@ -95,3 +95,19 @@ window.M1CONFIG = {
 
 // sin emojis en los mensajes de WhatsApp (algunos WhatsApp los muestran como �)
 window.MRNE = (t) => String(t == null ? '' : t).replace(/[\u{1F000}-\u{1FAFF}\u{2300}-\u{27BF}\u{2B00}-\u{2BFF}\u{FE0F}\u{200D}\u{20E3}]/gu, '').replace(/ {2,}/g, ' ').replace(/ ([.,!?)])/g, '$1').trim();
+// ✉️ correos de exámenes con el MISMO diseño de los correos de la plataforma (plantilla general de EmailJS)
+window.MRMAIL_TEMPLATE = 'template_rid8emw';
+window.MRMAILX = function (p) {
+  const base = new URL('.', location.href).href, e = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const pt = /placement/i.test(p.module || ''), row = (a, b) => `<tr><td style="padding:8px 10px;border:1px solid #dfe3ea;background:#f4f6fa;font-weight:700;color:#0B2A5B;width:55%">${a}</td><td style="padding:8px 10px;border:1px solid #dfe3ea;font-weight:700;text-align:right">${b}</td></tr>`;
+  const title = pt ? '📝 Resultado de tu prueba de clasificación' : '🎓 Resultado de tu examen final';
+  const body = `<p>Hola <b>${e(p.student_name)}</b>, ya tenemos tu resultado en <b>mrarrieta.com</b>. Aquí está tu resumen completo.</p>
+    <div style="border-left:6px solid ${p.result_color || '#0B2A5B'};background:#f4f7fc;border-radius:12px;padding:14px 16px;margin:14px 0"><div style="font-size:12px;letter-spacing:2px;color:#4A5B78;font-weight:700;text-transform:uppercase">${e(p.result_label)}</div><div style="font-size:24px;font-weight:800;color:${p.result_color || '#0B2A5B'};margin:4px 0">${e(p.result_headline)}</div><div style="color:#0B2A5B">${e(p.result_detail)}</div></div>
+    <table style="width:100%;border-collapse:collapse;margin:14px 0;font-size:15px">${row('🎧 Listening', p.listening_score + ' / 10.0')}${row('📖 Reading', p.reading_score + ' / 10.0')}${row('✍️ Writing', p.writing_score + ' / 10.0')}${row('🎤 Speaking', p.speaking_score + ' / 10.0')}<tr><td style="padding:10px;border:1px solid #dfe3ea;background:#0B2A5B;color:#fff;font-weight:800">Puntaje general</td><td style="padding:10px;border:1px solid #dfe3ea;font-weight:800;font-size:18px;color:#E3242B;text-align:right">${e(p.final_score)} / 10.0</td></tr></table>
+    ${p.feedback ? `<p style="padding:12px 14px;background:#fff6e0;border-left:4px solid #E3242B;border-radius:8px"><b>💬 Comentario:</b> ${e(p.feedback)}</p>` : ''}
+    ${p.next_steps_display !== 'none' && p.next_steps_text ? `<p style="padding:12px 14px;background:#eaf1fd;border-left:4px solid #1D5FD1;border-radius:8px"><b>🚀 Próximos pasos:</b><br>${e(p.next_steps_text).replace(/\n/g, '<br>')}</p>` : ''}
+    <p style="font-size:13px;color:#667">📅 ${e(p.date)} · ${e(p.time)} · ${e(p.attempt_label)} · ${e(p.status)}</p>
+    <p style="text-align:center;margin-top:18px"><a href="${base}" style="display:inline-block;background:#E3242B;color:#fff;text-decoration:none;font-weight:800;padding:12px 22px;border-radius:12px;border:3px solid #0B2A5B">Entrar a mi plataforma →</a></p>`;
+  const html = `<div style="background:#f4f6fa;padding:20px 10px;font-family:Arial,Helvetica,sans-serif"><div style="max-width:560px;margin:0 auto;background:#fff;border:3px solid #0B2A5B;border-radius:16px;overflow:hidden"><div style="background:#ffffff;padding:20px 20px 16px;text-align:center;border-bottom:1px solid #e2e8f0"><img src="${base}mra-brand.png" alt="mrarrieta.com" style="height:64px"></div><div style="height:6px;background:#E3242B"></div><div style="padding:22px 22px 10px;color:#1a202c;line-height:1.55"><h1 style="font-size:22px;color:#0B2A5B;margin:0 0 12px">${title}</h1>${body}</div><div style="padding:14px 22px 20px;font-size:12.5px;color:#4a5568;border-top:1px solid #e2e8f0">mrarrieta.com · ¡Aprende inglés HABLANDO! · WhatsApp <a href="https://wa.me/573017810841">3017810841</a></div></div></div>`;
+  return { subject: p.subject, message_html: html, bcc: '' };
+};

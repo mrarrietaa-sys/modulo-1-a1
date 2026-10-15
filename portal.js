@@ -194,7 +194,7 @@
         ${a && !ready && !trial ? `<p class="pt-soon">🚧 Tu ${esc(a.name)} se está terminando de construir. ¡Muy pronto estará listo! Mientras tanto puedes repasar los módulos anteriores.</p>` : ''}</div></div>`;
     }
     app.innerHTML = `<div class="wrap">
-      <section class="card pt-head ban-${esc(P.look().banner || 'w')}"><button class="pt-avwrap" id="me-av" title="Personaliza tu foto">${P.avHTML('pt-av')}<i class="pt-pen">✏️</i></button><div class="pt-hi"><span class="lbl">${greet}!</span><h1>${back ? '¡Hola de nuevo' : '¡Hola'}, <span class="nmw"><span class="nm">${esc(P.look().nick || p.first)}</span>!</span> 👋</h1>
+      <section class="card pt-head ban-${esc(P.look().banner || 'w')}"><button class="pt-avwrap" id="me-av" title="Personaliza tu foto">${P.avHTML('pt-av')}<i class="pt-pen">✏️</i></button><div class="pt-hi"><span class="lbl">${greet}!</span><h1>${back ? '¡Hola de nuevo' : '¡Hola'}, <span class="nmw"><span class="nm">${esc(P.look().nick || p.first)}!</span></span> 👋</h1>
         <p class="muted">${staff ? '👨‍🏫 Perfil de profesor — puedes revisar todo.' : trial ? '🟢 Acceso gratuito — descubre tu ruta de aprendizaje.' : '🎓 Estudiante de mrarrieta.com'}</p></div>${M.mascot('pt-headmra', 'welcome')}</section>
       ${birthdayBanner()}
       <div id="pt-ann"></div>

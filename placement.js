@@ -393,7 +393,7 @@
         .then(x => setN('n0', !!(x && x.ok), x && x.ok ? '✓ Tu profe y administración recibieron tu resultado en la plataforma' : '✗ No se pudo avisar en la plataforma (revisa tu conexión).'))
         .catch(() => setN('n0', false, '✗ No se pudo avisar en la plataforma (sin conexión).'));
     }
-    const params = { subject: `Placement Test${r.attempt > 1 ? (r.attempt > CFG.ATTEMPTS ? ' – Additional Attempt' : ' – Attempt ' + r.attempt) : ''} – ${r.name} – Recommended: ${m.name} (${m.es})`,
+    const params = { subject: `📝 Prueba de clasificación${r.attempt > 1 ? (r.attempt > CFG.ATTEMPTS ? ' – intento adicional' : ' – intento ' + r.attempt) : ''} – ${r.name} – Nivel recomendado: ${m.name} (${m.es})`,
       student_name: r.name, student_whatsapp: r.wa || '', student_whatsapp_link: waLink(r.wa), course_interest: COURSE[r.course] || '', module: 'Placement Test', level: m.es, recommended_module: m.name,
       result_label: 'Nivel recomendado', result_headline: m.name, result_detail: m.es, result_color: '#0B2A5B',
       attempt_label: r.attemptLabel, date: r.date.toLocaleDateString(), time: r.date.toLocaleTimeString(),
@@ -406,7 +406,7 @@
     catch (e) { setN('n1', false, '✗ No se pudieron guardar en el panel (sin conexión).'); }
     const ok = await loadScript('https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js', () => !!window.emailjs);
     if (ok) { try { emailjs.init({ publicKey: CFG.EMAILJS_PUBLIC_KEY }); } catch (e) { } }
-    const send = async (to) => { if (!ok) return false; try { await emailjs.send(CFG.EMAILJS_SERVICE_ID, CFG.EMAILJS_TEMPLATE_ID, Object.assign({ to_email: to }, params)); return true; } catch (e) { return false; } };
+    const send = async (to) => { if (!ok) return false; try { await (window.MRMAILX ? emailjs.send(CFG.EMAILJS_SERVICE_ID, window.MRMAIL_TEMPLATE, Object.assign({ to_email: to }, window.MRMAILX(params))) : emailjs.send(CFG.EMAILJS_SERVICE_ID, CFG.EMAILJS_TEMPLATE_ID, Object.assign({ to_email: to }, params))); return true; } catch (e) { return false; } };
     const s1 = await send(r.temail); setN('n2', s1, s1 ? `✓ Correo enviado a ${r.temail}.` : '✗ No se pudo enviar el correo. Usa “Copiar resumen”.');
     const s2 = await send(CFG.ADMIN_EMAIL); setN('n3', s2, s2 ? '✓ Copia enviada a administración.' : '✗ No se pudo enviar la copia a administración.');
   }

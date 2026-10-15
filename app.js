@@ -184,7 +184,7 @@
       <section class="hero solo">
         <div class="card hello">
           ${window.MRAP && MRAP.get() ? '<a class="mod-back" href="index.html">← Mi perfil<span class="mb-x"> · Mi ruta de aprendizaje</span></a>' : ''}<span class="lbl">${esc(M.MOD.es)} · ${esc(M.MOD.levelEs || M.MOD.id)}</span>${window.MRAP && MRAP.get() ? (MRAP.isTrial() ? ` <span class="rolechip trial">${MRAP.plan && MRAP.plan().expired ? '⏰ Plan vencido' : '🟢 Acceso gratuito'}</span>` : MRAP.role(C.MODULE_ID || 'A1') === 'review' && !MRAP.isStaff() ? ' <span class="rolechip rev">🔁 Modo repaso</span>' : MRAP.isStaff() ? ' <span class="rolechip rev">👨‍🏫 Profe</span>' : ' <span class="rolechip cur">🧭 Tu ruta de aprendizaje</span>') : ''}
-          <h1 style="margin-top:10px">${greeting()}, <span class="nmw"><span class="nm">${esc(first)}</span>!</span> 👋</h1>
+          <h1 style="margin-top:10px">${greeting()}, <span class="nmw"><span class="nm">${esc(first)}!</span></span> 👋</h1>
           <div class="ringbox"><div class="ring" style="--p:${rev ? 100 : pct}"><b>${rev ? 100 : pct}%</b></div>
             <div><div style="font-weight:800;font-size:18px">Tu progreso del ${M.MOD.es}</div>${rev ? `<div class="muted">✅ Superado · ${totP} de ${totP} clases · 🔥 ${S.streak.n || 0} día(s) seguidos</div>${revN ? `<div class="ce-revprog"><b>🔁 Repasando: ${revN} de ${totP} clases</b><div class="ce-revbar"><i style="width:${Math.round(revN / totP * 100)}%"></i></div></div>` : ''}` : `<div class="muted">${doneN} de ${M.MOD.classes} clases completadas · 🔥 ${S.streak.n || 0} día(s) seguidos</div>`}
             ${!nu && window.MRAP && MRAP.isTrial() ? `<button class="btn k" style="margin-top:12px" id="buy3">🔓 Desbloquear toda mi ruta</button>` : ''}</div></div>

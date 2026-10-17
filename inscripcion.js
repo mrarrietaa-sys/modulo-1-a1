@@ -1,3 +1,10 @@
+/* 💳 mini-utilidades para abrir el pago en esta página (la plataforma usa core.js) */
+if (!window.M1) window.M1 = {
+  modal(html, o = {}) { const m = document.createElement('div'); m.className = 'modal'; m.innerHTML = `<div class="card">${o.x ? '<button class="mx" aria-label="Cerrar" title="Cerrar">✕</button>' : ''}${html}</div>`; document.body.appendChild(m); if (o.x) m.querySelector('.mx').onclick = () => m.remove(); m.addEventListener('click', e => { if (e.target === m) m.remove(); }); return m; },
+  toast(t) { let n = document.getElementById('toast'); if (!n) { n = document.createElement('div'); n.id = 'toast'; n.className = 'toast'; document.body.appendChild(n); } n.textContent = t; n.classList.add('show'); clearTimeout(n._t); n._t = setTimeout(() => n.classList.remove('show'), 2200); },
+  sleep: (ms) => new Promise(r => setTimeout(r, ms)), confetti() { },
+  mascot: (cls = 'mascot', mood = 'thumbs') => `<img class="${cls} mra" src="mra-${({ happy: 'welcome', book: 'idea' })[mood] || mood}.webp" alt="Mr. Arrieta" draggable="false">`,
+};
 /* =====================================================================
    FORMULARIO DE INSCRIPCIÓN (público) · mrarrieta.com
    · Elige plan (Acceso gratuito / Membership / Premium) + datos.
@@ -194,7 +201,10 @@
   function success(d, code, dup) {
     const p = planOf(d.plan), paid = d.plan !== 'free';
     const waQ = `https://wa.me/${WA}?text=${encodeURIComponent((window.MRNE || String)('¡Hola! Soy ' + d.first + ' ' + d.last + ' (' + d.email + '). Tengo una pregunta sobre mi inscripción en mrarrieta.com'))}`;
-    if (paid && code) { try { localStorage.setItem('mra_buy_code', code); if (d.ref) localStorage.setItem('mra_ref', d.ref); } catch (e) { } location.href = 'index.html?pagar=' + encodeURIComponent(code) + '&plan=' + encodeURIComponent(d.plan); return; }
+    if (paid && code) { try { localStorage.setItem('mra_buy_code', code); if (d.ref) localStorage.setItem('mra_ref', d.ref); } catch (e) { }
+      window.__buyCode = code; // 💳 el pago se abre aquí mismo, sobre la página de inscripción
+      if (window.MRBUY && window.M1) { MRBUY.plan(d.plan); return; }
+      location.href = 'index.html?pagar=' + encodeURIComponent(code) + '&plan=' + encodeURIComponent(d.plan); return; }
     app.innerHTML = `<section class="card in-done center">
       <img src="mra-celebrate.webp" alt="Mr. Arrieta celebrando" class="in-done-img" width="240" height="240">
       <span class="lbl">${dup ? 'Ya estás en nuestra base' : 'Inscripción recibida'}</span>

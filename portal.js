@@ -298,7 +298,7 @@
         <p class="db-sub">${pr.done} de ${trial ? '4 clases de tu acceso gratuito' : tot + ' clases'} completadas${a.n > (p.module || 1) ? ' · ¡Avanzaste en tu ruta! 🎉' : ''}</p>
         <div class="db-bar"><i style="width:${pr.pct}%"></i></div>
         <div class="db-hero-b"><a class="btn db-wbtn lg" href="${a.url}">${MRI('video')} ${pr.done ? 'Continuar mi ruta' : 'Empezar mi ruta'}</a><button class="btn db-gbtn sm" id="pt3">¿No estás a gusto con tu nivel?</button></div></div>
-        <img class="db-hero-mra" src="mra-x-wave.webp" alt="Mr. Arrieta"></div>`;
+        <img class="db-hero-mra" src="mra-x-rocket.webp" alt="Mr. Arrieta"></div>`;
     } else if (a) {
       const ready = a && a.ready;
       main = `<div class="card pt-mymod">${a ? `<div class="pt-mymod-img" style="background-image:url('${U(a.img)}')"><span>${a.n}</span></div>` : ''}<div><span class="lbl">${staff ? 'Modo profe' : '🧭 Tu ruta de aprendizaje'}</span>

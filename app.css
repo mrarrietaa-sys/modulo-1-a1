@@ -4106,3 +4106,10 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--blue)!im
 .ld-login .pt-hello .bubble{font-size:25px;white-space:nowrap;padding:11px 18px}
 .ld-pf{grid-template-columns:repeat(3,minmax(0,1fr))}
 @media(max-width:980px){.ld-login .pt-login h1{font-size:18px!important}.ld-login .pt-hello .bubble{font-size:24px}.ld-pf{grid-template-columns:repeat(2,minmax(0,1fr))}}
+/* v158: Mr. Arrieta flotando (entrada y perfil) */
+@keyframes mraFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+.ld-login .pt-hello .pt-mra,.ld-hero-mra,.db-hero-mra{animation:mraFloat 3.4s ease-in-out infinite;will-change:transform}
+.ld-login .pt-hello .pt-mra{height:165px}
+.db-hero-mra{height:205px;right:24px;bottom:14px;filter:drop-shadow(0 14px 14px rgba(11,42,91,.18))}
+@media(max-width:980px){.ld-login .pt-hello .pt-mra{height:120px}.db-hero-mra{height:80px;right:6px;top:22px;bottom:auto}}
+@media(prefers-reduced-motion:reduce){.ld-login .pt-hello .pt-mra,.ld-hero-mra,.db-hero-mra{animation:none}}

@@ -21,7 +21,7 @@ if (!window.M1) window.M1 = {
 
   const pp = (k, n, pr) => ({ name: ((P[k] && P[k].name) || n).replace(/^[^A-Za-zÁÉÍÓÚÑ]+/, ''), price: (P[k] && P[k].price) || pr, per: (P[k] && P[k].per) || '/mes' });
   const PLANS = [
-    { id: 'free', name: 'ACCESO GRATUITO', price: '$0', per: '', tag: 'Para empezar · 5 días', icon: '🎁',
+    { id: 'free', name: 'ACCESO GRATUITO', price: '$0', per: '', tag: 'Para empezar · 3 días', icon: '🎁',
       perks: ['Acceso temporal a la plataforma', 'Prueba de clasificación y tu ruta de aprendizaje', 'Los 2 primeros temas de tu ruta'], note: 'No incluye clases individuales.' },
     Object.assign({ id: 'membership', tag: 'Toda la plataforma', icon: '🖥️',
       perks: ['Plataforma disponible 24/7', 'Ruta de aprendizaje por niveles y módulos', 'Materiales, videos y ejercicios', 'Seguimiento de tu progreso'], note: 'No incluye clases individuales.' }, pp('membership', '🖥️ PLATAFORMA', '$59.900')),

@@ -4143,3 +4143,4 @@ textarea.inp{font-size:15px;line-height:1.4}
 /* 👁 ojito en campos de PIN / clave */
 .pw-wrap{position:relative;display:block;width:100%}.pw-wrap>input{width:100%;padding-right:48px!important;box-sizing:border-box}
 .pw-eye{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:0;padding:6px;cursor:pointer;color:#5b6577;display:grid;place-items:center;border-radius:8px}.pw-eye:hover{background:#eef3fb;color:#0B2A5B}
+.to-offer{background:#fff4d6;border:1px solid #f5c542;color:#7a5300;border-radius:12px;padding:8px 12px;margin:8px 0;font-size:15px}

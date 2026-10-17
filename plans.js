@@ -11,7 +11,7 @@
     premium: { name: '🎓 PREMIUM · 4 CLASES', price: '$169.900', per: 'COP / mes', n: 169900, classes: 4 },
     premium8: { name: '🏅 PREMIUM · 8 CLASES', price: '$289.900', per: 'COP / mes', n: 289900, classes: 8 },
   };
-  const FREE = { name: '🎁 ACCESO GRATUITO', price: '$0', per: 'COP · prueba de 5 días' };
+  const FREE = { name: '🎁 ACCESO GRATUITO', price: '$0', per: 'COP · prueba de 3 días' };
   let EXTRA = 39900;
   // precios vigentes desde la nube (los cambia administración)
   function applyCat(cat) { try { if (!cat || !cat.plans) return; Object.keys(PL).forEach(k => { const p = cat.plans[k]; if (p && p.price) { PL[k].n = +p.price; PL[k].price = fmt(p.price); } }); if (cat.extra) EXTRA = +cat.extra; } catch (e) { } }

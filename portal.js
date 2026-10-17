@@ -102,8 +102,9 @@
   // 🌟 página de entrada: hero con el ingreso, planes, testimonios, beneficios y cómo funciona
   function landing() {
     const card = $('.pt-login'); if (!card || !window.MRI) return;
-    const tb = $('#topbar .tb-tag'); if (tb) tb.outerHTML = `<nav class="ld-nav"><a href="#ld-planes">Planes</a><a href="#ld-ganas">Beneficios</a><a href="#ld-profes">Profes</a><a href="#ld-testimonios">Testimonios</a><button class="btn r sm" data-trial>Empieza gratis</button></nav>`;
-    if (!window.__ldNav) { window.__ldNav = 1; document.addEventListener('click', (e) => { // 🧭 el menú muestra la sección completa (sin quedar tapada por la barra de arriba)
+    const tb = $('#topbar .tb-tag'); if (tb) tb.outerHTML = `<nav class="ld-nav"><a href="#ld-planes">Planes</a><a href="#ld-ganas">Beneficios</a><a href="#ld-profes">Profes</a><a href="#ld-testimonios">Testimonios</a>${(P.lastUser() || {}).first ? '<button class="btn r sm" data-goin>Entrar</button>' : '<button class="btn r sm" data-trial>Empieza gratis</button>'}</nav>`;
+    if (!window.__ldNav) { window.__ldNav = 1; document.addEventListener('click', (e) => {
+      const gi = e.target.closest('[data-goin]'); if (gi) { const lg = document.querySelector('.ld-login .pt-login') || document.querySelector('.ld-login'); if (lg) { const bar = (document.getElementById('topbar') || { offsetHeight: 0 }).offsetHeight; scrollTo({ top: Math.max(0, scrollY + lg.getBoundingClientRect().top - bar - 12), behavior: 'smooth' }); const inp = lg.querySelector('input'); if (inp) setTimeout(() => inp.focus({ preventScroll: true }), 450); } return; } // 🔑 estudiante reconocido: directo a escribir su código // 🧭 el menú muestra la sección completa (sin quedar tapada por la barra de arriba)
       const a = e.target.closest('a[href^="#ld-"]'); if (!a) return; const sec = document.querySelector(a.getAttribute('href')); if (!sec) return; e.preventDefault();
       const bar = (document.getElementById('topbar') || { offsetHeight: 0 }).offsetHeight, vh = innerHeight - bar, r = sec.getBoundingClientRect();
       const y = scrollY + r.top - bar - (r.height < vh ? Math.max(12, (vh - r.height) / 2) : 12);

@@ -76,7 +76,7 @@
   // 📣 visitante nuevo: "¿Vienes por primera vez?" → guarda nombre y correo en Interesados (una sola vez)
   function leadPop() {
     let seen = null; try { seen = localStorage.getItem('mra_lead'); } catch (e) { }
-    if (seen || P.lastUser() || !(window.MRAC && MRAC.on)) return;
+    if (seen || P.lastUser() || (() => { try { return localStorage.getItem('mra_last_role'); } catch (e) { return null; } })() || !(window.MRAC && MRAC.on)) return;
     setTimeout(() => {
       if (document.querySelector('.modal') || P.get()) return;
       const m = M.modal(`<div class="center"><img class="mascot bounce mra" src="mra-x-wave.webp" alt="Mr. Arrieta" draggable="false" style="height:170px;width:auto"></div><h3 class="center">¿Vienes por primera vez? 👋</h3>
@@ -102,7 +102,9 @@
   // 🌟 página de entrada: hero con el ingreso, planes, testimonios, beneficios y cómo funciona
   function landing() {
     const card = $('.pt-login'); if (!card || !window.MRI) return;
-    const tb = $('#topbar .tb-tag'); if (tb) tb.outerHTML = `<nav class="ld-nav"><a href="#ld-planes">Planes</a><a href="#ld-ganas">Beneficios</a><a href="#ld-profes">Profes</a><a href="#ld-testimonios">Testimonios</a>${(P.lastUser() || {}).first ? '<button class="btn r sm" data-goin>Entrar</button>' : '<button class="btn r sm" data-trial>Empieza gratis</button>'}</nav>`;
+    const tb = $('#topbar .tb-tag'); if (tb) tb.outerHTML = `<nav class="ld-nav"><a href="#ld-planes">Planes</a><a href="#ld-ganas">Beneficios</a><a href="#ld-profes">Profes</a><a href="#ld-testimonios">Testimonios</a>${(() => { let lr = null; try { lr = JSON.parse(localStorage.getItem('mra_last_role') || 'null'); } catch (e) { } // 🔑 reconocido en este equipo: estudiante, profe o administración
+      if (lr && lr.role === 'teacher') return '<a class="btn r sm" href="profesores.html">Entrar</a>'; if (lr && lr.role === 'admin') return '<a class="btn r sm" href="administracion.html">Entrar</a>';
+      return (P.lastUser() || {}).first ? '<button class="btn r sm" data-goin>Entrar</button>' : '<button class="btn r sm" data-trial>Empieza gratis</button>'; })()}</nav>`;
     if (!window.__ldNav) { window.__ldNav = 1; document.addEventListener('click', (e) => {
       const gi = e.target.closest('[data-goin]'); if (gi) { const lg = document.querySelector('.ld-login .pt-login') || document.querySelector('.ld-login'); if (lg) { const bar = (document.getElementById('topbar') || { offsetHeight: 0 }).offsetHeight; scrollTo({ top: Math.max(0, scrollY + lg.getBoundingClientRect().top - bar - 12), behavior: 'smooth' }); const inp = lg.querySelector('input'); if (inp) setTimeout(() => inp.focus({ preventScroll: true }), 450); } return; } // 🔑 estudiante reconocido: directo a escribir su código // 🧭 el menú muestra la sección completa (sin quedar tapada por la barra de arriba)
       const a = e.target.closest('a[href^="#ld-"]'); if (!a) return; const sec = document.querySelector(a.getAttribute('href')); if (!sec) return; e.preventDefault();
@@ -234,7 +236,7 @@
       if (window.MRAC && MRAC.on && !codeType(v)) {
         const b = $('#ok'); b.disabled = true; b.textContent = 'Entrando…';
         const r = await MRAC.login(v); b.disabled = false; b.textContent = 'Entrar →';
-        if (r.ok) { sfx('win'); M.confetti(1500); try { sessionStorage.removeItem('mra_back'); } catch (e) { } greetVoice(); return route('home'); }
+        if (r.ok) { try { localStorage.setItem('mra_last_role', JSON.stringify({ role: 'student' })); } catch (e) { } sfx('win'); M.confetti(1500); try { sessionStorage.removeItem('mra_back'); } catch (e) { } greetVoice(); return route('home'); }
         if (r.err === 'inactive') return bad('Tu acceso está inactivo. Escríbenos por WhatsApp 🙏');
         if (r.err === 'moved') return bad('Este código gratuito ya no funciona: al activar tu plan te enviamos un código nuevo a tu correo. Entra con ese.');
         if (r.err === 'trial_over') { b.disabled = false; return trialOver(v); }

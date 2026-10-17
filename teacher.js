@@ -72,6 +72,7 @@
       const r = await MR.call('tLogin', { tcode, pin });
       b.disabled = false; b.textContent = 'Entrar';
       if (!r.ok) { er.textContent = r.err === 'auth' ? 'Código o PIN incorrecto.' : errText(r.err); er.hidden = false; return; }
+      try { localStorage.setItem('mra_last_role', JSON.stringify({ role: 'teacher', first: (r.teacher && (r.teacher.hello || String(r.teacher.name || '').split(' ')[0])) || '' })); } catch (e) { } // 🔑 la entrada le muestra "Entrar"
       S = { tcode, pin }; ss.set(SKEY, S); D = r; tab = 'home'; ss.set(TABKEY, tab); shell(); firstTour() ? tour() : (welcome(), setTimeout(popNew, 1500));
     };
   }

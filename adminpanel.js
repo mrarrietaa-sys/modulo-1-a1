@@ -51,7 +51,7 @@
       <input class="inp" id="pw" type="password" autocomplete="current-password" placeholder="Clave"><button class="btn k block lg" id="go">Entrar</button><p id="err" class="ad-err"></p></div>`;
     const go = async () => { const v = $('#pw').value.trim(); if (!v) return; $('#go').disabled = true; $('#go').textContent = 'Verificando…';
       const r = await MRAC.call('aLogin', { key: v }); $('#go').disabled = false; $('#go').textContent = 'Entrar';
-      if (r.ok) { try { sessionStorage.setItem(KK, v); } catch (e) { } boot(); }
+      if (r.ok) { try { sessionStorage.setItem(KK, v); localStorage.setItem('mra_last_role', JSON.stringify({ role: 'admin' })); } catch (e) { } boot(); }
       else $('#err').textContent = r.err === 'change_password' ? '⚠️ Primero cambia ADMIN_PASSWORD en Code.gs y vuelve a implementar (Implementar → Gestionar implementaciones → Editar → Nueva versión).' : r.err === 'auth' ? 'Clave incorrecta.' : 'No hay conexión con la nube. Revisa CLOUD_URL.'; };
     $('#go').onclick = go; $('#pw').onkeydown = e => { if (e.key === 'Enter') go(); }; setTimeout(() => $('#pw').focus(), 100);
   }

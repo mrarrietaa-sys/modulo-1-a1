@@ -35,7 +35,7 @@
     opt = opt || {}; const p = PL[k]; const cur = opt.current === k; const top = k === 'premium8';
     return `<div class="pl-card ${k === 'membership' ? 'membership' : 'premium'}${cur ? ' cur' : ''}">${top ? `<span class="pl-rib">${window.MRI ? MRI('award') : ''} Más práctica</span>` : ''}
       <h3 class="pl-h"><span class="pl-hi">${ico(k)}</span>${esc(noEmo(p.name))}</h3><div class="pl-price"><b>${esc(p.price)}</b><small>${esc(p.per)}</small></div>
-      <ul>${BEN[k].map(b => `<li${/^Clases no acumulables/.test(b) ? ' class="pl-warnli"' : ''}>${esc(noEmo(b))}</li>`).join('')}</ul>
+      <ul>${BEN[k].map(b => `<li${/^Clases no acumulables/.test(b) ? ' class="pl-warnli"' : /^No incluye/.test(b) ? ' class="pl-noli"' : ''}>${esc(noEmo(b))}</li>`).join('')}</ul>
       ${cur && !opt.renew ? `<div class="pl-on">${window.MRI ? MRI('check') : ''} Tu plan actual</div>` : canBuy() ? `<button class="btn ${k === 'membership' ? 'w' : 'k'} block pl-go" data-buy="${k}">${opt.renew && cur ? 'Renovar' : 'Elegir este plan'} →</button>`
         : `<a class="btn ${k === 'membership' ? 'w' : 'k'} block pl-go" target="_blank" rel="noopener" href="${WA(waMsg(k, opt.renew && cur))}">${opt.renew && cur ? '🔁 Renovar' : 'Quiero este plan'} →</a>`}</div>`;
   }
@@ -55,10 +55,11 @@
     const m = M.modal(`<div class="center">${M.mascot('mascot', 'present')}</div>
       <h3 class="center pl-mh">${window.MRI ? MRI(exp ? 'clock' : 'unlock') : ''} ${exp ? 'Tu plan venció' : 'Desbloquea toda tu ruta'}</h3>
       <p class="center" style="font-size:16.5px">${exp ? `Tu plan <b>${esc(PL[pl.plan] ? PL[pl.plan].name : '')}</b> venció${pl.end ? ' el ' + new Date(pl.end + 'T12:00:00').toLocaleDateString('es-CO', { day: 'numeric', month: 'long' }) : ''}. <b>Tu progreso sigue guardado</b>: renueva y continúa justo donde ibas.` : (why || 'Tu acceso gratuito incluye los <b>2 primeros temas</b> de tu ruta. Elige tu plan y sigue aprendiendo con todos los temas, exámenes y certificados 🎓')}</p>
-      ${cards(exp ? pl.plan : 'free', exp)}<button class="btn w block" style="margin-top:8px" id="pl-cl">Seguir explorando</button>`, { x: true });
+      ${cards(exp ? pl.plan : (pl.plan === 'premium8' || pl.eff === 'free' ? 'free' : pl.eff), exp)}${payInfo()}<button class="btn w block" style="margin-top:8px" id="pl-cl">Seguir explorando</button>`, { x: true });
     const b = m.querySelector('#pl-cl'); if (b) b.onclick = () => m.remove();
     return m;
   }
+  function payInfo() { return `<div class="to-pay"><b>Formas de pago</b><div><span>${window.MRI ? MRI('card') : ''} Tarjeta débito o crédito (Mercado Pago) · se habilita de inmediato</span><span>${window.MRI ? MRI('bank') : ''} Transferencia: Nequi 3017810841 · Llave (Breve-B) 1047374279</span></div></div><p class="center" style="margin:10px 0 0;font-size:14px"><a target="_blank" rel="noopener" style="color:#16A34A;font-weight:800" href="${WA('¡Hola! ' + (who() ? 'Soy ' + who() + '. ' : '') + 'Tengo una pregunta sobre los planes de mrarrieta.com')}">¿Dudas? Escríbenos por WhatsApp</a></p>`; }
   function badge() { const pl = window.MRAP && MRAP.plan ? MRAP.plan() : {}; if (pl.eff === 'staff') return '👨‍🏫 Profe'; if (pl.expired) return '⏰ Plan vencido'; return { premium: '🎓 Premium · 4', premium8: '🏅 Premium · 8', membership: '🖥️ Plataforma', free: '🎁 Acceso gratuito', legacy: '🎓 Estudiante' }[pl.plan === 'premium8' && pl.eff !== 'free' ? 'premium8' : pl.eff] || '🎁 Acceso gratuito'; }
-  window.MRPLANS = { PL, FREE, BEN, IC, noEmo, card, cards, modal, badge, WA, waMsg, applyCat, extra: () => EXTRA, fmt };
+  window.MRPLANS = { PL, FREE, BEN, IC, noEmo, card, cards, modal, payInfo, badge, WA, waMsg, applyCat, extra: () => EXTRA, fmt };
 })();

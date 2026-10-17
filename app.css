@@ -4074,3 +4074,4 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--blue)!im
 @media (max-width:980px){.ld-login .pt-hello>:not(.bubble){display:none}.ld-login .pt-hello .bubble{font-size:28px;padding:16px 28px}.ld-login .pt-hello .bubble:after,.ld-login .pt-hello .bubble:before{display:none}}
 @media (max-width:860px){.in-plan-name{font-size:21px}}
 .in-plan ul{align-content:start}
+.pl-card li.pl-noli{color:#8a96ab;font-style:italic}.pl-card li.pl-noli:before{content:"–";color:#8a96ab}

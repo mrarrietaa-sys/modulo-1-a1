@@ -198,7 +198,7 @@
     let r = { ok: false, err: 'offline' };
     if (MR.on) { try { r = await MR.call('enroll', d); } catch (e) { r = { ok: false, err: 'network' }; } }
     st.busy = false; btn.disabled = false; btn.textContent = 'Enviar mi inscripción 🚀';
-    if (r && r.ok) success(d); else fallback(d, r && r.err);
+    if (r && r.ok) success(d, r.code); else fallback(d, r && r.err);
   }
   function fallback(d, err) {
     const box = document.createElement('div'); box.className = 'in-modal'; box.setAttribute('role', 'dialog'); box.setAttribute('aria-modal', 'true');
@@ -210,17 +210,17 @@
     document.body.appendChild(box);
     box.onclick = (e) => { const a = e.target.closest('[data-a]'); if (e.target === box || (a && a.dataset.a === 'close')) box.remove(); if (a && a.dataset.a === 'retry') { box.remove(); send(); } };
   }
-  function success(d) {
+  function success(d, code) {
     const p = planOf(d.plan), paid = d.plan !== 'free';
-    const msg = paid ? `¡Hola! Acabo de inscribirme en mrarrieta.com con el plan ${p.name} 🙌 Mi nombre es ${d.first} ${d.last} (${d.email}). ¿Cómo activo mi plan?${d.ref ? ' Tengo el código de referido ' + d.ref + ' (10% de descuento).' : ''}` : `¡Hola! Acabo de inscribirme en mrarrieta.com (Acceso gratuito) 🙌 Mi nombre es ${d.first} ${d.last} (${d.email}). Quiero mi código de acceso.`;
+    const waQ = `https://wa.me/${WA}?text=${encodeURIComponent((window.MRNE || String)('¡Hola! Soy ' + d.first + ' ' + d.last + ' (' + d.email + '). Tengo una pregunta sobre mi inscripción en mrarrieta.com'))}`;
+    if (paid && code) { try { localStorage.setItem('mra_buy_code', code); if (d.ref) localStorage.setItem('mra_ref', d.ref); } catch (e) { } location.href = 'index.html?pagar=' + encodeURIComponent(code) + '&plan=' + encodeURIComponent(d.plan); return; }
     app.innerHTML = `<section class="card in-done center">
       <img src="mra-celebrate.webp" alt="Mr. Arrieta celebrando" class="in-done-img" width="240" height="240">
       <span class="lbl">Inscripción recibida</span>
       <h1>¡Bienvenido(a), ${esc(d.first)}! 🎉</h1>
-      <p>Recibimos tus datos para el plan <b>${esc(p.name)}</b>. Te enviamos un correo de confirmación a <b>${esc(d.email)}</b> y muy pronto te escribiremos por WhatsApp con tu <b>código de acceso</b>.</p>
-      <ol class="in-next"><li><b>Recibe tu código</b> por WhatsApp.</li><li><b>Toma tu prueba de clasificación</b> y conoce tu nivel.</li><li><b>Empieza tu ruta</b> de aprendizaje${/^premium/.test(d.plan) ? ' y reserva tus clases individuales' : ''}.</li></ol>
-      <a class="btn k lg block in-wa" href="https://wa.me/${WA}?text=${encodeURIComponent((window.MRNE || String)(msg))}" target="_blank" rel="noopener">💬 ${paid ? 'Escríbenos para activar tu plan' : 'Escríbenos para recibir tu código'}</a>
-      <a class="btn w block" href="index.html" style="margin-top:12px">Ir a la plataforma</a>
+      ${code ? `<p>Tu código de acceso es</p><div class="in-code" style="font:800 28px Poppins,sans-serif;color:#0B2A5B;letter-spacing:.06em;background:#EEF3FB;border:2px dashed #9fb3d6;border-radius:14px;padding:8px 18px;display:inline-block;margin:6px 0">${esc(code)}</div><p class="muted">También te lo enviamos a <b>${esc(d.email)}</b>.</p>
+      <a class="btn k lg block" href="index.html" style="margin-top:10px">Entrar a la plataforma →</a>` : `<p>Recibimos tus datos para el plan <b>${esc(p.name)}</b>. Te enviamos un correo de confirmación a <b>${esc(d.email)}</b>.</p><a class="btn k lg block" href="index.html">Ir a la plataforma</a>`}
+      <p style="margin-top:14px;font-size:14px"><a href="${waQ}" target="_blank" rel="noopener" style="color:#16A34A;font-weight:800">¿Dudas? Escríbenos por WhatsApp</a></p>
     </section>`;
     window.scrollTo({ top: 0, behavior: 'smooth' });
     confetti();

@@ -87,7 +87,7 @@
         const b = $('#ld-ok', m); b.disabled = true; b.textContent = 'Guardando…';
         const r = await MRAC.call('leadAdd', { name, email, consent: true }).catch(() => ({ ok: false }));
         if (!r || !r.ok) { b.disabled = false; b.textContent = 'Quiero conocerlos →'; return M.toast('No se pudo guardar. Revisa tu conexión e inténtalo de nuevo.'); }
-        mark('ok'); m.querySelector('.card').innerHTML = `<div class="center">${M.mascot('mascot', 'celebrate')}</div><h3 class="center">¡Gracias, ${esc(name.split(' ')[0])}! 🎉</h3><p class="center" style="font-size:16px">Revisa tu correo: te enviamos la bienvenida. Si quieres empezar ya, pide tu acceso gratuito.</p><a class="btn block lg pt-wa" target="_blank" rel="noopener" href="${WA('¡Hola! Soy ' + name + ' y quiero mi acceso gratuito a la plataforma de mrarrieta.com (plan Gratuito)')}">🎁 Pedir mi acceso gratuito</a><button class="btn w block" style="margin-top:8px" id="ld-x">Cerrar</button>`;
+        mark('ok'); m.querySelector('.card').innerHTML = `<div class="center">${M.mascot('mascot', 'celebrate')}</div><h3 class="center">¡Gracias, ${esc(name.split(' ')[0])}! 🎉</h3><p class="center" style="font-size:16px">Revisa tu correo: te enviamos la bienvenida. Si quieres empezar ya, pide tu acceso gratuito.</p><a class="btn block lg pt-wa" href="#" data-trial>Pedir mi acceso gratuito</a><button class="btn w block" style="margin-top:8px" id="ld-x">Cerrar</button>`;
         $('#ld-x', m).onclick = () => m.remove();
       };
     }, 1500);
@@ -142,7 +142,15 @@
     w.addEventListener('mousedown', down); w.addEventListener('touchstart', down, { passive: true });
     w.querySelector('.ld-wa').addEventListener('click', (e) => { if (moved) { e.preventDefault(); moved = false; } });
   }
-  function trialClick(e) { const b = e.target.closest && e.target.closest('[data-trial]'); if (!b || !$('.ld')) return; e.preventDefault(); trialForm(); }
+  function plansClick(e) { const b = e.target.closest && e.target.closest('[data-plans]'); if (!b) return; e.preventDefault(); const mo = b.closest('.modal'); if (mo) mo.remove(); if (window.MRPLANS) MRPLANS.modal(M); }
+  if (!window.__plansWired) { window.__plansWired = true; document.addEventListener('click', plansClick); }
+  // enlaces de los correos: ?pagar=CÓDIGO abre los planes y pagos · ?gratis=1 abre la prueba gratis
+  setTimeout(() => { try { const q = new URLSearchParams(location.search); const pc = (q.get('pagar') || '').trim().toUpperCase(); const gr = q.get('gratis');
+    if (pc || gr) history.replaceState(null, '', location.pathname);
+    const pk = q.get('plan');
+    if (pc) { if (window.MRAC && MRAC.code && MRAC.code() && MRAC.code().toUpperCase() === pc) { if (window.MRPLANS) MRPLANS.modal(M); } else { trialOver(pc, true); if (pk && window.MRBUY && /^(membership|premium|premium8)$/.test(pk)) setTimeout(() => { document.querySelectorAll('.modal').forEach(m => m.remove()); MRBUY.plan(pk); }, 300); } }
+    else if (gr && $('.ld')) trialForm(); } catch (er) { } }, 1600);
+  function trialClick(e) { const b = e.target.closest && e.target.closest('[data-trial]'); if (!b) return; e.preventDefault(); trialForm(); }
   // 🎁 acceso gratuito automático: nombre, WhatsApp y correo → se crea el código y entra de una
   function trialForm() {
     const m = M.modal(`<div class="center"><div class="to-ic">${MRI('gift')}</div><h3>Prueba gratis 5 días</h3><p class="muted">Crea tu acceso en segundos. Sin tarjeta, sin compromiso.</p></div>
@@ -227,13 +235,12 @@
       route('home'); };
   }
   // el acceso gratuito (5 días) terminó → invitación a inscribirse
-  function trialOver(code) {
+  function trialOver(code, generic) {
     window.__buyCode = code || ''; // permite pagar desde aquí aunque el acceso gratuito haya terminado
     const PL = window.MRPLANS;
-    M.modal(`<div class="center"><div class="to-ic">${MRI('gift')}</div><h3>Tu acceso gratuito terminó</h3><p>Gracias por conocer <b>mrarrieta.com</b>. Tu progreso está guardado: <b>elige tu plan</b> y continúa justo donde lo dejaste.</p></div>
+    M.modal(`<div class="center"><div class="to-ic">${MRI('gift')}</div><h3>${generic ? 'Elige tu plan' : 'Tu acceso gratuito terminó'}</h3><p>${generic ? 'Paga con tarjeta o transferencia y tu plan se habilita en tu perfil.' : 'Gracias por conocer <b>mrarrieta.com</b>. Tu progreso está guardado: <b>elige tu plan</b> y continúa justo donde lo dejaste.'}</p></div>
       ${PL ? PL.cards('free') : ''}
-      <div class="to-pay"><b>Formas de pago</b><div><span>${MRI('card')} Tarjeta débito o crédito (Mercado Pago) · se habilita de inmediato</span><span>${MRI('bank')} Transferencia: Nequi 3017810841 · Llave (Breve-B) 1047374279</span></div></div>
-      <a class="btn wa-btn block" target="_blank" rel="noopener" href="${WA('¡Hola! Mi código es ' + (code || '') + ', terminó mi acceso gratuito y quiero inscribirme en mrarrieta.com')}" style="margin-top:12px">Escríbenos por WhatsApp</a>`, { x: true });
+      ${PL && PL.payInfo ? PL.payInfo() : ''}`, { x: true });
   }
   function logout() {
     const m = M.modal(`<h3>¿Salir de tu perfil?</h3><p class="muted">Tu progreso queda guardado${window.MRAC && MRAC.code() ? ' en la nube: puedes continuar desde cualquier dispositivo' : ' en este dispositivo'}. Para volver a entrar necesitarás tu código.</p><div class="row"><button class="btn k" id="y">Sí, salir</button><button class="btn w" id="n">Cancelar</button></div>`, { x: true });
@@ -258,7 +265,7 @@
       main = `<div class="card pt-mymod"><div class="pt-mymod-img" style="background-image:url('${U(a.img)}')"><span>🔒</span></div><div><span class="lbl">⏰ Plan vencido</span>
         <h2>Tu contenido está bloqueado</h2><p>Tu plan venció el <b>${esc(new Date(P.plan().end + 'T00:00:00').toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' }))}</b>. Tus módulos, juegos y clases quedan bloqueados hasta que renueves.</p>
         <p class="muted">Tranquilo: tu progreso está guardado. Cuando administración confirme tu renovación, todo se desbloquea solo y sigues justo donde ibas.</p>
-        <a class="btn block pt-wa" target="_blank" rel="noopener" href="${WA('¡Hola! Soy ' + (p.first || '') + ' ' + (p.last || '') + ' (código ' + (p.code || '') + ') y quiero renovar mi plan 🚀')}">💬 Renovar mi plan</a></div></div>`;
+        <a class="btn block pt-wa" href="#" data-plans>Renovar mi plan</a></div></div>`;
     } else if (a && a.ready && !staff) {
       const pr = P.progress(a.id), tot = trial ? 4 : a.classes;
       main = `<div class="card pt-mymod db-hero"><div class="db-hero-tx"><span class="lbl db-red">${pr.done ? 'Tu siguiente paso' : 'Empieza tu ruta'}</span>
@@ -321,7 +328,7 @@
     try { if (P.isBirthday()) sessionStorage.setItem('mra_wb', '1'); // en su cumpleaños el saludo es la fiesta 🎂
       if (back && !sessionStorage.getItem('mra_wb')) { sessionStorage.setItem('mra_wb', '1'); const pr = a && a.ready ? P.progress(a.id) : null;
       const wm = M.modal(`<div class="center wb">${P.pic() ? P.avHTML('pt-av big') : M.mascot('mascot bounce', 'wink')}<h2>Welcome, ${esc(P.look().nick || p.first)}! 👋</h2><p style="font-size:17px">¡Qué bueno verte de nuevo! ${P.isExpired() ? '' : pr && pr.done ? `Llevas <b>${pr.done} clase(s)</b> en tu ruta. ¡Sigamos!` : 'Hoy es un gran día para avanzar en tu ruta de aprendizaje.'}</p>
-        ${P.isExpired() ? `<p style="font-size:16px">⏰ Tu plan venció y tu contenido está bloqueado. Renuévalo para seguir justo donde ibas.</p><a class="btn block lg pt-wa" target="_blank" rel="noopener" style="text-decoration:none" href="${WA('¡Hola! Quiero renovar mi plan en mrarrieta.com 🚀')}">💬 Renovar mi plan</a>` : a && a.ready && !staff ? `<a class="btn k block lg" style="text-decoration:none" href="${a.url}">▶ Continuar mi ruta</a>` : ''}<button class="btn w block" id="wbx" style="margin-top:8px">Ir a mi perfil</button></div>`, { x: true });
+        ${P.isExpired() ? `<p style="font-size:16px">⏰ Tu plan venció y tu contenido está bloqueado. Renuévalo para seguir justo donde ibas.</p><a class="btn block lg pt-wa" href="#" data-plans>Renovar mi plan</a>` : a && a.ready && !staff ? `<a class="btn k block lg" style="text-decoration:none" href="${a.url}">▶ Continuar mi ruta</a>` : ''}<button class="btn w block" id="wbx" style="margin-top:8px">Ir a mi perfil</button></div>`, { x: true });
       $('#wbx', wm).onclick = () => wm.remove(); M.confetti && M.confetti(900); } } catch (e) { }
     if (!tourSeenK(tourKind())) setTimeout(portalTour, 900);
     $('#me-av').onclick = () => route('me'); if ($('#me-go')) $('#me-go').onclick = () => route('me');
@@ -345,14 +352,14 @@
   function openMod(id) {
     const m = P.mod(id), r = P.role(id), a = P.assigned();
     if (r === 'current' || r === 'review') { location.href = m.url; return; }
-    if (P.isExpired()) { const mm = M.modal(`<div class="center">${M.mascot('mascot', 'pointside')}</div><h3 class="center">⏰ Tu plan venció</h3><p class="center" style="font-size:17px">Todo tu contenido está bloqueado hasta que renueves. Tu progreso está guardado y se desbloquea apenas administración confirme tu renovación.</p><a class="btn block pt-wa" target="_blank" rel="noopener" href="${WA('¡Hola! Quiero renovar mi plan en mrarrieta.com 🚀')}">💬 Renovar mi plan</a>`, { x: true }); return; }
+    if (P.isExpired()) { const mm = M.modal(`<div class="center">${M.mascot('mascot', 'pointside')}</div><h3 class="center">⏰ Tu plan venció</h3><p class="center" style="font-size:17px">Todo tu contenido está bloqueado hasta que renueves. Tu progreso está guardado y se desbloquea apenas administración confirme tu renovación.</p><a class="btn block pt-wa" href="#" data-plans>Renovar mi plan</a>`, { x: true }); return; }
     if (r === 'soon') return M.modal(`<div class="center">${M.mascot('mascot', 'think')}</div><h3 class="center">🚧 ${esc(m.name)} · ${esc(m.es)}</h3><p class="center">Este módulo está en construcción. ¡Muy pronto estará disponible en tu perfil!</p>`, { x: true });
     if (P.isTrial() && window.MRPLANS && a) return MRPLANS.modal(M);
     const msg = P.isTrial() ? `Tu acceso gratuito incluye solo el inicio de tu ruta. ¡Inscríbete para estudiar todos los módulos!`
       : !a ? 'Primero toma tu prueba de clasificación para saber en qué módulo empiezas.'
       : `Para abrir el ${m.name} primero debes <b>terminar y aprobar el examen final del ${esc(a.name)}</b>. ¡Paso a paso! 💪`;
     const mm = M.modal(`<div class="center">${M.mascot('mascot', 'pointside')}</div><h3 class="center">🔒 ${esc(m.name)} bloqueado</h3><p class="center" style="font-size:17px">${msg}</p>
-      ${P.isTrial() ? `<a class="btn block pt-wa" target="_blank" rel="noopener" href="${WA('¡Hola! Quiero inscribirme en mrarrieta.com 🚀')}">💬 Quiero inscribirme</a>` : '<button class="btn k block" id="cl">Entendido</button>'}`, { x: true });
+      ${P.isTrial() ? `<a class="btn block pt-wa" href="#" data-plans>Quiero inscribirme</a>` : '<button class="btn k block" id="cl">Entendido</button>'}`, { x: true });
     if ($('#cl', mm)) $('#cl', mm).onclick = () => mm.remove();
   }
   const courseState = () => { try { return JSON.parse(localStorage.getItem('mra_final_progress_v1') || '{}'); } catch (e) { return {}; } };
@@ -556,7 +563,7 @@
     if (r.ok === false && (r.err === 'notfound' || r.err === 'inactive')) { M.toast('Tu acceso ya no está activo. Escríbenos por WhatsApp.'); return; }
     if (before !== sig()) { topbar(); return home(); } // el plan cambió en la nube → actualizar perfil
     const ann = r.conf && r.conf.announcement; if (ann && $('#pt-ann')) $('#pt-ann').innerHTML = `<div class="pt-ann">📣 ${esc(ann)}</div>`;
-    if (r.trialLeft != null && r.trialLeft > 0 && $('#pt-ann')) $('#pt-ann').insertAdjacentHTML('afterbegin', `<div class="pt-ann pt-trial"><span>🎁 ${r.trialLeft === 1 ? '<b>Hoy es tu último día</b> de acceso gratuito.' : 'Te quedan <b>' + r.trialLeft + ' días</b> de acceso gratuito.'}</span><a class="btn k sm" target="_blank" rel="noopener" href="${WA('¡Hola! Soy ' + (P.get().first || '') + ' ' + (P.get().last || '') + ' (código ' + MRAC.code() + ' · plan Gratuito) y quiero inscribirme en mrarrieta.com 🚀')}">💬 Quiero inscribirme</a></div>`);
+    if (r.trialLeft != null && r.trialLeft > 0 && $('#pt-ann')) $('#pt-ann').insertAdjacentHTML('afterbegin', `<div class="pt-ann pt-trial"><span>🎁 ${r.trialLeft === 1 ? '<b>Hoy es tu último día</b> de acceso gratuito.' : 'Te quedan <b>' + r.trialLeft + ' días</b> de acceso gratuito.'}</span><a class="btn k sm" href="#" data-plans>Quiero inscribirme</a></div>`);
     refCard();
     if (!r.premium) { if (box) box.innerHTML = ''; return; }
     if (box) renderLive(box, r);

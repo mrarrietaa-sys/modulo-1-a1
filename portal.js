@@ -185,8 +185,8 @@
   function login() {
     app.innerHTML = `<div class="wrap pt-wrap"><div class="card pt-login">
       
-      ${(() => { const lu = P.lastUser(); return lu && lu.first ? `<div class="pt-hello">${lu.pic ? `<span class="pt-av big pt-lu has"><img src="${lu.pic}" alt=""></span>` : M.mascot('pt-mra', 'wink')}<div class="bubble">Welcome! 👋</div></div>`
-        : `<div class="pt-hello">${M.mascot('pt-mra', 'welcome')}<div class="bubble">Welcome! 👋</div></div>`; })()}
+      ${(() => { const lu = P.lastUser(); return lu && lu.first ? `<div class="pt-hello">${lu.pic ? `<span class="pt-av big pt-lu has"><img src="${lu.pic}" alt=""></span>` : M.mascot('pt-mra', 'wink')}<div class="bubble">${(() => { const hr = new Date().getHours(); return hr < 12 ? 'Good morning! ☀️' : hr < 18 ? 'Good afternoon! 👋' : 'Good evening! 🌙'; })()}</div></div>`
+        : `<div class="pt-hello">${M.mascot('pt-mra', 'welcome')}<div class="bubble">${(() => { const hr = new Date().getHours(); return hr < 12 ? 'Good morning! ☀️' : hr < 18 ? 'Good afternoon! 👋' : 'Good evening! 🌙'; })()}</div></div>`; })()}
       <h1>Ingresa a tu perfil</h1><p class="muted">Escribe el código que te llegó a tu correo o WhatsApp.</p>
       <input class="inp" id="cd" placeholder="Ej: ABC-123" autocapitalize="characters" autocomplete="off">
       <button class="btn k block lg" id="ok">Entrar →</button>

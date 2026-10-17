@@ -106,7 +106,7 @@
     const wrap = document.createElement('div'); wrap.className = 'ld';
     wrap.innerHTML = `<section class="ld-hero"><div class="ld-copy"><span class="lbl ld-red">Metodología RealTalk®</span><h1>Aprende inglés <em>HABLANDO</em></h1><p class="ld-lead">Plataforma que escucha tu pronunciación, ruta personalizada del A1 al B2+ y clases individuales con profes reales. 100% online.</p>
         <div class="ld-cta"><button class="btn r lg" data-trial>${MRI('gift')} Prueba gratis 5 días</button><a class="btn w lg" href="#ld-planes">${MRI('crown')} Ver planes</a></div>
-        <div class="ld-badges"><span>${MRI('check')} Voces americanas</span><span>${MRI('check')} Certificado por módulo</span><span>${MRI('check')} Clases de 50 min</span></div></div><div class="ld-login"></div></section>
+        <div class="ld-badges"><span>${MRI('check')} Voces americanas</span><span>${MRI('check')} Certificado por módulo</span><span>${MRI('check')} Clases de 50 min</span></div><img class="ld-hero-mra" src="mra-x-wave-dk.webp" alt="Mr. Arrieta"></div><div class="ld-login"></div></section>
       <section class="ld-sec" id="ld-planes"><h2>Elige tu plan</h2><p class="ld-sub">Pagos mes a mes · tarjeta o transferencia</p><div class="in-plans ld-inplans">
         ${CARDS.map(c => `<a class="in-plan${c.best ? ' best' : ''}" ${c.id === 'free' ? 'href="#" data-trial' : `href="inscripcion.html?plan=${c.id}"`}>${c.best ? '<span class="in-ribbon">⭐ Más completo</span>' : ''}<span class="in-plan-ic" aria-hidden="true">${c.icon}</span><span class="in-plan-name">${esc(c.name)}</span><span class="in-plan-price"><b>${esc(c.price)}</b><small>${esc(c.per)}</small></span><span class="in-plan-tag">${esc(c.tag)}</span><ul>${c.perks.map(k => `<li>${esc(k)}</li>`).join('')}</ul>${c.note ? `<span class="in-plan-note">${esc(c.note)}</span>` : ''}<span class="in-plan-pick">${c.btn || 'Elegir este plan'}</span></a>`).join('')}</div></section>
       ${T.length ? `<section class="ld-sec" id="ld-testimonios"><h2>Lo que dicen nuestros estudiantes</h2><p class="ld-sub">Testimonios reales en video</p><div class="ld-tes">${T.map(t => `<div class="card ld-t"><video src="${esc(t.video)}" ${t.poster ? `poster="${esc(t.poster)}"` : ''} controls preload="none" playsinline></video><b>${esc(t.name)} 🙏💙</b></div>`).join('')}</div></section>` : ''}
@@ -251,7 +251,7 @@
         <p class="db-sub">${pr.done} de ${trial ? '4 clases de tu acceso gratuito' : tot + ' clases'} completadas${a.n > (p.module || 1) ? ' · ¡Avanzaste en tu ruta! 🎉' : ''}</p>
         <div class="db-bar"><i style="width:${pr.pct}%"></i></div>
         <div class="db-hero-b"><a class="btn db-wbtn lg" href="${a.url}">${MRI('video')} ${pr.done ? 'Continuar mi ruta' : 'Empezar mi ruta'}</a><button class="btn db-gbtn sm" id="pt3">¿No estás a gusto con tu nivel?</button></div></div>
-        <img class="db-hero-mra" src="mra-x-wave.webp" alt="Mr. Arrieta"></div>`;
+        <img class="db-hero-mra" src="mra-x-wave-dk.webp" alt="Mr. Arrieta"></div>`;
     } else if (a) {
       const ready = a && a.ready;
       main = `<div class="card pt-mymod">${a ? `<div class="pt-mymod-img" style="background-image:url('${U(a.img)}')"><span>${a.n}</span></div>` : ''}<div><span class="lbl">${staff ? 'Modo profe' : '🧭 Tu ruta de aprendizaje'}</span>

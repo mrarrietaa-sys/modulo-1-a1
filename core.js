@@ -186,16 +186,29 @@
   /* ---------- speech recognition ---------- */
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   const canSR = !!SR;
+  // 🎙️ escucha con más paciencia: no se corta en el primer silencio, junta lo que va oyendo y reintenta si no oyó nada
+  // (así no hay que hablar duro: basta con hablar normal y claro)
   function listen(timeoutMs = 7000) {
     return new Promise((res) => {
       if (!SR) return res({ error: 'nosupport', alts: [] });
-      const r = new SR(); r.lang = 'en-US'; r.interimResults = false; r.maxAlternatives = 5; r.continuous = false;
-      let done = false; const fin = (o) => { if (done) return; done = true; try { r.stop(); } catch (e) { } res(o); };
-      r.onresult = (e) => { const alts = []; for (const res_ of e.results) for (let i = 0; i < res_.length; i++) alts.push(res_[i].transcript); fin({ alts }); };
-      r.onerror = (e) => fin({ error: e.error, alts: [] });
-      r.onend = () => fin({ alts: [] });
-      try { r.start(); } catch (e) { fin({ error: 'start', alts: [] }); }
-      setTimeout(() => fin({ alts: [], error: 'timeout' }), timeoutMs);
+      const t0 = Date.now(); let done = false, r = null, finals = [], interim = [], lastErr = '', idle = null;
+      const collect = () => { const a = []; finals.forEach(x => x.forEach(t => a.push(t))); if (!a.length) interim.forEach(t => a.push(t)); return a; };
+      const fin = (err) => { if (done) return; done = true; clearTimeout(idle); try { r && r.abort(); } catch (e) { } const alts = collect(); res(alts.length ? { alts } : { alts: [], error: err || lastErr || 'no-speech' }); };
+      const start = () => {
+        if (done) return;
+        r = new SR(); r.lang = 'en-US'; r.interimResults = true; r.maxAlternatives = 5; r.continuous = true;
+        r.onresult = (e) => {
+          for (let k = e.resultIndex; k < e.results.length; k++) { const rr = e.results[k], list = []; for (let i = 0; i < rr.length; i++) list.push(rr[i].transcript);
+            if (rr.isFinal) finals.push(list); else interim = list; }
+          // cuando ya dijo algo, espera un momento por si sigue hablando y termina
+          clearTimeout(idle); idle = setTimeout(() => fin(), finals.length ? 900 : 1600);
+        };
+        r.onerror = (e) => { lastErr = e.error; if (e.error === 'not-allowed' || e.error === 'service-not-allowed' || e.error === 'audio-capture') fin(e.error); };
+        r.onend = () => { if (done) return; if (collect().length) return fin(); if (Date.now() - t0 < timeoutMs - 600) { try { start(); } catch (e) { fin('start'); } } else fin(); }; // no oyó nada: vuelve a escuchar
+        try { r.start(); } catch (e) { fin('start'); }
+      };
+      start();
+      setTimeout(() => fin('timeout'), timeoutMs);
     });
   }
   /* ---------- voice recording (MediaRecorder) ---------- */
@@ -230,7 +243,7 @@
   function speechScore(target, alts) {
     const tw = words(target); let best = { score: 0, heard: '', hit: [] };
     for (const alt of alts) {
-      const aw = words(alt); const pool = aw.slice(); const hit = tw.map(w => { const i = pool.findIndex(x => x === w || (w.length > 3 && lev(x, w) <= 1)); if (i >= 0) { pool.splice(i, 1); return true; } return false; });
+      const aw = words(alt); const pool = aw.slice(); const joined = aw.join(''); const hit = tw.map(w => { const i = pool.findIndex(x => x === w || (w.length > 3 && lev(x, w) <= 1) || (w.length > 6 && lev(x, w) <= 2)); if (i >= 0) { pool.splice(i, 1); return true; } return w.length > 3 && joined.indexOf(w) >= 0; });
       const sc = Math.round(hit.filter(Boolean).length / tw.length * 100);
       if (sc > best.score || !best.heard) best = { score: sc, heard: alt, hit };
     }
@@ -240,9 +253,10 @@
   /* ---------- grabar + evaluar al mismo tiempo (para TODAS las grabaciones) ---------- */
   // devuelve { url, alts, score }  (score = null si el navegador no puede evaluar)
   async function recordScore(target, ms, onTick, scorer) {
+    if (!scorer && /^\s*[A-Za-z]\s*$/.test(String(target || ''))) scorer = letterScorer(String(target).trim()); // letras sueltas (A, B, C…)
     let rec = null, stream = null; const chunks = [];
     try { if ((typeof SR !== 'undefined' && SR) && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) throw 0; // en celular el micrófono no se puede compartir: se prioriza el reconocimiento de voz
-      stream = await navigator.mediaDevices.getUserMedia({ audio: true }); rec = new MediaRecorder(stream); rec.ondataavailable = e => chunks.push(e.data); rec.start(); }
+      stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } }); rec = new MediaRecorder(stream); rec.ondataavailable = e => chunks.push(e.data); rec.start(); }
     catch (e) { if (!SR) throw e; }
     const t0 = Date.now(); const iv = setInterval(() => onTick && onTick(Math.min(1, (Date.now() - t0) / ms)), 100);
     let r = { alts: [] };
@@ -257,7 +271,7 @@
     return { url, alts: r.alts, score, heard, error: r.error };
   }
   // deletreo: convierte lo que dijo el estudiante (ej. "jay oh h n") en letras y lo compara
-  const LETTER_WORDS = { a: 'a', ay: 'a', hey: 'a', eh: 'a', b: 'b', be: 'b', bee: 'b', c: 'c', see: 'c', sea: 'c', si: 'c', d: 'd', dee: 'd', de: 'd', e: 'e', ee: 'e', f: 'f', ef: 'f', eff: 'f', g: 'g', gee: 'g', ji: 'g', h: 'h', age: 'h', aitch: 'h', etch: 'h', i: 'i', eye: 'i', aye: 'i', j: 'j', jay: 'j', k: 'k', kay: 'k', okay: 'k', ok: 'k', l: 'l', el: 'l', elle: 'l', ell: 'l', m: 'm', em: 'm', n: 'n', en: 'n', and: 'n', o: 'o', oh: 'o', owe: 'o', p: 'p', pee: 'p', pea: 'p', q: 'q', cue: 'q', queue: 'q', r: 'r', are: 'r', our: 'r', ar: 'r', s: 's', es: 's', ess: 's', t: 't', tea: 't', tee: 't', u: 'u', you: 'u', v: 'v', vee: 'v', w: 'w', x: 'x', ex: 'x', y: 'y', why: 'y', z: 'z', zee: 'z', zed: 'z' };
+  const LETTER_WORDS = { a: 'a', ay: 'a', hey: 'a', eh: 'a', b: 'b', be: 'b', bee: 'b', c: 'c', see: 'c', sea: 'c', si: 'c', d: 'd', dee: 'd', de: 'd', e: 'e', ee: 'e', f: 'f', ef: 'f', eff: 'f', g: 'g', gee: 'g', ji: 'g', h: 'h', age: 'h', aitch: 'h', etch: 'h', i: 'i', eye: 'i', aye: 'i', j: 'j', jay: 'j', k: 'k', kay: 'k', okay: 'k', ok: 'k', l: 'l', el: 'l', elle: 'l', ell: 'l', m: 'm', em: 'm', n: 'n', en: 'n', and: 'n', o: 'o', oh: 'o', owe: 'o', p: 'p', pee: 'p', pea: 'p', q: 'q', cue: 'q', queue: 'q', r: 'r', are: 'r', our: 'r', ar: 'r', s: 's', es: 's', ess: 's', yes: 's', ass: 's', as: 's', t: 't', tea: 't', tee: 't', ti: 't', tv: 't', u: 'u', you: 'u', ew: 'u', yu: 'u', v: 'v', vee: 'v', w: 'w', x: 'x', ex: 'x', y: 'y', why: 'y', z: 'z', zee: 'z', zed: 'z' };
   function letterScorer(word) {
     const W = word.toLowerCase().replace(/[^a-z]/g, '');
     return (alts) => { let best = { score: 0, heard: alts[0] || '' };

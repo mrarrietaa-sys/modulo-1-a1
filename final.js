@@ -423,7 +423,7 @@
   }
 
   // ---------- evaluación docente (anónima) antes del examen final de módulo ----------
-  function needEval() { return !MOD.course && cloud() && typeof MRAC.isPremium === 'function' && MRAC.isPremium() && !ST.evalDone; }
+  function needEval() { return false; } // 🗑 encuesta docente retirada: ahora se usan las opiniones públicas de los profes
   const EVALQ = [['¿Te gusta cómo tu profesor te está enseñando?', ['Sí, me encanta', 'Más o menos', 'No mucho']], ['¿Cómo calificas a tu profe?', ['Excelente', 'Bueno', 'Regular']], ['¿Sientes que has aprendido más en este módulo?', ['Sí, mucho más', 'Un poco', 'No mucho']]];
   function evaluation() {
     stopTimer(); const ans = [0, 0, 0];

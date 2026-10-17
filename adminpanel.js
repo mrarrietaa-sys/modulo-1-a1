@@ -2,7 +2,7 @@
    PANEL DE ADMINISTRACIÓN — mrarrieta.com (datos en la nube)
    Estudiantes y progreso · planes · inscripciones · placement (audios)
    · reclutamiento (CV + audios) · profesores (disponibilidad y clases
-   dictadas) · clases VIP y grupales · grupos · solicitudes · ajustes
+   dictadas) · clases individuales · grupos (historial) · solicitudes · ajustes
    ===================================================================== */
 (function () {
   const C = window.M1CONFIG || {}; const app = document.getElementById('app');
@@ -180,7 +180,7 @@
     };
   }
   // sin emojis: WhatsApp Web los muestra como signos negros (�) cuando llegan por enlace
-  const accessMsg = (s) => `¡Hola ${s.first}! Bienvenido(a) a la plataforma de mrarrieta.com.\n\n*Tu código de acceso:* ${s.code}\n*Entra aquí:* ${BASE}\n\nEscribe tu código en la plataforma y empieza a aprender.${s.plan === 'premium' ? '\n\n*Importante:* tus clases VIP y tus clubs no son acumulables. Resérvalos durante la vigencia de tu plan; las que no uses antes de la fecha de vencimiento se pierden.' : ''}${s.plan === 'premium' ? '\n\n*POLÍTICA DE RESERVAS Y CANCELACIONES*\n*Clases VIP:* reserva mínimo 4 horas antes. Cancelación sin penalización mínimo 2 horas antes. Cancelación tardía o inasistencia: la clase se descuenta del paquete y no será repuesta.\n*Clases grupales ilimitadas:* asiste a todas las de tu nivel, sin límite mensual. Reserva tu cupo mínimo 3 horas antes (máximo 10 estudiantes por sesión; si se llena, elige otro horario). Puedes cancelar hasta 2 horas antes; si cancelas después o no asistes, no hay ninguna penalización ni pierdes el acceso a futuras clases grupales.\n*Duración:* todas las clases duran 50 minutos.\nPolítica completa: ' + BASE + 'politica.html' : ''}\n\n¡Aprende inglés HABLANDO!`;
+  const accessMsg = (s) => `¡Hola ${s.first}! Bienvenido(a) a la plataforma de mrarrieta.com.\n\n*Tu código de acceso:* ${s.code}\n*Entra aquí:* ${BASE}\n\nEscribe tu código en la plataforma y empieza a aprender.${/^premium/.test(s.plan) ? '\n\n*Importante:* tus clases individuales no son acumulables. Resérvalas durante tu periodo mensual; las que no uses antes del vencimiento se pierden.\n\n*POLÍTICA DE RESERVAS Y CANCELACIONES*\nReserva mínimo 4 horas antes. Cancelación sin penalización mínimo 2 horas antes. Cancelación tardía o inasistencia: la clase se descuenta de tu plan y no será repuesta.' : ''}`;
   function shareCode(s) {
     const msg = accessMsg(s);
     const m = modal(`<div class="center"><div style="font-size:44px">🔑</div><h2>Código de ${esc(s.first)}</h2><div class="ad-code">${esc(s.code)}</div><p class="muted">Envíaselo por WhatsApp o cópialo.</p>
@@ -204,7 +204,7 @@
       <div class="card"><h3>🧭 Progreso en su ruta</h3><p class="muted">Módulo actual: <b>${s.module ? 'Módulo ' + s.module + ' · ' + MODN[s.module] : 'aún sin placement'}</b>${s.moduleBy ? ' (' + (s.moduleBy === 'admin' ? 'asignado por administración' : 'por prueba de clasificación') + ')' : ''} · ✅ ${+s.classesDone || 0} clases · ⚡ ${+s.xp || 0} XP · 🕒 última conexión ${s.lastSeen ? fDT(s.lastSeen) : 'nunca'}</p>
         <div class="ad-mods">${['A1', 'A2', 'B2', 'B2+'].map(id => { const x = pr[id] || { done: 0, total: 0, pct: 0 }; return `<div class="ad-mod${x.passed ? ' ok' : ''}"><b>${id}</b>${bar(x.pct)}<span>${x.done}/${x.total || '—'} clases · ${x.pct || 0}%${x.passed ? ' · 🎓 aprobado' : ''}</span></div>`; }).join('')}</div>
         ${(r.placements || []).length ? `<h4>📝 Exámenes de clasificación</h4><div class="ad-mini">${r.placements.map(p => `<button class="ad-mrow" data-pl="${esc(p.id)}"><b>${esc(p.level || ('Módulo ' + p.module))} · nota ${esc(p.final)}</b><span>${fDT(p.date)} · ▶ ver y escuchar audios</span></button>`).join('')}</div>` : ''}</div>
-      <div class="card"><h3>👩‍🏫 Clases con profesores · ${r.classes.filter(c => c.attended).length} asistidas</h3>${r.classes.length ? `<div class="ad-mini">${r.classes.map(c => `<div class="ad-mrow"><b>${c.type === 'vip' ? '⭐ VIP' : c.type === 'club' ? '🎙️ Club' : '👥 Grupal'} · ${fD(c.date)} ${fT(c.time)} · ${esc(c.teacher)}</b><span>${c.status === 'done' ? (c.attended ? '✅ asistió' : '❌ no asistió') : c.status === 'scheduled' ? '📅 programada' : c.status === 'cancelled' ? 'cancelada' : '❌ no asistió'}</span></div>`).join('')}</div>` : '<p class="muted">Sin clases todavía.</p>'}
+      <div class="card"><h3>👩‍🏫 Clases con profesores · ${r.classes.filter(c => c.attended).length} asistidas</h3>${r.classes.length ? `<div class="ad-mini">${r.classes.map(c => `<div class="ad-mrow"><b>${c.type === 'vip' ? '🎯 Individual' : c.type === 'club' ? '🎙️ Club' : '👥 Grupal'} · ${fD(c.date)} ${fT(c.time)} · ${esc(c.teacher)}</b><span>${c.status === 'done' ? (c.attended ? '✅ asistió' : '❌ no asistió') : c.status === 'scheduled' ? '📅 programada' : c.status === 'cancelled' ? 'cancelada' : '❌ no asistió'}</span></div>`).join('')}</div>` : '<p class="muted">Sin clases todavía.</p>'}
         ${(r.requests || []).length ? `<h4>🔁 Solicitudes</h4><div class="ad-mini">${r.requests.map(q => `<div class="ad-mrow"><b>${esc(q.preferred)}</b><span>${fDT(q.date)} · ${esc(q.status)}</span></div>`).join('')}</div>` : ''}</div>
       <div class="card"><h3>✏️ Datos del estudiante</h3>${studentForm(s, false)}<button class="btn k" id="d-save">💾 Guardar cambios</button></div>`;
     wireBack(() => go('students'));
@@ -234,7 +234,7 @@
 
   /* ======================= INSCRIPCIONES ======================= */
   const ENR_ST = [['nuevo', '🆕 Nuevo'], ['contactado', '📞 Contactado'], ['inscrito', '✅ Inscrito'], ['descartado', '🗑 Descartado']];
-  const planName = (k) => ({ free: '🟢 Acceso gratuito', membership: '⭐ Membership', premium: '👑 Premium' }[k] || k || '—');
+  const planName = (k) => ({ free: '🎁 Acceso gratuito', membership: '🖥️ Plataforma', premium: '🎓 Premium · 4 clases', premium8: '🏅 Premium · 8 clases' }[k] || k || '—');
   function enroll() {
     list('enroll', { title: '📝 Inscripciones', sub: `Formulario: ${BASE}inscripcion.html`,
       filters: [{ k: 'status', opts: [['', 'Todos los estados']].concat(ENR_ST) }],
@@ -319,7 +319,7 @@
   function teachers() {
     list('teachers', { title: '🧑‍🏫 Profesores', sub: `Portal de profes (disponibilidad y asistencia): ${BASE}profesores.html`, add: '＋ Nuevo profesor', onAdd: () => teacherEdit({}),
       row: t => { const s = REF.teachers.find(x => x.id === t.id) || {}; return `<div class="card ad-row" data-open="${esc(t.id)}"><div class="ad-av">${esc((t.name || '?')[0].toUpperCase())}</div><div class="grow"><b>${esc(t.name)}</b> ${t.active === 'no' ? chip('inactivo', 'gray') : chip('activo', 'p-premium')}
-        <small>${esc(t.code)}</small><div class="ad-rowstats"><span>✅ ${s.taughtMonth || 0} dictadas este mes</span><span>📚 ${s.taughtTotal || 0} en total (⭐ ${s.vipTotal || 0} VIP · 👥 ${s.groupTotal || 0} grupales)</span><span>📅 ${s.upcoming || 0} programadas</span><span>🟢 ${s.freeSlots || 0} espacios libres</span></div></div></div>`; },
+        <small>${esc(t.code)}</small><div class="ad-rowstats"><span>✅ ${s.taughtMonth || 0} dictadas este mes</span><span>📚 ${s.taughtTotal || 0} en total (🎯 ${s.vipTotal || 0} individuales · 👥 ${s.groupTotal || 0} grupales)</span><span>📅 ${s.upcoming || 0} programadas</span><span>🟢 ${s.freeSlots || 0} espacios libres</span></div></div></div>`; },
       open: (id) => teacherDetail(id), empty: 'Aún no hay profesores. Crea el primero.' });
     payCard();
   }
@@ -368,11 +368,11 @@
     const slots = (r.slots || []).sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
     const byDate = {}; slots.forEach(x => (byDate[x.date] = byDate[x.date] || []).push(x));
     view().innerHTML = `${back()}<div class="card ad-dhead"><div class="ad-av lg">${esc((t.name || '?')[0].toUpperCase())}</div><div class="grow"><h1>${esc(t.name)}</h1><p>${esc(t.code)} · PIN ${esc(t.pin)}</p><p class="muted">${esc(t.email)} ${t.whatsapp ? '· ' + esc(t.whatsapp) : ''}</p>${t.meet ? `<p class="muted">🎥 ${String(t.meet).split(/[\s,;]+/).filter(Boolean).map(esc).join('<br>🎥 ')}</p>` : ''}</div><div class="ad-dact"><button class="btn w sm" id="t-ed">✏️ Editar</button><button class="btn w sm ad-del" id="t-del">🗑️ Borrar</button></div></div>
-      <div class="ad-kpis sm"><div class="ad-kpi"><b>${s.taughtMonth || 0}</b><span>Dictadas este mes</span></div><div class="ad-kpi"><b>${s.taughtTotal || 0}</b><span>Dictadas en total</span><em>⭐ ${s.vipTotal || 0} VIP · 👥 ${s.groupTotal || 0} grupales</em></div><div class="ad-kpi"><b>${s.upcoming || 0}</b><span>Programadas</span></div><div class="ad-kpi"><b>${s.freeSlots || 0}</b><span>Espacios libres</span></div></div>
-      <div class="card"><h3>🗓️ Disponibilidad (espacios para clases VIP)</h3><p class="muted">El profe la publica desde su portal; también puedes agregarla aquí.</p>
+      <div class="ad-kpis sm"><div class="ad-kpi"><b>${s.taughtMonth || 0}</b><span>Dictadas este mes</span></div><div class="ad-kpi"><b>${s.taughtTotal || 0}</b><span>Dictadas en total</span><em>🎯 ${s.vipTotal || 0} individuales</em></div><div class="ad-kpi"><b>${s.upcoming || 0}</b><span>Programadas</span></div><div class="ad-kpi"><b>${s.freeSlots || 0}</b><span>Espacios libres</span></div></div>
+      <div class="card"><h3>🗓️ Disponibilidad (espacios para clases individuales)</h3><p class="muted">El profe la publica desde su portal; también puedes agregarla aquí.</p>
         <div class="ad-form"><label>Fecha<input class="inp" type="date" id="sl-d" min="${todayISO()}" value="${addDays(todayISO(), 1)}"></label><label>Horas <small>(separadas por coma)</small><input class="inp" id="sl-h" placeholder="07:00, 18:00, 19:00"></label><label>Repetir semanas<select class="inp" id="sl-w">${[1, 2, 3, 4, 6, 8].map(n => `<option>${n}</option>`).join('')}</select></label><label>Duración<select class="inp" id="sl-u"><option>50</option></select></label></div><button class="btn k" id="sl-add">＋ Agregar espacios</button>
         <div class="ad-slots">${Object.keys(byDate).length ? Object.keys(byDate).map(d => `<div class="ad-sday"><b>${fD(d, { weekday: 'short', day: 'numeric', month: 'short' })}</b><div>${byDate[d].map(x => `<span class="ad-slot ${x.status}">${fT(x.time)}${x.status === 'free' ? ` <button data-del="${esc(x.id)}" title="Borrar">✕</button>` : ' · reservado'}</span>`).join('')}</div></div>`).join('') : '<p class="muted">Sin espacios publicados.</p>'}</div></div>
-      <div class="card"><h3>📚 Clases</h3>${(r.classes || []).length ? `<div class="ad-mini">${r.classes.map(c => `<div class="ad-mrow"><b>${c.type === 'vip' ? '⭐ VIP' : c.type === 'club' ? '🎙️ Club' : '👥 Grupal'} · ${fD(c.date)} ${fT(c.time)}</b><span>${J(c.students, []).join(', ')} · ${c.status === 'done' ? '✅ dictada' : c.status === 'scheduled' ? '📅 programada' : c.status === 'cancelled' ? 'cancelada' : 'no asistió'}</span></div>`).join('')}</div>` : '<p class="muted">Sin clases.</p>'}</div>`;
+      <div class="card"><h3>📚 Clases</h3>${(r.classes || []).length ? `<div class="ad-mini">${r.classes.map(c => `<div class="ad-mrow"><b>${c.type === 'vip' ? '🎯 Individual' : c.type === 'club' ? '🎙️ Club' : '👥 Grupal'} · ${fD(c.date)} ${fT(c.time)}</b><span>${J(c.students, []).join(', ')} · ${c.status === 'done' ? '✅ dictada' : c.status === 'scheduled' ? '📅 programada' : c.status === 'cancelled' ? 'cancelada' : 'no asistió'}</span></div>`).join('')}</div>` : '<p class="muted">Sin clases.</p>'}</div>`;
     wireBack(() => go('teachers')); $('#t-ed').onclick = () => teacherEdit(t); $('#t-del').onclick = () => delAsk('Profesores', t.id, t.name, 'Se borra su código y sus espacios libres. El historial de clases dictadas se conserva. Si tiene grupos o clubs asignados, asígnale otro profe.', async () => { await loadRef(); go('teachers'); });
     $('#sl-add').onclick = async () => { const d = $('#sl-d').value; const hs = $('#sl-h').value.split(/[,\s]+/).map(x => x.trim()).filter(Boolean).map(x => x.length === 4 ? '0' + x : x).filter(x => /^\d{2}:\d{2}$/.test(x)); if (!d || !hs.length) return toast('Escribe la fecha y las horas (ej: 18:00)');
       const w = +$('#sl-w').value, slots = []; for (let i = 0; i < w; i++) hs.forEach(h => slots.push({ date: addDays(d, i * 7), time: h, duration: $('#sl-u').value }));
@@ -382,15 +382,15 @@
 
   /* ======================= CLASES ======================= */
   function classes() {
-    list('classes', { title: '📅 Clases', sub: 'VIP (las reservan los estudiantes Premium) y clubs (se crean solos según el horario de Ajustes)', desc: false, add: '🎁 Clase VIP adicional', onAdd: bonusModal,
-      filters: [{ k: 'status', opts: [['scheduled', '📅 Programadas'], ['done', '✅ Dictadas'], ['noshow', '❌ No asistió'], ['cancelled', 'Canceladas'], ['', 'Todas']] }, { k: 'type', opts: [['', 'VIP y clubs'], ['vip', '⭐ VIP'], ['club', '🎙️ Clubs']] }],
-      row: c => { const st = J(c.students, []); const att = J(c.attendance, {}); return `<div class="card ad-row ad-cl ${c.type}" data-open="${esc(c.id)}"><div class="ad-cdate"><b>${fD(c.date, { day: 'numeric' })}</b><small>${fD(c.date, { month: 'short' })}</small></div><div class="grow"><b>${c.type === 'vip' ? '⭐ VIP' : c.type === 'club' ? '🎙️ Club' : '👥 Grupal'} · ${fT(c.time)} · ${esc(tName(c.teacherId))}</b> ${chip({ scheduled: '📅 programada', done: '✅ dictada', noshow: '❌ no asistió', cancelled: 'cancelada' }[c.status] || esc(c.status), 'st-' + c.status)}
+    list('classes', { title: '📅 Clases', sub: 'Clases individuales (las reservan los estudiantes Premium). Los clubs y grupos antiguos quedan en el historial.', desc: false, add: '🎁 Clase adicional de regalo', onAdd: bonusModal,
+      filters: [{ k: 'status', opts: [['scheduled', '📅 Programadas'], ['done', '✅ Dictadas'], ['noshow', '❌ No asistió'], ['cancelled', 'Canceladas'], ['', 'Todas']] }, { k: 'type', opts: [['', 'Todas'], ['vip', '🎯 Individuales'], ['club', '🎙️ Clubs (historial)']] }],
+      row: c => { const st = J(c.students, []); const att = J(c.attendance, {}); return `<div class="card ad-row ad-cl ${c.type}" data-open="${esc(c.id)}"><div class="ad-cdate"><b>${fD(c.date, { day: 'numeric' })}</b><small>${fD(c.date, { month: 'short' })}</small></div><div class="grow"><b>${c.type === 'vip' ? '🎯 Individual' : c.type === 'club' ? '🎙️ Club' : '👥 Grupal'} · ${fT(c.time)} · ${esc(tName(c.teacherId))}</b> ${chip({ scheduled: '📅 programada', done: '✅ dictada', noshow: '❌ no asistió', cancelled: 'cancelada' }[c.status] || esc(c.status), 'st-' + c.status)}
         <small>${st.length} estudiante(s)${c.status === 'done' ? ' · asistieron ' + Object.values(att).filter(Boolean).length : ''}${c.topic ? ' · ' + esc(c.topic) : ''}</small></div></div>`; },
       open: (id, c) => classMark(c), empty: 'No hay clases con este filtro.' });
   }
   // 🎁 regalar clases VIP adicionales (por un inconveniente o como regalo); valen solo para el ciclo actual del plan
   async function bonusModal() {
-    const m = modal(`<h2>🎁 Agregar clase VIP adicional</h2><p class="muted">El estudiante podrá reservarla desde su perfil. Vale solo para su ciclo actual (no es acumulable) y le llega un aviso y un correo.</p>
+    const m = modal(`<h2>🎁 Agregar clase individual de regalo</h2><p class="muted">El estudiante podrá reservarla desde su perfil. Vale solo para su ciclo actual (no es acumulable) y le llega un aviso y un correo.</p>
       <div class="ad-form"><label class="full">Estudiante Premium<input class="inp" id="bo-s" list="bo-list" placeholder="⏳ Cargando estudiantes…" autocomplete="off"><datalist id="bo-list"></datalist></label>
       <label>Cantidad<select class="inp" id="bo-n">${[1, 2, 3, 4, 5].map(n => `<option value="${n}">${n} clase${n > 1 ? 's' : ''}</option>`).join('')}</select></label>
       <label>Motivo<select class="inp" id="bo-r"><option>Regalo de la escuela 🎁</option><option>Compensación por un inconveniente</option><option>Otro</option></select></label>
@@ -401,19 +401,19 @@
     $('#bo-ok', m).onclick = async () => { const code = $('#bo-s', m).value.split('·')[0].trim().toUpperCase(); if (!code) return toast('Elige un estudiante');
       const why = $('#bo-r', m).value + ($('#bo-d', m).value.trim() ? ': ' + $('#bo-d', m).value.trim() : '');
       const b = $('#bo-ok', m); b.disabled = true; const res = await api('aBonus', { code, n: +$('#bo-n', m).value, reason: why });
-      if (res.ok) { m.remove(); toast(`✅ Listo: ahora tiene ${res.credits.vipLeft} clase(s) VIP disponibles este ciclo. Ya le avisamos.`); }
+      if (res.ok) { m.remove(); toast(`✅ Listo: ahora tiene ${res.credits.vipLeft} clase(s) individuales disponibles este ciclo. Ya le avisamos.`); }
       else { b.disabled = false; toast(res.err === 'not_premium' ? 'Ese estudiante no tiene plan Premium activo' : res.err === 'notfound' ? 'No encontramos ese código' : 'No se pudo agregar'); } };
   }
   function classMark(c) {
     const st = J(c.students, []); const att = J(c.attendance, {});
-    const m = modal(`<h2>${c.type === 'vip' ? '⭐ Clase VIP' : '👥 Clase grupal'}</h2><p class="muted">${fD(c.date, { weekday: 'long', day: 'numeric', month: 'long' })} · ${fT(c.time)} · ${esc(tName(c.teacherId))}${c.meet ? ` · <a href="${esc(c.meet)}" target="_blank" rel="noopener">enlace</a>` : ''}</p>
+    const m = modal(`<h2>${c.type === 'vip' ? '🎯 Clase individual' : '👥 Clase grupal'}</h2><p class="muted">${fD(c.date, { weekday: 'long', day: 'numeric', month: 'long' })} · ${fT(c.time)} · ${esc(tName(c.teacherId))}${c.meet ? ` · <a href="${esc(c.meet)}" target="_blank" rel="noopener">enlace</a>` : ''}</p>
       <h4>Asistencia</h4>${st.length ? st.map(s => `<label class="ad-chk"><input type="checkbox" data-a="${esc(s)}" ${att[s] !== false && (c.status === 'done' ? att[s] : true) ? 'checked' : ''}> ${esc(s)}</label>`).join('') : '<p class="muted">Sin estudiantes.</p>'}
       <label class="ad-lab">Notas</label><textarea class="inp" id="cm-n" rows="2">${esc(c.notes)}</textarea>
       <div class="ad-planbtns"><button class="btn k" data-s="done">✅ Dictada</button><button class="btn w" data-s="noshow">❌ No asistió</button><button class="btn w" data-s="cancelled">Cancelar clase</button>${c.status !== 'scheduled' ? '<button class="btn w" data-s="scheduled">↩ Volver a programada</button>' : ''}</div>`);
     $$('[data-s]', m).forEach(b => b.onclick = async () => { const a = {}; $$('[data-a]', m).forEach(i => a[i.dataset.a] = i.checked); const r = await api('aMark', { classId: c.id, status: b.dataset.s, attendance: a, notes: $('#cm-n', m).value }); m.remove(); if (r.ok) { toast('✅ Actualizada'); classes(); } });
   }
   function classNew() {
-    const m = modal(`<h2>＋ Programar clase</h2><div class="ad-form"><label>Tipo<select class="inp" name="type"><option value="vip">⭐ VIP</option><option value="group">👥 Grupal</option></select></label>
+    const m = modal(`<h2>＋ Programar clase</h2><div class="ad-form"><label>Tipo<select class="inp" name="type"><option value="vip">🎯 Individual</option></select></label>
       <label>Profe<select class="inp" name="teacherId">${teacherOpts()}</select></label><label>Fecha<input class="inp" type="date" name="date" value="${addDays(todayISO(), 1)}"></label><label>Hora<input class="inp" type="time" name="time" value="18:00"></label>
       <label>Grupo (si es grupal)<select class="inp" name="groupId">${groupOpts()}</select></label><label>Códigos de estudiantes <small>(coma)</small><input class="inp" name="students" placeholder="LAURA-4062, ANDRES-1234" style="text-transform:uppercase"></label>
       <label class="full">Enlace (opcional)<input class="inp" name="meet"></label><label class="full">Tema<input class="inp" name="topic"></label></div><button class="btn k block lg" id="cn-ok">Programar</button>`);

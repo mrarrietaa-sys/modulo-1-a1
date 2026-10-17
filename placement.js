@@ -51,7 +51,7 @@
     return (c2 === q.length || (c2 === q.length - 1 && PL.sp !== false)) ? passLv() : failLv();
   }
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  const COURSE = { vip: 'Curso VIP (1 a 1)', group: 'Cursos grupales', self: 'Estudiar por mi cuenta en la plataforma' };
+  const COURSE = { vip: 'Plataforma + clases individuales (Premium)', self: 'Estudiar por mi cuenta en la plataforma' };
 
   const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } };
   const store = (o) => { try { localStorage.setItem(KEY, JSON.stringify(o)); } catch (e) { } };

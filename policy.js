@@ -3,21 +3,19 @@
   const HTML = `<div class="pol">
   <p class="pol-k">MRARRIETA.COM – RealTalk®</p>
   <h2 class="pol-t">📌 Política de reservas y cancelaciones</h2>
-  <p class="pol-only">Aplica para estudiantes <b>Premium</b>: las clases VIP y las clases grupales son exclusivas de este plan.</p>
-  <section><h3>1. Clases VIP</h3><ul>
-    <li><b>Reserva:</b> mínimo <b>4 horas</b> antes de la clase.</li>
-    <li><b>Cancelación sin penalización:</b> mínimo <b>2 horas</b> antes de la clase.</li>
-    <li><b>Cancelación tardía o inasistencia:</b> la clase se descontará del paquete y no será repuesta.</li></ul></section>
-  <section><h3>2. Clases grupales</h3><ul>
-    <li><b>Reserva tu cupo:</b> en <b>Mis próximas clases</b>, mínimo <b>3 horas</b> antes de la clase.</li>
-    <li><b>Cancelaciones:</b> puedes cancelar hasta <b>2 horas</b> antes de la clase.</li>
-    <li><b>Cancelación tardía o inasistencia:</b> no recibirás ninguna penalización ni perderás el acceso a futuras clases grupales.</li></ul></section>
-  <section><h3>3. Acceso y cupos de clases grupales</h3><ul>
-    <li><b>Clases grupales ilimitadas:</b> asiste a todas las clases grupales de tu nivel que quieras, sin límite mensual, mientras tu plan <b>Premium</b> esté activo.</li>
-    <li><b>Cupo máximo:</b> cada sesión admite máximo <b>10 estudiantes</b>; si se llena, se cierran las reservas y deberás elegir otro horario disponible de tu nivel.</li>
-    <li>Es <b>obligatorio reservar con anticipación</b> para asistir a las clases grupales.</li></ul></section>
+  <p class="pol-only">Aplica para estudiantes <b>Premium</b> (4 u 8 clases al mes): las clases individuales son exclusivas de estos planes.</p>
+  <section><h3>1. Reservas</h3><ul>
+    <li><b>Reserva:</b> mínimo <b>4 horas</b> antes de la clase, eligiendo profe, fecha y hora desde tu perfil.</li>
+    <li>Las clases de tu plan <b>no son acumulables</b>: úsalas dentro de tu periodo mensual o se pierden.</li>
+    <li>Las <b>clases adicionales</b> que compres valen solo dentro de tu plan vigente.</li></ul></section>
+  <section><h3>2. Cancelaciones</h3><ul>
+    <li><b>Cancelación sin penalización:</b> mínimo <b>2 horas</b> antes de la clase. La clase vuelve a tu saldo.</li>
+    <li><b>Cancelación tardía o inasistencia:</b> la clase se descuenta de tu plan y no será repuesta.</li></ul></section>
+  <section><h3>3. Si tu profe no se conecta</h3><ul>
+    <li>Desde 15 minutos después de la hora de inicio y hasta 24 horas después, puedes reportarlo desde tu perfil.</li>
+    <li>Administración lo revisa en máximo 24 horas y, si se confirma, <b>la clase vuelve a tu saldo</b>.</li></ul></section>
   <section><h3>Horario de la escuela</h3><p><b>Lunes a viernes:</b> 7:00 a. m. a 9:00 p. m. (jornada continua) · <b>Sábados:</b> 7:00 a. m. a 5:00 p. m. · <b>Domingos y festivos de Colombia:</b> no hay clases ni atención por chat. (Hora Colombia)</p></section>
-  <section><h3>4. Duración de las clases</h3><p>Todas las clases de la escuela (VIP y grupales) duran <b>50 minutos</b>.</p></section>
+  <section><h3>4. Duración de las clases</h3><p>Todas las clases individuales duran <b>50 minutos</b>.</p></section>
   <section><h3>5. Cancelaciones por parte de MRARRIETA.COM</h3>
     <p>Si MRARRIETA.COM cancela una clase, esta será reprogramada sin costo para el estudiante.</p></section>
   <p class="pol-imp"><b>Importante:</b> los tiempos mínimos de reserva y cancelación se cuentan hacia atrás desde la hora de inicio de cada clase.</p>

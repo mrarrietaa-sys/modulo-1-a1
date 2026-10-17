@@ -10,8 +10,9 @@ window.M1CONFIG = {
 
   // PLANES (se muestran a los estudiantes)
   PLANS: {
-    membership: { name: "Membership", price: "$59.900", per: "/mes" },
-    premium: { name: "Premium", price: "$349.000", per: "/mes" }
+    membership: { name: "🖥️ PLATAFORMA", price: "$59.900", per: "/mes" },
+    premium: { name: "🎓 PREMIUM · 4 CLASES", price: "$169.900", per: "/mes" },
+    premium8: { name: "🏅 PREMIUM · 8 CLASES", price: "$289.900", per: "/mes" }
   },
 
   // MODO REVISIÓN GLOBAL: true = TODAS las clases y el examen abiertos para TODOS (no usar con estudiantes).

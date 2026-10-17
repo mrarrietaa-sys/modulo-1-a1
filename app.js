@@ -336,7 +336,7 @@
     const f = dt.toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long' });
     const m = M.modal(`<div class="center">${M.mascot('mascot', 'watch')}</div><h3 class="center">📅 Tu próximo tema se abre pronto</h3>
       <p class="center" style="font-size:17px"><b>Topic ${n} · ${esc(t ? t.title : '')}</b> se abre el <b>${esc(f)}</b>.</p>
-      <p class="center">Tu curso avanza paso a paso para que aprendas de verdad. Mientras tanto, repasa los temas que ya viste, practica en la zona de juegos y, si eres Premium, aprovecha tus clases y clubs. 💪</p>
+      <p class="center">Tu curso avanza paso a paso para que aprendas de verdad. Mientras tanto, repasa los temas que ya viste, practica en la zona de juegos y, si eres Premium, aprovecha tus clases individuales. 💪</p>
       <p class="center muted" style="font-size:14px">Te avisaremos por correo y en tu campanita 🔔 el día que se abra.</p>
       <button class="btn k block lg" id="cl">Entendido</button>`, { x: true });
     $('#cl', m).onclick = () => m.remove();

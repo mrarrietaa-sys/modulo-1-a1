@@ -3,7 +3,7 @@
    · Elige plan (Acceso gratuito / Membership / Premium) + datos.
    · Envía a la nube: MRAC.call('enroll', {...}).
    · Sin nube o con error: ofrece enviar los datos por WhatsApp.
-   · ?plan=premium | membership | free  → preselecciona el plan.
+   · ?plan=premium | premium8 | membership | free  → preselecciona el plan.
    ===================================================================== */
 (function () {
   const C = window.M1CONFIG || {}, MR = window.MRAC || { on: false, call: async () => ({ ok: false, err: 'offline' }) };
@@ -12,22 +12,25 @@
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const $ = (s, r) => (r || document).querySelector(s), $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
 
+  const pp = (k, n, pr) => ({ name: ((P[k] && P[k].name) || n).replace(/^[^A-Za-zÁÉÍÓÚÑ]+/, ''), price: (P[k] && P[k].price) || pr, per: (P[k] && P[k].per) || '/mes' });
   const PLANS = [
-    { id: 'free', name: 'Acceso gratuito', price: '$0', per: '', tag: 'Para empezar', icon: '🟢',
-      perks: ['Código de acceso entregado por la escuela', 'Prueba de clasificación', 'Tu nivel y tu ruta de aprendizaje', 'Los 2 primeros temas gratis'] },
-    { id: 'membership', name: (P.membership && P.membership.name) || 'Membership', price: (P.membership && P.membership.price) || '$59.900', per: (P.membership && P.membership.per) || '/mes', tag: 'Toda la plataforma', icon: '🚀',
-      perks: ['Toda la plataforma: ruta A1 → A2 → B2 → B2+', 'Tu progreso guardado en la nube', 'Todas las actividades y materiales', 'Estudia a tu ritmo, desde cualquier dispositivo'], note: 'No incluye clases con profe.' },
-    { id: 'premium', name: (P.premium && P.premium.name) || 'Premium', price: (P.premium && P.premium.price) || '$349.000', per: (P.premium && P.premium.per) || '/mes', tag: 'Plataforma + clases', icon: '⭐', best: true,
-      perks: ['Todo lo de Membership', '2 clases VIP al mes: tú las reservas según la disponibilidad real de los profes', 'Clubs de conversación y fonética en vivo', '⚠️ Clases no acumulables: resérvalas durante la vigencia de tu plan'] },
+    { id: 'free', name: 'ACCESO GRATUITO', price: '$0', per: '', tag: 'Para empezar · 5 días', icon: '🎁',
+      perks: ['Acceso temporal a la plataforma', 'Prueba de clasificación y tu ruta de aprendizaje', 'Los 2 primeros temas de tu ruta'], note: 'No incluye clases individuales.' },
+    Object.assign({ id: 'membership', tag: 'Toda la plataforma', icon: '🖥️',
+      perks: ['🌐 Plataforma disponible 24/7', '📚 Ruta de aprendizaje por niveles y módulos', 'Materiales, videos y ejercicios', '📈 Seguimiento de tu progreso'], note: 'No incluye clases individuales.' }, pp('membership', '🖥️ PLATAFORMA', '$59.900')),
+    Object.assign({ id: 'premium', tag: 'Plataforma + 4 clases', icon: '🎓', best: true,
+      perks: ['Todo lo incluido en Plataforma', '🎯 4 clases individuales de 50 minutos al mes', '🗓️ Reservas según la disponibilidad de los profes', '⚠️ Clases no acumulables: úsalas en tu periodo mensual'] }, pp('premium', '🎓 PREMIUM · 4 CLASES', '$169.900')),
+    Object.assign({ id: 'premium8', tag: 'Plataforma + 8 clases', icon: '🏅',
+      perks: ['Todo lo incluido en Plataforma', '🎯 8 clases individuales de 50 minutos al mes', '🗣️ Más práctica de comunicación cada semana', '⚠️ Clases no acumulables: úsalas en tu periodo mensual'] }, pp('premium8', '🏅 PREMIUM · 8 CLASES', '$289.900')),
   ];
   const DAYS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
-  const SCHED = [['Mañana', '🌅', '6:00 a. m. – 12:00 m.'], ['Tarde', '☀️', '12:00 m. – 6:00 p. m.'], ['Noche', '🌙', '6:00 p. m. – 9:00 p. m.']];
-  const PAY = ['Transferencia bancaria', 'Nequi', 'Daviplata', 'Tarjeta', 'Otro'];
+  const SCHED = [['Mañana', '🌅', '7:00 a. m. – 12:00 m.'], ['Tarde', '☀️', '12:00 m. – 6:00 p. m.'], ['Noche', '🌙', '6:00 p. m. – 9:00 p. m.']];
+  const PAY = ['Nequi', 'Llave (Breve-B)', 'Tarjeta (Mercado Pago)'];
   const SRC = ['Instagram', 'Facebook', 'TikTok', 'Google', 'Recomendación', 'Otro'];
   const LEVELS = [['No sé', 'No sé mi nivel'], ['Básico', 'Básico'], ['Intermedio', 'Intermedio'], ['Avanzado', 'Avanzado']];
 
   const qs = new URLSearchParams(location.search);
-  const st = { plan: ['free', 'membership', 'premium'].indexOf(qs.get('plan')) >= 0 ? qs.get('plan') : '', schedule: '', days: [], level: '', source: '', busy: false };
+  const st = { plan: ['free', 'membership', 'premium', 'premium8'].indexOf(qs.get('plan')) >= 0 ? qs.get('plan') : '', schedule: '', days: [], level: '', source: '', busy: false };
   const planOf = (id) => PLANS.find((p) => p.id === id);
 
   /* ---------------- vista principal ---------------- */
@@ -91,7 +94,7 @@
             <legend>Días que te funcionan <small class="muted">(puedes elegir varios)</small></legend>
             <div class="in-chips" data-group="days">${DAYS.map((d) => chip('days', d, d)).join('')}</div>
           </fieldset>
-          <p class="in-tip">💡 La escuela te asigna tu grupo según tu nivel y horario. Tus 2 clases VIP las reservas tú desde tu perfil.</p>
+          <p class="in-tip">💡 Tus clases individuales las reservas tú desde tu perfil, según la disponibilidad de los profes. Este horario nos ayuda a asignarte profe.</p>
         </div>
 
         <div id="in-pay" class="in-f in-cond" hidden>
@@ -145,8 +148,8 @@
   }
   function syncPlan() {
     $$('.in-plan').forEach((b) => { const on = b.dataset.plan === st.plan; b.classList.toggle('on', on); b.setAttribute('aria-checked', on); b.querySelector('.in-plan-pick').textContent = on ? '✓ Seleccionado' : 'Elegir este plan'; });
-    $('#in-premium').hidden = st.plan !== 'premium';
-    $('#in-pay').hidden = !(st.plan === 'membership' || st.plan === 'premium');
+    $('#in-premium').hidden = !/^premium/.test(st.plan);
+    $('#in-pay').hidden = !(st.plan === 'membership' || /^premium/.test(st.plan));
     summary();
   }
   function syncChips() {
@@ -160,7 +163,7 @@
   /* ---------------- validación y envío ---------------- */
   function data() {
     const v = (id) => ($('#in-' + id) ? $('#in-' + id).value.trim() : '');
-    const premium = st.plan === 'premium', paid = premium || st.plan === 'membership';
+    const premium = /^premium/.test(st.plan), paid = premium || st.plan === 'membership';
     return { first: v('first'), last: v('last'), email: v('email'), whatsapp: v('whatsapp'), birth: v('birth'), city: v('city'), plan: st.plan, level: st.level,
       schedule: premium ? st.schedule : '', days: premium ? DAYS.filter((d) => st.days.indexOf(d) >= 0).join(', ') : '', payment: paid ? v('payment') : '', source: st.source, comments: v('comments') };
   }
@@ -209,7 +212,7 @@
       <span class="lbl">Inscripción recibida</span>
       <h1>¡Bienvenido(a), ${esc(d.first)}! 🎉</h1>
       <p>Recibimos tus datos para el plan <b>${esc(p.name)}</b>. Te enviamos un correo de confirmación a <b>${esc(d.email)}</b> y muy pronto te escribiremos por WhatsApp con tu <b>código de acceso</b>.</p>
-      <ol class="in-next"><li><b>Recibe tu código</b> por WhatsApp.</li><li><b>Toma tu prueba de clasificación</b> y conoce tu nivel.</li><li><b>Empieza tu ruta</b> de aprendizaje${d.plan === 'premium' ? ' y reserva tus clases VIP' : ''}.</li></ol>
+      <ol class="in-next"><li><b>Recibe tu código</b> por WhatsApp.</li><li><b>Toma tu prueba de clasificación</b> y conoce tu nivel.</li><li><b>Empieza tu ruta</b> de aprendizaje${/^premium/.test(d.plan) ? ' y reserva tus clases individuales' : ''}.</li></ol>
       <a class="btn k lg block in-wa" href="https://wa.me/${WA}?text=${encodeURIComponent((window.MRNE || String)(msg))}" target="_blank" rel="noopener">💬 ${paid ? 'Escríbenos para activar tu plan' : 'Escríbenos para recibir tu código'}</a>
       <a class="btn w block" href="index.html" style="margin-top:12px">Ir a la plataforma</a>
     </section>`;

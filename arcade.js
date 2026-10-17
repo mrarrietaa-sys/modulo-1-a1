@@ -151,12 +151,12 @@
         <div class="ar-lvhead"><b>Nivel de los juegos</b><small class="muted">Se abre en tu nivel. Puedes cambiarlo cuando quieras.</small></div>
         <div class="ar-lvs" role="tablist">${LEVELS.map(l => `<button class="ar-lv ${l.id === LV ? 'on' : ''}" data-lv="${l.id}" role="tab" aria-selected="${l.id === LV}"><b>${l.id}</b><small>${l.es}</small>${l.id === MINE ? '<i>Tu nivel</i>' : ''}</button>`).join('')}</div>
       </section>
-      ${trial ? `<div class="ar-trial"><span>🟢</span><div><b>Acceso gratuito:</b> tienes 2 juegos abiertos. Los demás se abren con <b>Membership</b> o <b>Premium</b>.</div></div>` : ''}
+      ${trial ? `<div class="ar-trial"><span>🟢</span><div><b>Acceso gratuito:</b> tienes 2 juegos abiertos. Los demás se abren con <b>Plataforma</b> o <b>Premium</b>.</div></div>` : ''}
       <section class="ar-grid">${GAMES.map((g, i) => `<article class="ar-gc c-${g.c} ${locked(g) ? 'lock' : ''}" data-g="${g.id}" style="--d:${i * 55}ms">
           ${g.id === feat && !locked(g) ? '<span class="ar-feat">⚡ Juego del día · puntos x2</span>' : ''}
           <div class="ar-gc-top"><span class="ar-gc-ic">${g.icon}</span><span class="ar-gc-tag">${g.tag}</span></div>
           <h3>${g.name}</h3><p class="ar-gc-en">${g.en}</p><p class="ar-gc-d">${g.desc}</p>
-          <div class="ar-gc-ft"><span>🏆 ${best(g) ? fmt(best(g)) : '—'}</span>${locked(g) ? '<span class="ar-gc-lk">🔒 Membership o Premium</span>' : '<button class="btn k ar-play">Jugar ▶</button>'}</div>
+          <div class="ar-gc-ft"><span>🏆 ${best(g) ? fmt(best(g)) : '—'}</span>${locked(g) ? '<span class="ar-gc-lk">🔒 Plataforma o Premium</span>' : '<button class="btn k ar-play">Jugar ▶</button>'}</div>
         </article>`).join('')}</section>
       <section class="card ar-medals"><h2>🏅 Mis medallas</h2><p class="muted">Gana medallas jugando. ¡Colecciónalas todas!</p>
         <div class="ar-mgrid">${MEDALS.map(m => `<div class="ar-md ${S.medals[m.id] ? 'on' : ''}" title="${esc(m.d)}"><span>${S.medals[m.id] ? m.icon : '🔒'}</span><b>${m.name}</b><small>${m.d}</small></div>`).join('')}</div>
@@ -174,7 +174,7 @@
   function lockModal(g) {
     fx('bad');
     M.modal(`<div class="ar-lockm"><div class="ar-lockic">🔒</div><h3>${g.icon} ${esc(g.name)}</h3>
-      <p>Este juego se abre con el plan <b>Membership</b> o <b>Premium</b>.</p>
+      <p>Este juego se abre con el plan <b>Plataforma</b> o <b>Premium</b>.</p>
       <p class="muted">Con tu acceso gratuito puedes jugar <b>Lluvia de palabras</b> y <b>Memoria sonora</b>.</p>
       <div class="ar-row"><a class="btn k" href="index.html">Ver planes en mi perfil</a></div></div>`, { x: true });
   }

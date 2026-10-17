@@ -40,7 +40,7 @@
   const studentName = (code) => { const s = D && D.students[String(code).toUpperCase()]; return s ? s.name || s.code : code; };
   const groupOf = (id) => (D.groups || []).find((g) => g.id === id);
   const meetOf = (c) => c.meet || (c.groupId && groupOf(c.groupId) ? groupOf(c.groupId).meet : '') || (D.teacher && String(D.teacher.meet || '').split(/[\s,;]+/).filter(Boolean)[0]) || '';
-  const typeBadge = (c) => c.type === 'vip' ? '<span class="tp-badge vip">VIP</span>' : (c.type === 'club' ? '<span class="tp-badge grp">Club</span>' : '<span class="tp-badge grp">Grupal</span>');
+  const typeBadge = (c) => c.type === 'vip' ? '<span class="tp-badge vip">Individual</span>' : (c.type === 'club' ? '<span class="tp-badge grp">Club</span>' : '<span class="tp-badge grp">Grupal</span>');
   const statusBadge = (c) => ({ done: '<span class="tp-st done">Dictada ✓</span>', noshow: '<span class="tp-st noshow">No asistió</span>', cancelled: '<span class="tp-st canc">Cancelada</span>', latecancel: '<span class="tp-st canc">Cancelada tarde</span>' }[c.status] || (c.date <= today() ? '<span class="tp-st pend">Por marcar</span>' : '<span class="tp-st sch">Programada</span>'));
   const whoOf = (c) => c.type === 'vip' ? esc(studentName(c.students[0] || '')) : esc(c.type === 'club' ? (c.topic || 'Club') : ((groupOf(c.groupId) || {}).name || 'Grupo')) + ` · ${c.students.length} estudiante${c.students.length === 1 ? '' : 's'}`;
 
@@ -82,11 +82,11 @@
     const first = esc(String((D.teacher || {}).name || '').split(/\s+/)[0]);
     const steps = [
       ['welcome', `¡Welcome, ${first}! 👋`, 'Soy Mr. Arrieta. Te muestro en 1 minuto cómo funciona tu portal de profesor.', null],
-      ['point', '🏠 Resumen', 'Aquí ves tus <b>notificaciones</b> (clases VIP reservadas, confirmaciones de clubs y mensajes de tus estudiantes), tus próximas clases y tus estadísticas.', 'home'],
-      ['idea', '🗓️ Mi disponibilidad', 'Marca las horas en que puedes dar clases <b>de lunes a sábado</b>. Los estudiantes Premium solo pueden reservar clases VIP en esos horarios. Domingos y festivos no hay clases.', 'avail'],
+      ['point', '🏠 Resumen', 'Aquí ves tus <b>notificaciones</b> (clases individuales reservadas y mensajes de tus estudiantes), tus próximas clases y tus estadísticas.', 'home'],
+      ['idea', '🗓️ Mi disponibilidad', 'Marca las horas en que puedes dar clases <b>de lunes a sábado</b>. Los estudiantes Premium solo pueden reservar clases individuales en esos horarios. Domingos y festivos no hay clases.', 'avail'],
       ['present', '🎓 Mis clases', 'Aquí entras a cada clase con tu enlace de Meet y, al terminar, la marcas como <b>dictada</b> o <b>no asistió</b>.', 'classes'],
       ['pointside', '💬 Chat con estudiantes', 'Con el botón <b>Chat con estudiantes</b> respondes las dudas y tareas de tus estudiantes.', null],
-      ['watch', '🔔 Correos diarios', 'Cada mañana te llega un correo con tu resumen del día. Si nadie confirma un club, te avisamos 3 horas antes para que no tengas que conectarte.', null],
+      ['watch', '🔔 Correos diarios', 'Cada mañana te llega un correo con tu resumen del día.', null],
       ['thumbs', '¡Listo! 🚀', 'Para empezar, escribe tu <b>disponibilidad semanal</b>.', 'avail'],
     ];
     try { localStorage.setItem(TKEY(), '1'); } catch (e) { } if (D && D.teacher && !D.teacher.tour) { D.teacher.tour = 1; api('tTour').catch(() => { }); } // marcado desde que empieza
@@ -114,7 +114,7 @@
     const sl = first.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z]/g, '');
     const hasWeek = Object.keys(t.weekly || {}).length > 0;
     const m = modal(`<div style="text-align:center"><div style="font-size:52px">👋</div><h2>¡Welcome, ${esc(first)}!</h2>
-      <p>${hasWeek ? 'Antes de empezar, revisa que tu <b>disponibilidad semanal</b> esté al día. Los estudiantes Premium solo pueden reservar clases VIP en los horarios que publiques.' : '<b>Aún no has escrito tu disponibilidad semanal.</b> Márcala ahora para que los estudiantes Premium puedan reservar tus clases VIP.'}</p>
+      <p>${hasWeek ? 'Antes de empezar, revisa que tu <b>disponibilidad semanal</b> esté al día. Los estudiantes Premium solo pueden reservar clases individuales en los horarios que publiques.' : '<b>Aún no has escrito tu disponibilidad semanal.</b> Márcala ahora para que los estudiantes Premium puedan reservar tus clases VIP.'}</p>
       <p class="muted">Lunes a sábado · domingos y festivos no hay clases.</p>
       <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:12px"><button class="btn k" id="wl-av">📅 ${hasWeek ? 'Revisar' : 'Escribir'} mi disponibilidad</button><button class="btn w" data-x>Más tarde</button></div></div>`);
     $('#wl-av', m).onclick = () => { m.remove(); tab = 'avail'; ss.set(TABKEY, tab); shell(); };
@@ -173,13 +173,13 @@
         <div class="tp-stat red"><b>${+D.stats.taughtMonth || 0}</b><span>clases dictadas este mes</span></div>
         <div class="tp-stat"><b>${+D.stats.taughtTotal || 0}</b><span>clases dictadas en total</span></div>
         <div class="tp-stat"><b>${up.length}</b><span>próximas clases</span></div>
-        <div class="tp-stat"><b>${free}</b><span>espacios VIP libres</span></div>
+        <div class="tp-stat"><b>${free}</b><span>espacios libres</span></div>
       </div>
       ${pend.length ? `<div class="tp-alert warn"><b>📌 Tienes ${pend.length} clase${pend.length > 1 ? 's' : ''} por marcar.</b> Registra la asistencia para que el estudiante vea su progreso. <button class="btn k sm" data-go="classes">Ir a Mis clases</button></div>` : ''}
       <div class="card tp-card"><div class="tp-card-h"><h2>Próximas clases</h2><small class="muted">hora Colombia</small></div>
         ${up.length ? `<ul class="tp-list">${up.slice(0, 8).map((c) => classRow(c)).join('')}</ul>` : `<div class="tp-empty"><img src="mra-think.webp" alt="" width="110" height="110"><p>No tienes clases programadas.${free ? '' : ' Agrega espacios en <b>Mi disponibilidad</b> para que tus estudiantes Premium reserven clases VIP.'}</p></div>`}
       </div>
-      ${!free ? `<div class="tp-alert"><b>🗓️ No tienes espacios VIP libres.</b> Los estudiantes Premium solo pueden reservar en los horarios que publiques. <button class="btn w sm" data-go="avail">Agregar disponibilidad</button></div>` : ''}`;
+      ${!free ? `<div class="tp-alert"><b>🗓️ No tienes espacios libres.</b> Los estudiantes Premium solo pueden reservar en los horarios que publiques. <button class="btn w sm" data-go="avail">Agregar disponibilidad</button></div>` : ''}`;
     $$('[data-go]', el).forEach((b) => b.onclick = () => { tab = b.dataset.go; ss.set(TABKEY, tab); shell(); });
     bindMarks(el);
   }
@@ -324,14 +324,14 @@
         <span class="tp-paid ${paid ? 'ok' : 'pend'}">${paid ? '✅ Pagado' + (paidAt ? ' el ' + esc(dLabel(String(paidAt).slice(0, 10))) : '') : '⏳ Pendiente por pagar'}</span></div>
       <div class="tp-alert"><b>¿Cómo se calcula?</b> Se paga cada clase <b>dictada</b> (${COP(P.rate)} por clase de 50 min). Si <b>te conectas y el estudiante no asiste</b>, se pagan ${COP(P.noshowRate)}. Las clases canceladas (a tiempo o fuera de tiempo) y las no dictadas no se pagan. El pago es mensual. Recuerda <b>marcar cada clase</b> en Mis clases.</div>
       <div class="card tp-card"><div class="tp-card-h"><h2>Detalle</h2><small class="muted">hora Colombia</small></div>
-      ${P.items.length ? `<ul class="tp-list tp-pay-list">${P.items.map((x) => { const st = PST[x.status] || ['off', x.status]; return `<li class="tp-pay-row"><div><b>${dLabel(x.date)} · ${h12(x.time)}</b><small>${x.type === 'vip' ? 'VIP' : esc(x.club || 'Clase grupal')}${x.who ? ' · ' + esc(x.who) : ''}</small></div><span class="tp-pst ${st[0]}">${esc(st[1])}</span><b class="tp-amt">${COP(x.amount)}</b></li>`; }).join('')}</ul>` : '<p class="muted">No hay clases registradas en este mes.</p>'}</div>`;
+      ${P.items.length ? `<ul class="tp-list tp-pay-list">${P.items.map((x) => { const st = PST[x.status] || ['off', x.status]; return `<li class="tp-pay-row"><div><b>${dLabel(x.date)} · ${h12(x.time)}</b><small>${x.type === 'vip' ? 'Individual' : esc(x.club || 'Clase grupal')}${x.who ? ' · ' + esc(x.who) : ''}</small></div><span class="tp-pst ${st[0]}">${esc(st[1])}</span><b class="tp-amt">${COP(x.amount)}</b></li>`; }).join('')}</ul>` : '<p class="muted">No hay clases registradas en este mes.</p>'}</div>`;
     $('#tp-pm', el).onchange = (e) => { payMonth = e.target.value; pay(el); };
     $('#tp-pdf', el).onclick = () => payPdf(P, paid, paidAt);
   }
   // volante de pago imprimible → "Guardar como PDF"
   function payPdf(P, paid, paidAt) {
     const t = D.teacher || {}; const w = window.open('', '_blank'); if (!w) { toast('Permite las ventanas emergentes para descargar el PDF', true); return; }
-    const rows = P.items.map((x) => `<tr><td>${esc(dLabel(x.date))}</td><td>${esc(h12(x.time))}</td><td>${x.type === 'vip' ? 'VIP' : esc(x.club || 'Clase grupal')}</td><td>${esc(x.who || '')}</td><td>${esc((PST[x.status] || ['', x.status])[1])}</td><td class="r">${COP(x.amount)}</td></tr>`).join('');
+    const rows = P.items.map((x) => `<tr><td>${esc(dLabel(x.date))}</td><td>${esc(h12(x.time))}</td><td>${x.type === 'vip' ? 'Individual' : esc(x.club || 'Clase grupal')}</td><td>${esc(x.who || '')}</td><td>${esc((PST[x.status] || ['', x.status])[1])}</td><td class="r">${COP(x.amount)}</td></tr>`).join('');
     w.document.write(`<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Volante de pago ${esc(t.name)} ${esc(P.month)}</title><style>
       body{font-family:Arial,Helvetica,sans-serif;color:#1a202c;margin:32px}h1{color:#0B2A5B;font-size:22px;margin:16px 0 4px}.top{display:flex;justify-content:space-between;align-items:center;border-bottom:4px solid #E3242B;padding-bottom:12px}
       .top img{height:60px}.meta{font-size:14px;line-height:1.6}table{width:100%;border-collapse:collapse;margin-top:16px;font-size:13px}th,td{border:1px solid #dfe3ea;padding:7px 8px;text-align:left}th{background:#0B2A5B;color:#fff}

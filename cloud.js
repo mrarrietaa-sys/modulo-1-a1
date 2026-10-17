@@ -130,5 +130,5 @@
   // cerrar sesión: guarda en la nube y deja el dispositivo limpio (el siguiente que entre no ve el progreso de otro)
   async function signOut() { if (window.MRTEACH && MRTEACH.on()) { MRTEACH.exit(); return true; } const ok = await sync(true); if (ok) { wipeLocal(true); ls.del(OWNER); ls.del(ME); try { sessionStorage.removeItem(ME); } catch (e) { } } return ok; }
   window.MRAC = { signOut, flush: () => beacon(true), examResult, requestAttempt, homework, feedbackFor, evalSave, notifications, markRead, isPremium: premium, cachedMe: () => { const c = cachedMe(); return c && c.r; }, on: !!URL_, url: URL_, call, login, me, sync, upload, saveProfile, code, toB64, applyStudent, wipeLocal,
-    planName: (p) => ({ free: 'Acceso gratuito', membership: 'Membership', premium: 'Premium' }[p] || 'Acceso gratuito') };
+    planName: (p) => ({ free: 'Acceso gratuito', membership: 'Plataforma', premium: 'Premium · 4 clases', premium8: 'Premium · 8 clases' }[p] || 'Acceso gratuito') };
 })();

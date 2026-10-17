@@ -50,7 +50,7 @@
   (function () { try { const q = new URLSearchParams(location.search), hi = q.get('hi'); if (!hi) return;
     const b = atob(hi.replace(/-/g, '+').replace(/_/g, '/')); setVName(new TextDecoder().decode(Uint8Array.from(b, c => c.charCodeAt(0))));
     q.delete('hi'); history.replaceState(null, '', location.pathname + (q.toString() ? '?' + q : '') + location.hash); } catch (e) { } })();
-  const hiGreet = (nm) => { const hr = new Date().getHours(), w = hr < 12 ? 'Good morning' : hr < 18 ? 'Good afternoon' : 'Good evening', e = hr < 12 ? '☀️' : hr < 18 ? '👋' : '🌙'; return nm ? `<span class="hg">${w},</span> <span class="hg">${esc(nm)}! ${e}</span>` : `${w}! ${e}`; };
+  const hiGreet = (nm) => { const hr = new Date().getHours(), w = hr < 12 ? 'Good morning' : hr < 18 ? 'Good afternoon' : 'Good evening', e = hr < 12 ? '☀️' : hr < 18 ? '👋' : '🌙'; return nm ? `<span class="hg">${w},</span> <span class="hg">${esc(nm)}! ${e}</span>` : `<span class="hg">${w}! ${e}</span>`; };
   const hiName = () => { const p = P.get() || {}; const lu = P.lastUser() || {}; return (p.look && p.look.nick) || p.first || lu.first || ''; };
   // saludo en voz natural (voz masculina americana pregrabada): "Good morning / afternoon / evening, Nombre!"
   const VKEY = 'mra_voice_off';

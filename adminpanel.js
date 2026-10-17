@@ -11,7 +11,7 @@
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const J = (s, d) => { if (s && typeof s === 'object') return s; try { return s ? JSON.parse(s) : d; } catch (e) { return d; } };
   const key = () => { try { return sessionStorage.getItem(KK) || ''; } catch (e) { return ''; } };
-  const PLAN = { free: ['🟢', 'Acceso gratuito'], membership: ['⭐', 'Membership'], premium: ['👑', 'Premium'], expired: ['⏰', 'Vencido'] };
+  const PLAN = { free: ['🎁', 'ACCESO GRATUITO'], membership: ['🖥️', 'PLATAFORMA'], premium: ['🎓', 'PREMIUM · 4 CLASES'], premium8: ['🏅', 'PREMIUM · 8 CLASES'], expired: ['⏰', 'Vencido'] };
   const MODN = { 1: 'A1', 2: 'A2', 3: 'B2', 4: 'B2+' };
   const PRICE = { membership: 59900, premium: 349000 };
   const money = (n) => '$' + Math.round(+n || 0).toLocaleString('es-CO');
@@ -57,7 +57,7 @@
   }
 
   /* ======================= ESTRUCTURA ======================= */
-  const TABS = [['home', '📊', 'Resumen'], ['students', '🎓', 'Estudiantes'], ['enroll', '📝', 'Inscripciones'], ['leads', '📣', 'Interesados'], ['placement', '🧭', 'Placement'], ['recruit', '👩‍🏫', 'Reclutamiento'], ['teachers', '🧑‍🏫', 'Profesores'], ['classes', '📅', 'Clases'], ['requests', '🔁', 'Solicitudes'], ['chats', '💬', 'Chats'], ['settings', '⚙️', 'Ajustes']];
+  const TABS = [['home', '📊', 'Resumen'], ['students', '🎓', 'Estudiantes'], ['enroll', '📝', 'Inscripciones'], ['buys', '💳', 'Pagos'], ['leads', '📣', 'Interesados'], ['placement', '🧭', 'Placement'], ['recruit', '👩‍🏫', 'Reclutamiento'], ['teachers', '🧑‍🏫', 'Profesores'], ['classes', '📅', 'Clases'], ['requests', '🔁', 'Solicitudes'], ['chats', '💬', 'Chats'], ['settings', '⚙️', 'Ajustes']];
   let TAB = 'home', STATS = null;
   // "Atrás": dentro del panel vuelve al Resumen (nunca saca a otra página por error)
   document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('.tb-back'); if (!b || !key()) return; if (document.querySelector('.modal, .wa-wrap')) return; e.preventDefault(); e.stopImmediatePropagation(); if (TAB !== 'home') go('home'); else window.scrollTo(0, 0); }, true);
@@ -72,7 +72,7 @@
   function go(t) { TAB = t; history.replaceState(null, '', '#' + t); $$('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === t)); const on = $(`#tabs button[data-t="${t}"]`); on && on.scrollIntoView({ inline: 'center', block: 'nearest' }); window.scrollTo(0, 0); (VIEWS[t] || VIEWS.home)(); }
   const view = () => $('#view');
   function badges(s) { const set = (k, n) => { const e = $(`[data-b="${k}"]`); if (e) { e.textContent = n || ''; e.style.display = n ? '' : 'none'; } };
-    set('enroll', s.enrollNew); set('recruit', s.recruitNew); set('requests', s.requestsPending); }
+    set('enroll', s.enrollNew); set('recruit', s.recruitNew); set('requests', s.requestsPending); set('buys', s.buysPending); }
 
   /* ======================= RESUMEN ======================= */
   async function home() {
@@ -81,7 +81,7 @@
     STATS = s; badges(s); const b = s.byPlan;
     const kpi = (n, l, sub, cls, t) => `<button class="ad-kpi ${cls || ''}" ${t ? `data-go="${t}"` : ''}><b>${n}</b><span>${l}</span>${sub ? `<em>${sub}</em>` : ''}</button>`;
     view().innerHTML = `<div class="ad-head"><h1>👋 Hola, administración</h1><p class="muted">${fD(s.today, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p></div>
-      <div class="ad-kpis">${kpi(s.students, 'Estudiantes', `${s.active7} activos esta semana`, '', 'students')}${kpi(b.premium, '👑 Premium', '', 'prem', 'students:premium')}${kpi(b.membership, '⭐ Membership', '', 'memb', 'students:membership')}${kpi(b.free, '🟢 Acceso gratuito', '', 'free', 'students:free')}${kpi(b.expired + s.expiring.length, '⏰ Vencidos y por vencer', `${b.expired} vencidos · ${s.expiring.length} vencen en 7 días`, 'exp', 'students:renew')}${kpi(money(s.revenue), 'Ingreso mensual', 'planes activos (estimado)', 'rev')}</div>
+      <div class="ad-kpis">${kpi(s.students, 'Estudiantes', `${s.active7} activos esta semana`, '', 'students')}${kpi(b.premium + (b.premium8 || 0), '🎓 Premium', `${b.premium} de 4 clases · ${b.premium8 || 0} de 8 clases`, 'prem', 'students:premium')}${kpi(b.membership, '🖥️ Plataforma', '', 'memb', 'students:membership')}${kpi(b.free, '🟢 Acceso gratuito', '', 'free', 'students:free')}${kpi(b.expired + s.expiring.length, '⏰ Vencidos y por vencer', `${b.expired} vencidos · ${s.expiring.length} vencen en 7 días`, 'exp', 'students:renew')}${kpi(money(s.revenue), 'Ingreso mensual', 'planes activos (estimado)', 'rev')}</div>
       <div class="ad-kpis sm">${kpi(s.enrollNew, 'Inscripciones nuevas', `${s.enrollTotal} en total`, s.enrollNew ? 'alert' : '', 'enroll')}${kpi(s.placementMonth, 'Placement este mes', `${s.placementTotal} en total`, '', 'placement')}${kpi(s.recruitNew, 'Candidatos nuevos', `${s.recruitTotal} en total`, s.recruitNew ? 'alert' : '', 'recruit')}${kpi(s.requestsPending, 'Solicitudes pendientes', 'intentos extra', s.requestsPending ? 'alert' : '', 'requests')}${kpi(s.classesMonth, 'Clases dictadas', 'este mes', '', 'classes')}${kpi(s.classesUpcoming, 'Clases programadas', 'próximas', '', 'classes')}</div>
       <div class="ad-grid2">
         <div class="card"><h3>⏰ Planes por vencer (7 días)</h3>${s.expiring.length ? `<div class="ad-mini">${s.expiring.map(x => `<button class="ad-mrow" data-st="${esc(x.code)}"><b>${esc(x.name)}</b><span>${PLAN[x.plan] ? PLAN[x.plan].join(' ') : ''} · ${x.daysLeft === 0 ? 'vence hoy' : 'vence en ' + x.daysLeft + ' d'} (${fD(x.planEnd)})</span></button>`).join('')}</div>` : '<p class="muted">Ninguno 🎉</p>'}</div>
@@ -126,7 +126,7 @@
     load(); return load;
   }
   const chip = (txt, cls) => `<i class="ad-chip ${cls || ''}">${txt}</i>`;
-  const planChip = (s) => { const st = s._state || {}; const k = st.expired ? 'expired' : (st.eff || s.plan || 'free'); return chip(PLAN[k].join(' '), 'p-' + k); };
+  const planChip = (s) => { const st = s._state || {}; const k = st.expired ? 'expired' : (st.pkg || st.eff || s.plan || 'free'); return chip(PLAN[k].join(' '), 'p-' + k); };
   const bar = (pct) => `<span class="ad-bar"><i style="width:${Math.max(0, Math.min(100, +pct || 0))}%"></i></span>`;
   function back(fn, label) { return `<button class="btn w sm ad-back" id="ad-back">← ${label || 'Volver'}</button>`; }
   function wireBack(fn) { const b = $('#ad-back'); if (b) b.onclick = fn; }
@@ -134,7 +134,7 @@
   /* ======================= ESTUDIANTES ======================= */
   function students() {
     list('students', { title: '🎓 Estudiantes', sub: 'Progreso, plan, grupo y clases asistidas', add: '＋ Nuevo estudiante', onAdd: newStudent,
-      filters: [{ k: '_plan', opts: [['', 'Todos los planes'], ['premium', '👑 Premium'], ['membership', '⭐ Membership'], ['free', '🟢 Acceso gratuito'], ['renew', '⏰ Vencidos y por vencer'], ['expiring', '⏳ Por vencer (7 días)'], ['expired', '⏰ Vencidos']] }],
+      filters: [{ k: '_plan', opts: [['', 'Todos los planes'], ['premium', '🎓 Premium (4 y 8 clases)'], ['membership', '🖥️ Plataforma'], ['free', '🎁 Acceso gratuito'], ['renew', '⏰ Vencidos y por vencer'], ['expiring', '⏳ Por vencer (7 días)'], ['expired', '⏰ Vencidos']] }],
       row: s => { const pr = J(s.progress, {}); const mod = s.module ? MODN[s.module] : ''; const cur = mod && pr[mod] ? pr[mod].pct : 0;
         return `<div class="card ad-row" data-open="${esc(s.code)}"><div class="ad-av">${esc(((s.first || '?')[0] + (s.last || '')[0]).toUpperCase())}</div><div class="grow"><b>${esc(s.first)} ${esc(s.last)}</b> ${planChip(s)}${s._trial != null ? chip(s._trial > 0 ? '🎁 prueba: ' + s._trial + ' día' + (s._trial > 1 ? 's' : '') : '🔒 prueba terminada', s._trial > 0 ? '' : 'gray') : ''}${s.status && s.status !== 'activo' ? chip(esc(s.status), 'gray') : ''}
           <small>${esc(s.code)} · ${mod ? 'Módulo ' + mod : 'Sin placement'}</small>
@@ -154,7 +154,7 @@
   const formData = (root) => { const o = {}; $$('[name]', root).forEach(i => { o[i.name] = i.type === 'checkbox' ? (i.checked ? 'sí' : 'no') : i.value.trim(); }); return o; };
   function newStudent(prefill) {
     const m = modal(`<h2>＋ Nuevo estudiante</h2>${studentForm(prefill || {}, true)}
-      <label class="ad-lab">Plan inicial</label><div class="ad-plans">${['free', 'membership', 'premium'].map((k, i) => `<label class="ad-pl"><input type="radio" name="_plan" value="${k}" ${i ? '' : 'checked'}><span>${PLAN[k].join(' ')}</span></label>`).join('')}</div>
+      <label class="ad-lab">Plan inicial</label><div class="ad-plans">${['free', 'membership', 'premium', 'premium8'].map((k, i) => `<label class="ad-pl"><input type="radio" name="_plan" value="${k}" ${i ? '' : 'checked'}><span>${PLAN[k].join(' ')}</span></label>`).join('')}</div>
       <div class="ad-form" id="np-m" style="display:none"><label>Meses<select class="inp" id="np-mo">${[1, 2, 3, 6, 12].map(n => `<option>${n}</option>`).join('')}</select></label><label>Valor pagado<input class="inp" id="np-amt" inputmode="numeric" placeholder="Automático"></label></div>
       <label class="ad-pl" style="margin:12px 0"><input type="checkbox" id="np-send" checked><span>📩 Enviarle sus datos de acceso (código y enlace) por <b>correo</b> y <b>WhatsApp</b></span></label>
       <button class="btn k block lg" id="np-ok">Crear estudiante</button>`);
@@ -190,7 +190,7 @@
   async function studentDetail(code) {
     view().innerHTML = '<div class="ad-loading">⏳ Cargando estudiante…</div>'; window.scrollTo(0, 0);
     const r = await api('aGet', { table: 'Estudiantes', id: code }); if (!r.ok) return view().innerHTML = `${back()}<p class="ad-err">No se encontró.</p>`, wireBack(() => go('students'));
-    const s = r.row, st = r.state, pr = J(s.progress, {}); const k = st.expired ? 'expired' : st.eff;
+    const s = r.row, st = r.state, pr = J(s.progress, {}); const k = st.expired ? 'expired' : (st.pkg || st.eff);
     view().innerHTML = `${back()}
       <div class="card ad-dhead"><div class="ad-av lg">${esc(((s.first || '?')[0] + (s.last || '')[0]).toUpperCase())}</div><div class="grow"><h1>${esc(s.first)} ${esc(s.last)}</h1>
         <p>${chip(PLAN[k].join(' '), 'p-' + k)} <button class="ad-codebtn" id="d-code" title="Copiar">${esc(s.code)} 📋</button></p>
@@ -198,8 +198,8 @@
         <div class="ad-dact">${s.whatsapp ? `<a class="btn ad-wa sm" target="_blank" rel="noopener" href="${waLink(s.whatsapp, 'Hola ' + s.first + '.')}">💬 WhatsApp</a>` : ''}<button class="btn w sm" id="d-share">🔑 Enviar código</button><button class="btn w sm" id="d-rst">♻️ Reiniciar progreso</button><button class="btn w sm ad-del" id="d-del">🗑️ Borrar</button></div></div>
       <div class="card ad-plan"><h3>💎 Plan</h3>
         <p>${st.eff === 'free' && !st.expired ? 'Acceso gratuito: prueba de clasificación + los 2 primeros temas.' : `${PLAN[s.plan] ? PLAN[s.plan].join(' ') : ''} · desde ${fD(s.planStart)} hasta <b>${fD(s.planEnd)}</b> ${st.expired ? chip('VENCIDO', 'p-expired') : st.daysLeft !== null ? chip(st.daysLeft + ' días restantes', st.daysLeft <= 5 ? 'p-expired' : 'gray') : ''}`}</p>
-        <div class="ad-planbtns"><button class="btn w" data-plan="membership">⭐ Activar Membership</button><button class="btn k" data-plan="premium">👑 Activar Premium</button>${s.plan !== 'free' ? `<button class="btn w" data-plan="${esc(s.plan)}" data-renew="1">🔁 Renovar ${esc(PLAN[s.plan][1])}</button><button class="btn w" data-plan="free">🟢 Pasar a gratuito</button>` : ''}</div>
-        ${st.eff === 'premium' && r.credits ? `<div class="ad-cred"><span>⭐ VIP: <b>${r.credits.vipUsed}/${r.credits.vipTotal}</b> usadas</span><span>🎙️ Clubs asistidos: <b>${r.credits.groupDone}/${r.credits.groupTotal}</b></span><span>Ciclo: ${fD(r.credits.cycleStart)} → ${fD(r.credits.cycleEnd)}</span></div>` : ''}
+        <div class="ad-planbtns"><button class="btn w" data-plan="membership">🖥️ Plataforma</button><button class="btn k" data-plan="premium">🎓 Premium · 4</button><button class="btn k" data-plan="premium8">🏅 Premium · 8</button>${s.plan !== 'free' ? `<button class="btn w" data-plan="${esc(s.plan)}" data-renew="1">🔁 Renovar ${esc(PLAN[s.plan][1])}</button><button class="btn w" data-plan="free">🟢 Pasar a gratuito</button>` : ''}</div>
+        ${st.eff === 'premium' && r.credits ? `<div class="ad-cred"><span>🎯 Clases individuales: <b>${r.credits.vipUsed}/${r.credits.vipTotal}</b> usadas${r.credits.vipBonus ? ' (incluye ' + r.credits.vipBonus + ' adicionales)' : ''}</span><span>Ciclo: ${fD(r.credits.cycleStart)} → ${fD(r.credits.cycleEnd)}</span></div>` : ''}
         ${(r.plans || []).length ? `<details><summary>Historial de pagos/planes (${r.plans.length})</summary><div class="ad-mini">${r.plans.map(p => `<div class="ad-mrow"><b>${PLAN[p.plan] ? PLAN[p.plan].join(' ') : esc(p.plan)} · ${esc(p.months || 0)} mes(es) · ${money(p.amount)}</b><span>${fDT(p.date)} · ${fD(p.start)} → ${fD(p.end)}${p.note ? ' · ' + esc(p.note) : ''}</span></div>`).join('')}</div></details>` : ''}</div>
       <div class="card"><h3>🧭 Progreso en su ruta</h3><p class="muted">Módulo actual: <b>${s.module ? 'Módulo ' + s.module + ' · ' + MODN[s.module] : 'aún sin placement'}</b>${s.moduleBy ? ' (' + (s.moduleBy === 'admin' ? 'asignado por administración' : 'por prueba de clasificación') + ')' : ''} · ✅ ${+s.classesDone || 0} clases · ⚡ ${+s.xp || 0} XP · 🕒 última conexión ${s.lastSeen ? fDT(s.lastSeen) : 'nunca'}</p>
         <div class="ad-mods">${['A1', 'A2', 'B2', 'B2+'].map(id => { const x = pr[id] || { done: 0, total: 0, pct: 0 }; return `<div class="ad-mod${x.passed ? ' ok' : ''}"><b>${id}</b>${bar(x.pct)}<span>${x.done}/${x.total || '—'} clases · ${x.pct || 0}%${x.passed ? ' · 🎓 aprobado' : ''}</span></div>`; }).join('')}</div>
@@ -396,7 +396,7 @@
       <label>Motivo<select class="inp" id="bo-r"><option>Regalo de la escuela 🎁</option><option>Compensación por un inconveniente</option><option>Otro</option></select></label>
       <label class="full">Detalle <small>(opcional, lo ve el estudiante)</small><input class="inp" id="bo-d" maxlength="120" placeholder="Ej: por tu cumpleaños"></label></div>
       <button class="btn k block lg" id="bo-ok">🎁 Agregar</button>`);
-    const r = await api('aList', { table: 'Estudiantes', size: 500 }); const list = (r.rows || []).filter(x => x.plan === 'premium' && (!x.planEnd || x.planEnd >= todayISO()));
+    const r = await api('aList', { table: 'Estudiantes', size: 500 }); const list = (r.rows || []).filter(x => (x.plan === 'premium' || x.plan === 'premium8') && (!x.planEnd || x.planEnd >= todayISO()));
     $('#bo-list', m).innerHTML = list.map(x => `<option value="${esc(x.code)} · ${esc((x.first + ' ' + x.last).trim())}">`).join(''); $('#bo-s', m).placeholder = list.length ? 'Escribe el nombre o el código' : 'No hay estudiantes Premium activos';
     $('#bo-ok', m).onclick = async () => { const code = $('#bo-s', m).value.split('·')[0].trim().toUpperCase(); if (!code) return toast('Elige un estudiante');
       const why = $('#bo-r', m).value + ($('#bo-d', m).value.trim() ? ': ' + $('#bo-d', m).value.trim() : '');
@@ -445,11 +445,13 @@
     view().innerHTML = `<div class="ad-head"><h1>⚙️ Ajustes</h1></div>
       <div class="card"><h3>🔗 Enlaces para compartir</h3><div class="ad-mini">${links.map(([n, u]) => `<div class="ad-mrow ad-link"><b>${n}</b><span>${esc(u)}</span><button class="btn w sm" data-cp="${esc(u)}">📋</button></div>`).join('')}</div></div>
       <div class="card"><h3>📣 Anuncio para todos los estudiantes</h3><p class="muted">Aparece en el perfil de cada estudiante. Déjalo vacío para ocultarlo.</p><textarea class="inp" data-k="announcement" rows="2">${esc(conf.announcement)}</textarea></div>
-      <div class="card"><h3>🎙️ Horarios de los clubs (Premium)</h3><p class="muted">Cámbialos cuando un profe se enferme o haya un cambio de último momento. Los estudiantes los ven en su perfil según su nivel. Nunca domingos ni festivos.</p>
-        ${[['conv', '🗣️ Conversación'], ['fon', '🔤 Fonética']].map(([k, n]) => [['a', 'A1 · A2'], ['b', 'B2 · B2+']].map(([b, lv]) => { const c = 'club_' + k + '_' + b + '_'; return `<div class="ad-club"><h4>${n} · Niveles ${lv}</h4><div class="ad-form"><label>Día<select class="inp" data-k="${c}day">${['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'].map(d => `<option ${conf[c + 'day'] === d ? 'selected' : ''}>${d}</option>`).join('')}</select></label><label>Hora<input class="inp" type="time" data-k="${c}time" value="${esc(conf[c + 'time'])}"></label><label>Profe<select class="inp" data-k="${c}teacher"><option value="">—</option>${(REF.teachers || []).map(t => `<option value="${esc(t.id)}" ${conf[c + 'teacher'] === t.id ? 'selected' : ''}>${esc(t.name)}</option>`).join('')}</select></label><label class="full">Enlace (Meet/Zoom)<input class="inp" data-k="${c}link" value="${esc(conf[c + 'link'])}" placeholder="https://meet.google.com/…"></label></div></div>`; }).join('')).join('')}</div>
+      <div class="card"><h3>💲 Precios de las membresías</h3><p class="muted">Valores en pesos (COP), sin puntos. Se actualizan en toda la plataforma y en la compra.</p><div class="ad-form">
+        ${[['price_membership', '🖥️ Plataforma (mes)', 59900], ['price_premium', '🎓 Premium · 4 clases (mes)', 169900], ['price_premium8', '🏅 Premium · 8 clases (mes)', 289900], ['price_extra', '➕ Clase adicional', 39900]].map(([k, n, d]) => `<label>${n}<input class="inp" type="number" min="0" step="100" data-k="${k}" value="${esc(conf[k] || d)}"></label>`).join('')}</div></div>
       <button class="btn k lg" id="cf-sv">💾 Guardar ajustes</button>
+      <div class="card" style="margin-top:16px"><h3>💳 Mercado Pago (pagos con tarjeta)</h3><p class="muted">Pega aquí tu <b>Access Token de producción</b> (empieza por <code>APP_USR-</code>). Con él, los pagos con tarjeta se confirman solos y el plan se habilita de inmediato. No se muestra después de guardarlo.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><input class="inp" id="mp-tk" type="password" placeholder="APP_USR-…" style="flex:1 1 260px" autocomplete="off"><button class="btn k" id="mp-sv">💾 Guardar token</button></div></div>
       <div class="card" style="margin-top:16px"><h3>🔐 Cambiar clave de administración</h3><p class="muted">Mínimo 8 caracteres. No la compartas con nadie.</p><div class="ad-form"><label>Clave actual<input class="inp" type="password" id="pw-old" autocomplete="current-password"></label><label>Nueva clave<input class="inp" type="password" id="pw-new" autocomplete="new-password"></label><label>Repite la nueva clave<input class="inp" type="password" id="pw-new2" autocomplete="new-password"></label></div><button class="btn k" id="pw-sv">🔐 Cambiar clave</button></div>`;
     $$('[data-cp]').forEach(b => b.onclick = () => copy(b.dataset.cp));
+    $('#mp-sv').onclick = async () => { const t = $('#mp-tk').value.trim(); if (!/^(APP_USR|TEST)-/.test(t)) return toast('El token debe empezar por APP_USR-'); const r = await api('aMpToken', { token: t }); if (r.ok) { $('#mp-tk').value = ''; toast('✅ Token guardado. Mercado Pago quedó activo.'); } else toast('No se pudo guardar'); };
     $('#pw-sv').onclick = async () => { const o = $('#pw-old').value, n = $('#pw-new').value, n2 = $('#pw-new2').value;
       if (o !== key()) return toast('La clave actual no es correcta'); if (n.length < 8) return toast('La nueva clave debe tener mínimo 8 caracteres'); if (n !== n2) return toast('Las dos claves nuevas no coinciden');
       $('#pw-sv').disabled = true; const r = await api('aPass', { newKey: n }); $('#pw-sv').disabled = false;
@@ -458,6 +460,23 @@
       // 🕒 los clubs deben quedar dentro del horario laboral (L–V 7 a. m.–9 p. m., sábado 7 a. m.–5 p. m.; clase de 50 min)
       for (const k of ['conv_a', 'conv_b', 'fon_a', 'fon_b']) { const dEl = $(`[data-k="club_${k}_day"]`), tEl = $(`[data-k="club_${k}_time"]`); if (!dEl || !tEl || !tEl.value) continue; const [hh, mm] = tEl.value.split(':').map(Number); const st = hh * 60 + (mm || 0), sat = /s[áa]bado/i.test(dEl.value); if (st < 420 || st + 50 > (sat ? 1020 : 1260)) return toast(`⚠️ El horario del club (${dEl.value} ${tEl.value}) está fuera del horario laboral: lunes a viernes 7:00 a. m.–9:00 p. m. y sábados 7:00 a. m.–5:00 p. m. La clase dura 50 min.`); }
       const b = $('#cf-sv'); b.disabled = true; let clubCh = false; for (const i of $$('[data-k]')) { if ((conf[i.dataset.k] || '') !== i.value.trim()) { await api('aSave', { table: 'Config', row: { key: i.dataset.k, value: i.value.trim() } }); if (/^club_/.test(i.dataset.k)) clubCh = true; } } if (clubCh) await api('aClubSync'); b.disabled = false; toast(clubCh ? '✅ Guardado · se actualizaron las sesiones de los clubs y se avisó a los estudiantes que ya habían confirmado' : '✅ Ajustes guardados'); settings(); };
+  }
+
+  /* ======================= 💳 PAGOS (comprobantes y Mercado Pago) ======================= */
+  let BUYF = 'pendiente';
+  async function buys() {
+    view().innerHTML = '<div class="ad-loading">⏳ Cargando pagos…</div>';
+    const r = await api('aBuys'); if (!r.ok) return view().innerHTML = '<p class="ad-err">No se pudieron cargar los pagos.</p>';
+    const ST = { pendiente: '⏳ Pendiente', aprobado: '✅ Aprobado', rechazado: '❌ Rechazado', cancelado: '🚫 Cancelado' };
+    const pend = r.buys.filter(b => b.status === 'pendiente').length; const set = $('[data-b="buys"]'); if (set) { set.textContent = pend || ''; set.style.display = pend ? '' : 'none'; }
+    const L = r.buys.filter(b => !BUYF || b.status === BUYF);
+    view().innerHTML = `<div class="ad-head"><h1>💳 Pagos</h1><p class="muted">Transferencias con comprobante y pagos con Mercado Pago. Al <b>aprobar</b>, el plan o las clases se habilitan de inmediato y el estudiante recibe aviso y correo.</p></div>
+      <div class="ad-filters"><select class="inp" id="bf">${[['pendiente', '⏳ Pendientes'], ['aprobado', '✅ Aprobados'], ['rechazado', '❌ Rechazados'], ['cancelado', '🚫 Cancelados'], ['', 'Todos']].map(([v, n]) => `<option value="${v}" ${BUYF === v ? 'selected' : ''}>${n}</option>`).join('')}</select></div>
+      <div class="card">${L.length ? `<div class="ad-mini">${L.map(b => `<div class="ad-mrow" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><div style="flex:1;min-width:220px"><b>${esc(b.name)}</b> <span class="muted">(${esc(b.code)})</span><br><small class="muted">${b.kind === 'extra' ? '➕ ' + b.n + ' clase(s) adicional(es)' : esc(b.planName || b.plan)} · <b>${money(b.amount)}</b> · ${b.method === 'mercadopago' ? '💳 Mercado Pago' : '🏦 Transferencia'} · ${esc(String(b.date).slice(0, 16).replace('T', ' '))} · ${ST[b.status] || esc(b.status)}${b.note ? ' · ' + esc(b.note) : ''}</small></div>
+        ${b.proof ? `<a class="btn w sm" target="_blank" rel="noopener" href="https://drive.google.com/file/d/${encodeURIComponent(b.proof)}/view">🧾 Ver comprobante</a>` : ''}${b.status === 'pendiente' ? `<button class="btn k sm" data-ok="${esc(b.id)}">✅ Aprobar</button><button class="btn w sm" data-no="${esc(b.id)}">❌ Rechazar</button>` : ''}</div>`).join('')}</div>` : '<p class="muted">No hay pagos en esta lista.</p>'}</div>`;
+    $('#bf').onchange = (e) => { BUYF = e.target.value; buys(); };
+    $$('[data-ok]').forEach(b => b.onclick = async () => { if (!confirm('¿Confirmas que el pago llegó? Se habilitará de inmediato.')) return; b.disabled = true; const x = await api('aBuyDecide', { id: b.dataset.ok, ok: true }); toast(x.ok ? '✅ Aprobado y habilitado' : 'No se pudo aprobar'); buys(); });
+    $$('[data-no]').forEach(b => b.onclick = async () => { const note = prompt('Motivo del rechazo (lo verá el estudiante):', 'No encontramos el pago con ese comprobante.'); if (note === null) return; b.disabled = true; const x = await api('aBuyDecide', { id: b.dataset.no, ok: false, note }); toast(x.ok ? 'Pago rechazado · le avisamos al estudiante' : 'No se pudo rechazar'); buys(); });
   }
 
   /* ======================= 📣 INTERESADOS ======================= */
@@ -490,6 +509,6 @@
     const go = () => window.MRLIVE && MRLIVE.open({ title: 'Chats (solo lectura)', roomsAction: 'aChats', getAction: 'aChatGet', readOnly: true, empty: 'Todavía no hay conversaciones.', call: (a, d) => api(a, d) });
     $('#ch-open').onclick = go; go();
   }
-  const VIEWS = { home, students, enroll, leads, placement, recruit, teachers, classes, requests, chats, settings };
+  const VIEWS = { buys, home, students, enroll, leads, placement, recruit, teachers, classes, requests, chats, settings };
   key() && MRAC.on ? boot() : login();
 })();

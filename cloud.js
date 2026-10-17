@@ -28,7 +28,7 @@
   const code = () => { if (window.MRTEACH && MRTEACH.on()) return ''; const p = prof(); return p && p.cloud && p.code ? p.code : ''; };
 
   // ---------- perfil local a partir de los datos de la nube ----------
-  function typeFor(st, state) { const eff = state ? state.eff : (st.plan || 'free'); return eff === 'membership' || eff === 'premium' ? 'student' : 'trial'; }
+  function typeFor(st, state) { const eff = state ? state.eff : (st.plan || 'free'); return eff === 'membership' || eff === 'premium' || eff === 'premium8' ? 'student' : 'trial'; }
   function applyStudent(st, state, base) {
     const p = Object.assign({ created: Date.now() }, base || prof() || {});
     Object.assign(p, { cloud: true, code: st.code, plan: st.plan || 'free', planStart: st.planStart || '', planEnd: st.planEnd || '', paceStart: st.paceStart || '', paceMod: +st.paceMod || 0, type: typeFor(st, state), expired: !!(state && state.expired), groupId: st.groupId || '' });
@@ -110,7 +110,7 @@
     return call('upload', Object.assign({ kind, id, b64, mime: (blob.type || 'application/octet-stream').split(';')[0] }, meta || {}), { timeout: 90000 });
   }
   // ---------- avisos a profes / administración ----------
-  const premium = () => { const p = prof() || {}; return p.cloud && (p.plan === 'premium') && !(p.planEnd && p.planEnd < new Date().toISOString().slice(0, 10)); };
+  const premium = () => { const p = prof() || {}; return p.cloud && (p.plan === 'premium' || p.plan === 'premium8') && !(p.planEnd && p.planEnd < new Date().toISOString().slice(0, 10)); };
   // resultado de cualquier examen (módulos, final del curso, clasificación) → notificación al profe y a administración
   async function examResult(o) { const c = code(); if (!c) return { ok: false, err: 'offline' }; return call('examResult', Object.assign({ code: c }, o)); }
   // solicitud de intento extra (solo cuando agotó sus intentos)

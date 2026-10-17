@@ -208,6 +208,14 @@
         <h2>Tu contenido está bloqueado</h2><p>Tu plan venció el <b>${esc(new Date(P.plan().end + 'T00:00:00').toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' }))}</b>. Tus módulos, juegos y clases quedan bloqueados hasta que renueves.</p>
         <p class="muted">Tranquilo: tu progreso está guardado. Cuando administración confirme tu renovación, todo se desbloquea solo y sigues justo donde ibas.</p>
         <a class="btn block pt-wa" target="_blank" rel="noopener" href="${WA('¡Hola! Soy ' + (p.first || '') + ' ' + (p.last || '') + ' (código ' + (p.code || '') + ') y quiero renovar mi plan 🚀')}">💬 Renovar mi plan</a></div></div>`;
+    } else if (a && a.ready && !staff) {
+      const pr = P.progress(a.id), tot = trial ? 4 : a.classes;
+      main = `<div class="card pt-mymod db-hero"><div class="db-hero-tx"><span class="lbl db-red">${pr.done ? 'Tu siguiente paso' : 'Empieza tu ruta'}</span>
+        <h2><small class="pt-here">📍 Estás aquí</small>${esc(a.name)} · ${esc(a.es)}</h2>
+        <p class="db-sub">${pr.done} de ${trial ? '4 clases de tu acceso gratuito' : tot + ' clases'} completadas${a.n > (p.module || 1) ? ' · ¡Avanzaste en tu ruta! 🎉' : ''}</p>
+        <div class="db-bar"><i style="width:${pr.pct}%"></i></div>
+        <div class="db-hero-b"><a class="btn db-wbtn lg" href="${a.url}">${MRI('video')} ${pr.done ? 'Continuar mi ruta' : 'Empezar mi ruta'}</a><button class="btn db-gbtn sm" id="pt3">¿No estás a gusto con tu nivel?</button></div></div>
+        <img class="db-hero-mra" src="mra-x-wave.webp" alt="Mr. Arrieta"></div>`;
     } else if (a) {
       const ready = a && a.ready;
       main = `<div class="card pt-mymod">${a ? `<div class="pt-mymod-img" style="background-image:url('${U(a.img)}')"><span>${a.n}</span></div>` : ''}<div><span class="lbl">${staff ? 'Modo profe' : '🧭 Tu ruta de aprendizaje'}</span>
@@ -218,9 +226,17 @@
         ${a && !staff ? `<p style="margin:12px 0 0"><button class="btn w sm" id="pt3">🔁 ¿No estás a gusto con tu nivel?</button></p>` : ''}
         ${a && !ready && !trial ? `<p class="pt-soon">🚧 Tu ${esc(a.name)} se está terminando de construir. ¡Muy pronto estará listo! Mientras tanto puedes repasar los módulos anteriores.</p>` : ''}</div></div>`;
     }
-    app.innerHTML = `<div class="wrap">
-      <section class="card pt-head ban-${esc(P.look().banner || 'w')}"><button class="pt-avwrap" id="me-av" title="Personaliza tu foto">${P.avHTML('pt-av')}<i class="pt-pen">✏️</i></button><div class="pt-hi"><span class="lbl">${greet}!</span><h1>${back ? '¡Hola de nuevo' : '¡Hola'}, <span class="nmw"><span class="nm">${esc(P.look().nick || p.first)}!</span></span> 👋</h1>
-        <p class="muted">${staff ? '👨‍🏫 Perfil de profesor — puedes revisar todo.' : trial ? '🟢 Acceso gratuito — descubre tu ruta de aprendizaje.' : '🎓 Estudiante de mrarrieta.com'}</p></div>${M.mascot('pt-headmra', 'welcome')}</section>
+    const curMod = a && a.ready && !staff ? P.progress(a.id) : null;
+    const plNow = P.plan(); const plName = staff ? 'Profesor' : P.isExpired() ? 'Plan vencido' : (plNow.plan === 'premium8' && plNow.eff === 'premium' ? 'Premium · 8 clases' : { free: 'Acceso gratuito', membership: 'Plataforma', premium: 'Premium · 4 clases' }[plNow.eff] || 'Acceso gratuito');
+    const plIc = staff ? 'user' : P.isExpired() ? 'clock' : plNow.plan === 'premium8' && plNow.eff === 'premium' ? 'gem' : ({ free: 'gift', membership: 'monitor', premium: 'crown' }[plNow.eff] || 'gift');
+    const pct = curMod ? curMod.pct : 0;
+    const side = `<aside class="db-side card">
+        <div class="db-me"><button class="pt-avwrap" id="me-av" title="Personaliza tu foto">${P.avHTML('pt-av')}<i class="pt-pen">✏️</i></button>
+          <div class="db-me-tx"><span class="db-greet">${greet}!</span><h2>${esc(P.look().nick || p.first)} ${esc(p.last || '')}</h2><span class="db-chip ${plNow.eff}">${MRI(plIc)} ${plName}</span>${plNow.end && plNow.paid && !P.isExpired() ? `<small class="muted">Activo hasta el ${fmtD(plNow.end, { day: 'numeric', month: 'long' })}</small>` : ''}</div></div>
+        ${curMod ? `<div class="db-ring" style="--p:${pct}"><div><b>${pct}%</b><small>de tu módulo</small></div></div><small class="muted db-modtx">${esc(a.name)} · ${esc(a.id)} · ${curMod.done} de ${trial ? 4 : a.classes} clases</small>` : ''}
+        <nav class="db-qa">${staff ? '' : `<button class="btn w" id="pt-plans">${MRI('crown')} Mi plan</button>`}${!staff && P.plan().premium ? `<button class="btn w" data-go="#pt-live">${MRI('calendar')} Mis clases</button>` : ''}${!staff && P.plan().paid ? `<button class="btn w" data-go="#pt-ref">${MRI('gift')} Invita a un amigo</button>` : ''}${!staff && P.plan().premium ? `<button class="btn w pt-polb">${MRI('file')} Política de reservas</button>` : ''}<button class="btn w" id="me-go2">${MRI('user')} Personalizar perfil</button><button class="btn w" id="pt-tour">${MRI('compass')} Ver el tour</button></nav></aside>`;
+    app.innerHTML = `<div class="wrap db">${side}<div class="db-main">
+
       ${birthdayBanner()}
       <div id="pt-ann"></div>
       ${P.isExpired() || (trial && !(window.MRAC && MRAC.code())) ? `<div class="pt-trialbar">${P.isExpired() ? `⏰ <div><b>Tu plan venció.</b> Todo tu contenido está bloqueado, pero tu progreso sigue guardado. Apenas renueves, se desbloquea todo. <a href="#" class="tb-up">Ver planes →</a></div>` : `🟢 <div><b>Acceso gratuito:</b> la prueba de clasificación y los <b>2 primeros temas</b> de tu módulo. <a href="#" class="tb-up">Ver planes →</a></div>`}</div>` : ''}
@@ -236,12 +252,18 @@
       ${pl ? `<div class="sect-title"><h2>📝 Mi prueba de clasificación</h2></div><div class="card pt-plres"><div><b>Resultado:</b> ${esc(P.mod(pl.module).name)} · ${esc(P.mod(pl.module).es)}<br><span class="muted">${new Date(pl.date).toLocaleDateString('es-CO')}${pl.mods ? ' · ' + [1, 2, 3, 4].map(k => `${P.mod(k).id}: ${pl.mods[k]}%`).join(' · ') : ''}</span></div>${!P.isExpired() && (pst.attempts < pst.max || (pst.round || 1) < (pst.rounds || 1)) ? '<button class="btn w sm" id="pt2">🔁 Repetir prueba</button>' : ''}</div>` : ''}
       ${staff ? `<div class="sect-title"><h2>📝 Prueba de clasificación</h2></div><div class="card pt-plres"><div>Puedes presentar o revisar la prueba de clasificación como lo verá el estudiante.</div><button class="btn w sm" id="pt2">📝 Abrir prueba</button></div>` : ''}
       ${certs()}`}
-      <div class="center" style="margin-top:14px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">${staff ? '' : `<button class="btn w" id="pt-plans">${MRI('crown')} Ver planes${P.plan().eff !== 'free' ? ' · mi plan' : ''}</button>`}<button class="btn w" id="pt-tour">${MRI('compass')} Ver el tour de Mr. Arrieta</button>${!staff && P.plan().eff === 'premium' ? `<button class="btn w pt-polb">${MRI('file')} Política de reservas</button>` : ''}</div>
-      <p class="center fx-foot" style="margin-top:22px;font-size:13.5px;font-weight:600">mrarrieta.com · ¡Aprende inglés HABLANDO! · WhatsApp ${esc(C.WHATSAPP.replace(/^57/, ''))}</p></div>`;
+      </div>
+      <p class="center fx-foot db-foot" style="margin-top:22px;font-size:13.5px;font-weight:600">mrarrieta.com · ¡Aprende inglés HABLANDO! · WhatsApp ${esc(C.WHATSAPP.replace(/^57/, ''))}</p></div>
+      <nav class="db-tabbar">${[['compass', 'Inicio', 'top'], P.plan().premium ? ['video', 'Clases', '#pt-live'] : ['award', 'Mi ruta', '.pt-routebar'], ['crown', 'Mi plan', 'plans'], P.plan().paid ? ['gift', 'Invita', '#pt-ref'] : ['file', 'Política', 'pol'], ['user', 'Perfil', 'me']].map(([i, t, g], k) => `<button class="${k ? '' : 'on'}" data-tab="${g}">${MRI(i)}<span>${t}</span></button>`).join('')}</nav>`;
     if ($('#pt')) $('#pt').onclick = () => route('placement');
     const plans = (e) => { if (e) e.preventDefault(); M.modal(`<div class="pt-plmodal">${planSection()}</div>`, { x: true }); };
     $$('.tb-up').forEach(x => x.onclick = plans); if ($('#pt-tour')) $('#pt-tour').onclick = () => { window.scrollTo(0, 0); portalTour(true); }; if ($('#pt-plans')) $('#pt-plans').onclick = plans;
     wireBirth(); live(); birthdayParty();
+    const goTo = (sel) => { const el = $(sel); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+    $$('[data-go]').forEach(b => b.onclick = () => goTo(b.dataset.go));
+    if ($('#me-go2')) $('#me-go2').onclick = () => route('me');
+    $$('.db-tabbar button').forEach(b => b.onclick = () => { $$('.db-tabbar button').forEach(x => x.classList.toggle('on', x === b)); const g = b.dataset.tab;
+      if (g === 'top') window.scrollTo({ top: 0, behavior: 'smooth' }); else if (g === 'plans') plans(); else if (g === 'me') route('me'); else if (g === 'pol') { if (window.MRPOLICY) MRPOLICY.show(); } else goTo(g); });
     $$('.pt-polb').forEach(x => x.onclick = () => window.MRPOLICY && MRPOLICY.show());
     setTimeout(policyFirst, 400);
     // bienvenida de regreso (una vez por sesión)

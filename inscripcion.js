@@ -30,6 +30,8 @@
   const LEVELS = [['No sé', 'No sé mi nivel'], ['Básico', 'Básico'], ['Intermedio', 'Intermedio'], ['Avanzado', 'Avanzado']];
 
   const qs = new URLSearchParams(location.search);
+  const REF = String(qs.get('ref') || (() => { try { return localStorage.getItem('mra_ref') || ''; } catch (e) { return ''; } })()).trim().toUpperCase().replace(/[^A-Z0-9-]/g, '').slice(0, 20);
+  if (REF) { try { localStorage.setItem('mra_ref', REF); } catch (e) { } }
   const st = { plan: ['free', 'membership', 'premium', 'premium8'].indexOf(qs.get('plan')) >= 0 ? qs.get('plan') : '', schedule: '', days: [], level: '', source: '', busy: false };
   const planOf = (id) => PLANS.find((p) => p.id === id);
 
@@ -47,6 +49,7 @@
     </section>
 
     <form id="in-form" class="in-form" novalidate>
+      ${REF ? `<p class="pt-ann" style="margin:0 0 14px">🎁 Te invitó un amigo (código <b>${esc(REF)}</b>): tienes <b>10% de descuento</b> en tu primer mes de cualquier plan pago.</p>` : ''}
       <h2 class="in-step"><span>1</span> Elige tu plan</h2>
       <div class="in-plans" role="radiogroup" aria-label="Plan">
         ${PLANS.map((p) => `
@@ -165,7 +168,7 @@
     const v = (id) => ($('#in-' + id) ? $('#in-' + id).value.trim() : '');
     const premium = /^premium/.test(st.plan), paid = premium || st.plan === 'membership';
     return { first: v('first'), last: v('last'), email: v('email'), whatsapp: v('whatsapp'), birth: v('birth'), city: v('city'), plan: st.plan, level: st.level,
-      schedule: premium ? st.schedule : '', days: premium ? DAYS.filter((d) => st.days.indexOf(d) >= 0).join(', ') : '', payment: paid ? v('payment') : '', source: st.source, comments: v('comments') };
+      schedule: premium ? st.schedule : '', days: premium ? DAYS.filter((d) => st.days.indexOf(d) >= 0).join(', ') : '', payment: paid ? v('payment') : '', source: st.source, comments: v('comments'), ref: REF };
   }
   function validate(d) {
     let first = null;
@@ -206,7 +209,7 @@
   }
   function success(d) {
     const p = planOf(d.plan), paid = d.plan !== 'free';
-    const msg = paid ? `¡Hola! Acabo de inscribirme en mrarrieta.com con el plan ${p.name} 🙌 Mi nombre es ${d.first} ${d.last} (${d.email}). ¿Cómo activo mi plan?` : `¡Hola! Acabo de inscribirme en mrarrieta.com (Acceso gratuito) 🙌 Mi nombre es ${d.first} ${d.last} (${d.email}). Quiero mi código de acceso.`;
+    const msg = paid ? `¡Hola! Acabo de inscribirme en mrarrieta.com con el plan ${p.name} 🙌 Mi nombre es ${d.first} ${d.last} (${d.email}). ¿Cómo activo mi plan?${d.ref ? ' Tengo el código de referido ' + d.ref + ' (10% de descuento).' : ''}` : `¡Hola! Acabo de inscribirme en mrarrieta.com (Acceso gratuito) 🙌 Mi nombre es ${d.first} ${d.last} (${d.email}). Quiero mi código de acceso.`;
     app.innerHTML = `<section class="card in-done center">
       <img src="mra-celebrate.webp" alt="Mr. Arrieta celebrando" class="in-done-img" width="240" height="240">
       <span class="lbl">Inscripción recibida</span>

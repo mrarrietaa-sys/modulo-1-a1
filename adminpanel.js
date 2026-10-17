@@ -57,7 +57,7 @@
   }
 
   /* ======================= ESTRUCTURA ======================= */
-  const TABS = [['home', '📊', 'Resumen'], ['students', '🎓', 'Estudiantes'], ['enroll', '📝', 'Inscripciones'], ['buys', '💳', 'Pagos'], ['leads', '📣', 'Interesados'], ['placement', '🧭', 'Placement'], ['recruit', '👩‍🏫', 'Reclutamiento'], ['teachers', '🧑‍🏫', 'Profesores'], ['classes', '📅', 'Clases'], ['requests', '🔁', 'Solicitudes'], ['chats', '💬', 'Chats'], ['settings', '⚙️', 'Ajustes']];
+  const TABS = [['home', '📊', 'Resumen'], ['students', '🎓', 'Estudiantes'], ['enroll', '📝', 'Inscripciones'], ['buys', '💳', 'Pagos'], ['claims', '🚩', 'Reclamos'], ['leads', '📣', 'Interesados'], ['placement', '🧭', 'Placement'], ['recruit', '👩‍🏫', 'Reclutamiento'], ['teachers', '🧑‍🏫', 'Profesores'], ['classes', '📅', 'Clases'], ['requests', '🔁', 'Solicitudes'], ['chats', '💬', 'Chats'], ['settings', '⚙️', 'Ajustes']];
   let TAB = 'home', STATS = null;
   // "Atrás": dentro del panel vuelve al Resumen (nunca saca a otra página por error)
   document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('.tb-back'); if (!b || !key()) return; if (document.querySelector('.modal, .wa-wrap')) return; e.preventDefault(); e.stopImmediatePropagation(); if (TAB !== 'home') go('home'); else window.scrollTo(0, 0); }, true);
@@ -72,7 +72,7 @@
   function go(t) { TAB = t; history.replaceState(null, '', '#' + t); $$('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === t)); const on = $(`#tabs button[data-t="${t}"]`); on && on.scrollIntoView({ inline: 'center', block: 'nearest' }); window.scrollTo(0, 0); (VIEWS[t] || VIEWS.home)(); }
   const view = () => $('#view');
   function badges(s) { const set = (k, n) => { const e = $(`[data-b="${k}"]`); if (e) { e.textContent = n || ''; e.style.display = n ? '' : 'none'; } };
-    set('enroll', s.enrollNew); set('recruit', s.recruitNew); set('requests', s.requestsPending); set('buys', s.buysPending); }
+    set('enroll', s.enrollNew); set('recruit', s.recruitNew); set('requests', s.requestsPending); set('buys', s.buysPending); set('claims', s.claimsPending); }
 
   /* ======================= RESUMEN ======================= */
   async function home() {
@@ -332,7 +332,7 @@
     const loadPay = async () => { const o = $('#py-out'); if (!o) return; o.innerHTML = '<p class="muted">⏳ Calculando…</p>'; const p = await api('aPayroll', { month: $('#py-m').value });
       if (!p.ok) { o.innerHTML = '<p class="muted">No se pudo calcular.</p>'; return; }
       const tot = p.teachers.reduce((a, t) => a + t.total, 0), pend = p.teachers.filter(t => !t.paid).reduce((a, t) => a + t.total, 0);
-      o.innerHTML = p.teachers.length ? p.teachers.map(t => `<div class="ad-pay-row"><div><b>${esc(t.name)}</b><small class="muted" style="display:block">${t.done} dictada(s) · ${t.noshow} inasist.</small></div><b>${COP(t.total)}</b><span class="tp-paid ${t.paid ? 'ok' : 'pend'}">${t.paid ? '✅ Pagado' : '⏳ Pendiente'}</span><button class="btn ${t.paid ? 'w' : 'k'} sm" data-pay="${esc(t.id)}" data-st="${t.paid ? '0' : '1'}">${t.paid ? 'Marcar pendiente' : '💰 Marcar pagado'}</button></div>`).join('') + `<div class="ad-pay-row"><b>Total del mes</b><b>${COP(tot)}</b><span class="muted">Pendiente: <b>${COP(pend)}</b></span><span></span></div>` : '<p class="muted">No hay clases registradas en este mes.</p>';
+      o.innerHTML = p.teachers.length ? p.teachers.map(t => `<div class="ad-pay-row"><div><b>${esc(t.name)}</b><small class="muted" style="display:block">${t.done} dictada(s) · ${t.noshow} inasist.${t.tnoshow ? ' · <span style="color:#b91c1c">' + t.tnoshow + ' penalización(es)</span>' : ''}</small></div><b>${COP(t.total)}</b><span class="tp-paid ${t.paid ? 'ok' : 'pend'}">${t.paid ? '✅ Pagado' : '⏳ Pendiente'}</span><button class="btn ${t.paid ? 'w' : 'k'} sm" data-pay="${esc(t.id)}" data-st="${t.paid ? '0' : '1'}">${t.paid ? 'Marcar pendiente' : '💰 Marcar pagado'}</button></div>`).join('') + `<div class="ad-pay-row"><b>Total del mes</b><b>${COP(tot)}</b><span class="muted">Pendiente: <b>${COP(pend)}</b></span><span></span></div>` : '<p class="muted">No hay clases registradas en este mes.</p>';
       $$('[data-pay]', o).forEach(b => b.onclick = async () => { const paid = b.dataset.st === '1'; if (paid && !confirm('¿Confirmas que ya se realizó este pago? El profe recibirá un aviso.')) return; b.disabled = true; const r = await api('aPaySet', { teacherId: b.dataset.pay, month: $('#py-m').value, paid }); if (r.ok) { toast(paid ? '✅ Pago registrado. El profe ya fue notificado.' : 'Marcado como pendiente'); loadPay(); } else { b.disabled = false; toast('No se pudo guardar'); } }); };
     $('#py-m').onchange = loadPay; loadPay();
     const cf = await api('aList', { table: 'Config', size: 200 }); const conf = {}; (cf.rows || []).forEach(x => conf[x.key] = x.value);
@@ -472,11 +472,26 @@
     const L = r.buys.filter(b => !BUYF || b.status === BUYF);
     view().innerHTML = `<div class="ad-head"><h1>💳 Pagos</h1><p class="muted">Transferencias con comprobante y pagos con Mercado Pago. Al <b>aprobar</b>, el plan o las clases se habilitan de inmediato y el estudiante recibe aviso y correo.</p></div>
       <div class="ad-filters"><select class="inp" id="bf">${[['pendiente', '⏳ Pendientes'], ['aprobado', '✅ Aprobados'], ['rechazado', '❌ Rechazados'], ['cancelado', '🚫 Cancelados'], ['', 'Todos']].map(([v, n]) => `<option value="${v}" ${BUYF === v ? 'selected' : ''}>${n}</option>`).join('')}</select></div>
-      <div class="card">${L.length ? `<div class="ad-mini">${L.map(b => `<div class="ad-mrow" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><div style="flex:1;min-width:220px"><b>${esc(b.name)}</b> <span class="muted">(${esc(b.code)})</span><br><small class="muted">${b.kind === 'extra' ? '➕ ' + b.n + ' clase(s) adicional(es)' : esc(b.planName || b.plan)} · <b>${money(b.amount)}</b> · ${b.method === 'mercadopago' ? '💳 Mercado Pago' : '🏦 Transferencia'} · ${esc(String(b.date).slice(0, 16).replace('T', ' '))} · ${ST[b.status] || esc(b.status)}${b.note ? ' · ' + esc(b.note) : ''}</small></div>
+      <div class="card">${L.length ? `<div class="ad-mini">${L.map(b => `<div class="ad-mrow" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><div style="flex:1;min-width:220px"><b>${esc(b.name)}</b> <span class="muted">(${esc(b.code)})</span><br><small class="muted">${b.kind === 'extra' ? '➕ ' + b.n + ' clase(s) adicional(es)' : esc(b.planName || b.plan)} · <b>${money(b.amount)}</b>${b.ref ? ' (🎁 referido ' + esc(b.ref) + ' · −' + money(b.discount) + ')' : ''} · ${b.method === 'mercadopago' ? '💳 Mercado Pago' : '🏦 Transferencia'} · ${esc(String(b.date).slice(0, 16).replace('T', ' '))} · ${ST[b.status] || esc(b.status)}${b.note ? ' · ' + esc(b.note) : ''}</small></div>
         ${b.proof ? `<a class="btn w sm" target="_blank" rel="noopener" href="https://drive.google.com/file/d/${encodeURIComponent(b.proof)}/view">🧾 Ver comprobante</a>` : ''}${b.status === 'pendiente' ? `<button class="btn k sm" data-ok="${esc(b.id)}">✅ Aprobar</button><button class="btn w sm" data-no="${esc(b.id)}">❌ Rechazar</button>` : ''}</div>`).join('')}</div>` : '<p class="muted">No hay pagos en esta lista.</p>'}</div>`;
     $('#bf').onchange = (e) => { BUYF = e.target.value; buys(); };
+    api('aRefs').then(x => { if (!x.ok || !x.refs.length || !view().querySelector('#bf')) return; view().insertAdjacentHTML('beforeend', `<div class="card"><h3 style="margin-top:0">🎁 Referidos confirmados (${x.refs.length})</h3><div class="ad-mini">${x.refs.map(f => `<div class="ad-mrow"><b>${esc(f.referrerName)}</b> refirió a <b>${esc(f.friendName)}</b><br><small class="muted">${esc(String(f.date).slice(0, 10))} · Código ${esc(f.refCode)} · Recompensa: ${esc(f.reward)}${f.milestone === 'mes-gratis' ? ' · 🏆 llegó a 3 (mes gratis)' : f.milestone === 'embajador' ? ' · 🏅 llegó a 5 (Embajador)' : ''}</small></div>`).join('')}</div></div>`); });
     $$('[data-ok]').forEach(b => b.onclick = async () => { if (!confirm('¿Confirmas que el pago llegó? Se habilitará de inmediato.')) return; b.disabled = true; const x = await api('aBuyDecide', { id: b.dataset.ok, ok: true }); toast(x.ok ? '✅ Aprobado y habilitado' : 'No se pudo aprobar'); buys(); });
     $$('[data-no]').forEach(b => b.onclick = async () => { const note = prompt('Motivo del rechazo (lo verá el estudiante):', 'No encontramos el pago con ese comprobante.'); if (note === null) return; b.disabled = true; const x = await api('aBuyDecide', { id: b.dataset.no, ok: false, note }); toast(x.ok ? 'Pago rechazado · le avisamos al estudiante' : 'No se pudo rechazar'); buys(); });
+  }
+
+  /* ======================= 🚩 RECLAMOS (profe no se conectó) ======================= */
+  async function claims() {
+    view().innerHTML = '<div class="ad-loading">⏳ Cargando reclamos…</div>';
+    const r = await api('aClaims'); if (!r.ok) return view().innerHTML = '<p class="ad-err">No se pudieron cargar los reclamos.</p>';
+    const ST = { pendiente: '⏳ Pendiente', aprobado: '✅ Aplicado (penalización al profe)', rechazado: '❌ Rechazado', revertido: '↩️ Revertido (fuerza mayor, sin penalización)' };
+    const pend = r.claims.filter(x => x.status === 'pendiente').length; const bd = $('[data-b="claims"]'); if (bd) { bd.textContent = pend || ''; bd.style.display = pend ? '' : 'none'; }
+    view().innerHTML = `<div class="ad-head"><h1>🚩 Reclamos</h1><p class="muted">El estudiante reporta que su profe no se conectó (de 15 min a 24 h después de la clase). Si el profe <b>no había marcado</b> la clase, se aplica de una: la clase vuelve al estudiante y se descuenta la penalización al profe. Si el profe <b>ya la había marcado</b>, queda pendiente: resuélvelo en máximo 24 horas.</p></div>
+      <div class="card">${r.claims.length ? `<div class="ad-mini">${r.claims.map(x => `<div class="ad-mrow" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><div style="flex:1;min-width:220px"><b>${esc(x.studentName)}</b> <span class="muted">(${esc(x.code)})</span> → profe <b>${esc(x.teacherName)}</b><br><small class="muted">Clase: ${esc(fD(x.classDate))} · ${esc(fT(x.classTime))} · ${ST[x.status] || esc(x.status)}${x.auto ? ' · automático' : ''}${x.note ? '<br>💬 ' + esc(x.note) : ''}${x.adminNote ? '<br>📝 ' + esc(x.adminNote) : ''}</small></div>
+        ${x.status === 'pendiente' ? `<button class="btn k sm" data-ca="approve" data-id="${esc(x.id)}">✅ Aprobar</button><button class="btn w sm" data-ca="reject" data-id="${esc(x.id)}">❌ Rechazar</button>` : x.status === 'aprobado' ? `<button class="btn w sm" data-ca="revert" data-id="${esc(x.id)}">↩️ Revertir (fuerza mayor)</button>` : ''}</div>`).join('')}</div>` : '<p class="muted">No hay reclamos. 🙌</p>'}</div>`;
+    $$('[data-ca]').forEach(b => b.onclick = async () => { const act = b.dataset.ca; const Q = { approve: ['¿Aprobar? La clase vuelve al estudiante y se descuenta la penalización al profe.', ''], reject: ['Motivo del rechazo (lo verá el estudiante):', 'Según el registro, la clase sí se dictó.'], revert: ['Motivo (fuerza mayor). Se quita la penalización al profe; la clase sigue devuelta al estudiante:', 'Fuerza mayor'] }[act];
+      let note = ''; if (act === 'approve') { if (!confirm(Q[0])) return; } else { note = prompt(Q[0], Q[1]); if (note === null) return; }
+      b.disabled = true; const x = await api('aClaimDecide', { id: b.dataset.id, act, note }); toast(x.ok ? '✅ Listo' : 'No se pudo'); claims(); });
   }
 
   /* ======================= 📣 INTERESADOS ======================= */
@@ -509,6 +524,6 @@
     const go = () => window.MRLIVE && MRLIVE.open({ title: 'Chats (solo lectura)', roomsAction: 'aChats', getAction: 'aChatGet', readOnly: true, empty: 'Todavía no hay conversaciones.', call: (a, d) => api(a, d) });
     $('#ch-open').onclick = go; go();
   }
-  const VIEWS = { buys, home, students, enroll, leads, placement, recruit, teachers, classes, requests, chats, settings };
+  const VIEWS = { buys, claims, home, students, enroll, leads, placement, recruit, teachers, classes, requests, chats, settings };
   key() && MRAC.on ? boot() : login();
 })();

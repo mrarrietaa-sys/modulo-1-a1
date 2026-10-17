@@ -41,7 +41,7 @@
   const groupOf = (id) => (D.groups || []).find((g) => g.id === id);
   const meetOf = (c) => c.meet || (c.groupId && groupOf(c.groupId) ? groupOf(c.groupId).meet : '') || (D.teacher && String(D.teacher.meet || '').split(/[\s,;]+/).filter(Boolean)[0]) || '';
   const typeBadge = (c) => c.type === 'vip' ? '<span class="tp-badge vip">Individual</span>' : (c.type === 'club' ? '<span class="tp-badge grp">Club</span>' : '<span class="tp-badge grp">Grupal</span>');
-  const statusBadge = (c) => ({ done: '<span class="tp-st done">Dictada ✓</span>', noshow: '<span class="tp-st noshow">No asistió</span>', cancelled: '<span class="tp-st canc">Cancelada</span>', latecancel: '<span class="tp-st canc">Cancelada tarde</span>' }[c.status] || (c.date <= today() ? '<span class="tp-st pend">Por marcar</span>' : '<span class="tp-st sch">Programada</span>'));
+  const statusBadge = (c) => ({ done: '<span class="tp-st done">Dictada ✓</span>', noshow: '<span class="tp-st noshow">No asistió</span>', cancelled: '<span class="tp-st canc">Cancelada</span>', latecancel: '<span class="tp-st canc">Cancelada tarde</span>', tnoshow: '<span class="tp-st noshow">⚠️ No te conectaste</span>' }[c.status] || (c.date <= today() ? '<span class="tp-st pend">Por marcar</span>' : '<span class="tp-st sch">Programada</span>'));
   const whoOf = (c) => c.type === 'vip' ? esc(studentName(c.students[0] || '')) : esc(c.type === 'club' ? (c.topic || 'Club') : ((groupOf(c.groupId) || {}).name || 'Grupo')) + ` · ${c.students.length} estudiante${c.students.length === 1 ? '' : 's'}`;
 
   /* ---------- entrada ---------- */
@@ -307,9 +307,9 @@
     window.open('index.html?profe=1', '_blank');
   }
   /* ---------- 💰 Mis pagos ---------- */
-  const COP = (n) => '$' + Math.round(+n || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  const COP = (n) => (+n < 0 ? '−' : '') + '$' + Math.abs(Math.round(+n || 0)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
   const MES = (ym) => { const [y, m] = String(ym).split('-').map(Number); return new Date(y, m - 1, 15).toLocaleDateString('es-CO', { month: 'long', year: 'numeric' }); };
-  const PST = { done: ['ok', 'Dictada'], noshow: ['warn', 'Te conectaste · el estudiante no asistió'], cancelled: ['off', 'Cancelada a tiempo'], latecancel: ['off', 'Cancelada fuera de tiempo'], 'sin-asistentes': ['off', 'Sin reservas'] };
+  const PST = { done: ['ok', 'Dictada'], noshow: ['warn', 'Te conectaste · el estudiante no asistió'], cancelled: ['off', 'Cancelada a tiempo'], latecancel: ['off', 'Cancelada fuera de tiempo'], 'sin-asistentes': ['off', 'Sin reservas'], tnoshow: ['bad', '⚠️ No te conectaste · penalización (el estudiante lo reportó)'] };
   let payMonth = '', payCache = {};
   async function pay(el) {
     const months = (D.pay && D.pay.months) || []; if (!payMonth) payMonth = (D.pay && D.pay.cur && D.pay.cur.month) || (months[0] && months[0].month) || '';
@@ -320,9 +320,9 @@
     el.innerHTML = `<div class="tp-pay-top"><label class="tp-l" for="tp-pm">Mes</label><select class="inp tp-inp" id="tp-pm">${months.map((x) => `<option value="${x.month}"${x.month === payMonth ? ' selected' : ''}>${esc(MES(x.month))} · ${COP(x.total)} · ${x.paid ? '✅ Pagado' : '⏳ Pendiente'}</option>`).join('')}</select>
         <button class="btn w sm" id="tp-pdf">⬇️ Descargar volante (PDF)</button></div>
       <div class="tp-pay-hero card"><span class="lbl">Total · ${esc(MES(P.month))}</span><b>${COP(P.total)}</b>
-        <div class="tp-pay-k"><span><b>${P.done}</b> clase${P.done === 1 ? '' : 's'} dictada${P.done === 1 ? '' : 's'} × ${COP(P.rate)}</span><span><b>${P.noshow}</b> inasistencia${P.noshow === 1 ? '' : 's'} del estudiante × ${COP(P.noshowRate)}</span></div>
+        <div class="tp-pay-k"><span><b>${P.done}</b> clase${P.done === 1 ? '' : 's'} dictada${P.done === 1 ? '' : 's'} × ${COP(P.rate)}</span><span><b>${P.noshow}</b> inasistencia${P.noshow === 1 ? '' : 's'} del estudiante × ${COP(P.noshowRate)}</span>${P.tnoshow ? `<span class="tp-pen"><b>${P.tnoshow}</b> penalización${P.tnoshow === 1 ? '' : 'es'} × −${COP(P.penalty)}</span>` : ''}</div>
         <span class="tp-paid ${paid ? 'ok' : 'pend'}">${paid ? '✅ Pagado' + (paidAt ? ' el ' + esc(dLabel(String(paidAt).slice(0, 10))) : '') : '⏳ Pendiente por pagar'}</span></div>
-      <div class="tp-alert"><b>¿Cómo se calcula?</b> Se paga cada clase <b>dictada</b> (${COP(P.rate)} por clase de 50 min). Si <b>te conectas y el estudiante no asiste</b>, se pagan ${COP(P.noshowRate)}. Las clases canceladas (a tiempo o fuera de tiempo) y las no dictadas no se pagan. El pago es mensual. Recuerda <b>marcar cada clase</b> en Mis clases.</div>
+      <div class="tp-alert"><b>¿Cómo se calcula?</b> Se paga cada clase <b>dictada</b> (${COP(P.rate)} por clase de 50 min). Si <b>te conectas y el estudiante no asiste</b>, se pagan ${COP(P.noshowRate)}. Las clases canceladas (a tiempo o fuera de tiempo) y las no dictadas no se pagan. <b>Si no te conectas</b> y el estudiante lo reporta, se descuentan ${COP(P.penalty || 10000)} de penalización (administración puede revisarlo en casos de fuerza mayor). El pago es mensual. Recuerda <b>marcar cada clase</b> en Mis clases.</div>
       <div class="card tp-card"><div class="tp-card-h"><h2>Detalle</h2><small class="muted">hora Colombia</small></div>
       ${P.items.length ? `<ul class="tp-list tp-pay-list">${P.items.map((x) => { const st = PST[x.status] || ['off', x.status]; return `<li class="tp-pay-row"><div><b>${dLabel(x.date)} · ${h12(x.time)}</b><small>${x.type === 'vip' ? 'Individual' : esc(x.club || 'Clase grupal')}${x.who ? ' · ' + esc(x.who) : ''}</small></div><span class="tp-pst ${st[0]}">${esc(st[1])}</span><b class="tp-amt">${COP(x.amount)}</b></li>`; }).join('')}</ul>` : '<p class="muted">No hay clases registradas en este mes.</p>'}</div>`;
     $('#tp-pm', el).onchange = (e) => { payMonth = e.target.value; pay(el); };
@@ -341,7 +341,7 @@
       <h1>${esc(t.name || '')}</h1><div class="meta">Código: ${esc(t.code || '')}${t.email ? ' · ' + esc(t.email) : ''}<br>Periodo: ${esc(MES(P.month))} · Valor por clase dictada: ${COP(P.rate)} · Inasistencia del estudiante: ${COP(P.noshowRate)}</div>
       <span class="st">${paid ? 'PAGADO' + (paidAt ? ' · ' + esc(dLabel(String(paidAt).slice(0, 10))) : '') : 'PENDIENTE POR PAGAR'}</span>
       <table><thead><tr><th>Fecha</th><th>Hora</th><th>Clase</th><th>Estudiante(s)</th><th>Estado</th><th class="r">Valor</th></tr></thead><tbody>${rows || '<tr><td colspan="6">Sin clases registradas</td></tr>'}</tbody></table>
-      <table class="sum"><tr><td>Clases dictadas (${P.done} × ${COP(P.rate)})</td><td class="r">${COP(P.done * P.rate)}</td></tr><tr><td>Inasistencias (${P.noshow} × ${COP(P.noshowRate)})</td><td class="r">${COP(P.noshow * P.noshowRate)}</td></tr><tr class="tot"><td>TOTAL</td><td class="r">${COP(P.total)}</td></tr></table>
+      <table class="sum"><tr><td>Clases dictadas (${P.done} × ${COP(P.rate)})</td><td class="r">${COP(P.done * P.rate)}</td></tr><tr><td>Inasistencias (${P.noshow} × ${COP(P.noshowRate)})</td><td class="r">${COP(P.noshow * P.noshowRate)}</td></tr>${P.tnoshow ? `<tr><td>Penalizaciones (${P.tnoshow} × ${COP(P.penalty)})</td><td class="r">−${COP(P.tnoshow * P.penalty)}</td></tr>` : ''}<tr class="tot"><td>TOTAL</td><td class="r">${COP(P.total)}</td></tr></table>
       <p class="foot">mrarrieta.com · ¡Aprende inglés HABLANDO! · Generado el ${esc(dLabel(today(), true))}. Las clases canceladas y las no dictadas no generan pago.</p>
       <script>window.onload=function(){setTimeout(function(){window.print()},400)}<\/script></body></html>`);
     w.document.close();

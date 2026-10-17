@@ -7,7 +7,7 @@
   const M = new Proxy({}, { get: (o, k) => (window.M1 || {})[k] }); // core.js carga después
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const PLS = () => window.MRPLANS || {}; const fmt = (n) => (PLS().fmt || String)(n);
-  const ERR = { mp_off: 'El pago con tarjeta aún no está activo. Usa transferencia o escríbenos por WhatsApp.', mp_error: 'Mercado Pago no respondió. Inténtalo de nuevo en un momento.', proof: 'Adjunta la foto o el PDF de tu comprobante.', big: 'El archivo es muy pesado (máx. 8 MB).', too_many: 'Ya tienes comprobantes pendientes por revisar. Espera la aprobación.', not_premium: 'Las clases adicionales son para planes Premium activos.', plan: 'Plan no válido.' };
+  const ERR = { ref: 'El código de referido no es válido.', mp_off: 'El pago con tarjeta aún no está activo. Usa transferencia o escríbenos por WhatsApp.', mp_error: 'Mercado Pago no respondió. Inténtalo de nuevo en un momento.', proof: 'Adjunta la foto o el PDF de tu comprobante.', big: 'El archivo es muy pesado (máx. 8 MB).', too_many: 'Ya tienes comprobantes pendientes por revisar. Espera la aprobación.', not_premium: 'Las clases adicionales son para planes Premium activos.', plan: 'Plan no válido.' };
   let catOk = false;
   async function cat() { if (catOk) return; try { const r = await MRAC.call('plans', {}); if (r && r.ok) { PLS().applyCat && PLS().applyCat(r.cat); window.__mpOn = !!r.mp; catOk = true; } } catch (e) { } }
   function payBlock(id) {
@@ -45,11 +45,20 @@
     await cat(); const p = (PLS().PL || {})[k]; if (!p) return;
     const m = M.modal(`<h3>💳 ${esc(p.name)}</h3>
       <table class="by-sum"><tr><td>Plan</td><td><b>${esc(p.name)}</b></td></tr><tr><td>Precio</td><td><b>${esc(p.price)}</b> COP</td></tr><tr><td>Periodicidad</td><td>Mensual (se renueva solo si vuelves a pagar)</td></tr>
-        <tr><td>Clases incluidas</td><td>${p.classes ? p.classes + ' clases individuales de 50 minutos por mes' : 'No incluye clases individuales'}</td></tr><tr><td><b>Total a pagar</b></td><td><b>${esc(p.price)} COP</b></td></tr></table>
+        <tr><td>Clases incluidas</td><td>${p.classes ? p.classes + ' clases individuales de 50 minutos por mes' : 'No incluye clases individuales'}</td></tr><tr id="by-disc" class="hidden"><td>🎁 Descuento referido</td><td id="by-dv"></td></tr><tr><td><b>Total a pagar</b></td><td><b id="by-tot">${esc(p.price)} COP</b></td></tr></table>
+      <div class="${firstBuy() ? '' : 'hidden'}"><label class="ad-lab" style="display:block;margin-top:8px"><b>🎁 ¿Te recomendó un amigo?</b> Código de referido (opcional)</label><div class="by-ref"><input class="inp" id="by-ref" placeholder="Ej.: LAURA-123" value="${esc(refSaved())}"><button class="btn w" id="by-refok">Aplicar</button></div><p class="muted" id="by-refmsg" style="font-size:13px;margin:0 0 6px"></p></div>
       ${p.classes ? '<p class="muted" style="font-size:13.5px">Las clases incluidas son del periodo mensual y no se acumulan. Reserva con mínimo 4 horas de anticipación; cancela gratis hasta 2 horas antes.</p>' : ''}
       ${payBlock('bp')}`, { x: true });
-    wire(m, 'bp', { kind: 'plan', plan: k });
+    const pay = { kind: 'plan', plan: k }; wire(m, 'bp', pay);
+    const apply = async () => { const v = m.querySelector('#by-ref').value.trim().toUpperCase(), msg = m.querySelector('#by-refmsg');
+      if (!v) { delete pay.ref; m.querySelector('#by-disc').classList.add('hidden'); m.querySelector('#by-tot').textContent = fmt(p.n) + ' COP'; msg.textContent = ''; return; }
+      msg.textContent = '⏳ Revisando…'; const r = await MRAC.call('refCheck', { code: MRAC.code(), ref: v }).catch(() => null);
+      if (r && r.ok) { const d = Math.round(p.n * r.pct / 100 / 100) * 100; pay.ref = v; m.querySelector('#by-disc').classList.remove('hidden'); m.querySelector('#by-dv').textContent = '−' + fmt(d) + ' COP (' + r.pct + '%)'; m.querySelector('#by-tot').textContent = fmt(p.n - d) + ' COP'; msg.innerHTML = '✅ Código de <b>' + esc(r.name) + '</b> aplicado. Paga el total con descuento.'; }
+      else { delete pay.ref; m.querySelector('#by-disc').classList.add('hidden'); m.querySelector('#by-tot').textContent = fmt(p.n) + ' COP'; msg.textContent = '⚠️ Código no válido. El descuento aplica solo en tu primer mes y no con tu propio código.'; } };
+    m.querySelector('#by-refok').onclick = apply; if (refSaved() && firstBuy()) apply();
   }
+  function firstBuy() { const q = (window.MRAP && MRAP.get()) || {}; return !q.planStart; }
+  function refSaved() { try { return localStorage.getItem('mra_ref') || ''; } catch (e) { return ''; } }
   async function extra(cycleEnd) {
     await cat(); const unit = PLS().extra ? PLS().extra() : 39900;
     const m = M.modal(`<h3>➕ Clases individuales adicionales</h3>

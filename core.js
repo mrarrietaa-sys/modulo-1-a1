@@ -159,7 +159,8 @@
       // works both with folders (js/audio/t1.js) and with all files in one folder (t1.js)
       const base = (document.querySelector('script[src*="core.js"]').getAttribute('src') || '').replace(/core\.js(\?.*)?$/, '');
       const tryLoad = (paths) => { if (!paths.length) return res(); const sc = document.createElement('script'); sc.src = paths[0]; sc.onload = res; sc.onerror = () => { sc.remove(); tryLoad(paths.slice(1)); }; document.head.appendChild(sc); };
-      tryLoad([base + 'audio/' + g + '.js', base + g + '.js']);
+      const q = ((document.querySelector('script[src*="core.js"]').getAttribute('src') || '').match(/\?.*$/) || [''])[0]; // misma versión que core.js → los audios nuevos no quedan en caché
+      tryLoad([base + 'audio/' + g + '.js' + q, base + g + '.js' + q]);
     })));
   }
   async function playSeq(list, gap = 250) { for (const au of list) { await play(au); await sleep(gap); } }

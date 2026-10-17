@@ -3895,3 +3895,5 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--blue)!im
 /* "Meta final de tu ruta" cabe en el celular */
 .pt-course .lbl{white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
 @media (max-width:520px){.pt-course .lbl{font-size:10px;letter-spacing:.08em;padding:5px 10px}.pt-course{gap:10px}.pt-course-ic{font-size:36px}}
+.to-ic{width:64px;height:64px;margin:0 auto 6px;border-radius:18px;background:#ffe8ea;color:#E3242B;display:grid;place-items:center}.to-ic .mri{width:32px;height:32px}
+.to-pay{margin-top:12px;background:#f4f6fa;border-radius:14px;padding:12px 14px}.to-pay div{display:grid;gap:6px;margin-top:6px;font-size:14px}.to-pay span{display:flex;gap:8px;align-items:flex-start}.to-pay .mri{color:#1D5FD1;margin-top:2px}

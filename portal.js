@@ -155,9 +155,12 @@
   }
   // el acceso gratuito (5 días) terminó → invitación a inscribirse
   function trialOver(code) {
-    M.modal(`<div class="center"><div style="font-size:48px">🎁</div><h3>Tu acceso gratuito terminó</h3><p>Gracias por conocer <b>mrarrieta.com</b> 💙. Tu progreso está guardado: inscríbete y continúa justo donde lo dejaste.</p>
-      <a class="btn k block lg" target="_blank" rel="noopener" href="${WA('¡Hola! Mi código es ' + (code || '') + ', terminó mi acceso gratuito y quiero inscribirme en mrarrieta.com 🚀')}">💬 Quiero inscribirme</a>
-      <a class="btn w block" href="inscripcion.html" style="margin-top:8px">📝 Formulario de inscripción</a></div>`, { x: true });
+    window.__buyCode = code || ''; // permite pagar desde aquí aunque el acceso gratuito haya terminado
+    const PL = window.MRPLANS;
+    M.modal(`<div class="center"><div class="to-ic">${MRI('gift')}</div><h3>Tu acceso gratuito terminó</h3><p>Gracias por conocer <b>mrarrieta.com</b>. Tu progreso está guardado: <b>elige tu plan</b> y continúa justo donde lo dejaste.</p></div>
+      ${PL ? PL.cards('free') : ''}
+      <div class="to-pay"><b>Formas de pago</b><div><span>${MRI('card')} Tarjeta débito o crédito (Mercado Pago) · se habilita de inmediato</span><span>${MRI('bank')} Transferencia: Nequi 3017810841 · Llave (Breve-B) 1047374279</span></div></div>
+      <a class="btn wa-btn block" target="_blank" rel="noopener" href="${WA('¡Hola! Mi código es ' + (code || '') + ', terminó mi acceso gratuito y quiero inscribirme en mrarrieta.com')}" style="margin-top:12px">Escríbenos por WhatsApp</a>`, { x: true });
   }
   function logout() {
     const m = M.modal(`<h3>¿Salir de tu perfil?</h3><p class="muted">Tu progreso queda guardado${window.MRAC && MRAC.code() ? ' en la nube: puedes continuar desde cualquier dispositivo' : ' en este dispositivo'}. Para volver a entrar necesitarás tu código.</p><div class="row"><button class="btn k" id="y">Sí, salir</button><button class="btn w" id="n">Cancelar</button></div>`, { x: true });

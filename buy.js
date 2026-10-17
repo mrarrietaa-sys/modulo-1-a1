@@ -8,6 +8,7 @@
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const PLS = () => window.MRPLANS || {}; const fmt = (n) => (PLS().fmt || String)(n);
   const ERR = { ref: 'El código de referido no es válido.', mp_off: 'El pago con tarjeta aún no está activo. Usa transferencia o escríbenos por WhatsApp.', mp_error: 'Mercado Pago no respondió. Inténtalo de nuevo en un momento.', proof: 'Adjunta la foto o el PDF de tu comprobante.', big: 'El archivo es muy pesado (máx. 8 MB).', too_many: 'Ya tienes comprobantes pendientes por revisar. Espera la aprobación.', not_premium: 'Las clases adicionales son para planes Premium activos.', plan: 'Plan no válido.' };
+  const CODE = () => (window.MRAC && MRAC.code && MRAC.code()) || window.__buyCode || (() => { try { return localStorage.getItem('mra_buy_code') || ''; } catch (e) { return ''; } })();
   let catOk = false;
   async function cat() { if (catOk) return; try { const r = await MRAC.call('plans', {}); if (r && r.ok) { PLS().applyCat && PLS().applyCat(r.cat); window.__mpOn = !!r.mp; catOk = true; } } catch (e) { } }
   function payBlock(id) {
@@ -29,23 +30,23 @@
   }
   function wire(m, id, payload) {
     m.querySelector(`#${id}-mp`).onclick = async (e) => { const b = e.currentTarget; b.disabled = true; b.textContent = '⏳ Abriendo Mercado Pago…';
-      const r = await MRAC.call('buyStart', Object.assign({ code: MRAC.code(), method: 'mp' }, payload)).catch(() => ({ ok: false }));
-      if (r && r.ok && r.url) { try { localStorage.setItem('mra_buy_last', r.id); } catch (er) { } location.href = r.url; return; }
+      const r = await MRAC.call('buyStart', Object.assign({ code: CODE(), method: 'mp' }, payload)).catch(() => ({ ok: false }));
+      if (r && r.ok && r.url) { try { localStorage.setItem('mra_buy_last', r.id); localStorage.setItem('mra_buy_code', CODE()); } catch (er) { } location.href = r.url; return; }
       b.disabled = false; b.innerHTML = MRI('card') + '<span><b>Pagar con tarjeta</b><small>Mercado Pago · débito o crédito</small></span>'; M.toast(ERR[r && r.err] || 'No se pudo iniciar el pago.'); };
     m.querySelector(`#${id}-tr`).onclick = () => m.querySelector(`#${id}-trbox`).classList.remove('hidden');
     m.querySelector(`#${id}-file`).onchange = (e) => { const f = e.target.files[0]; const l = m.querySelector(`#${id}-fn`); l.textContent = f ? f.name : 'Adjunta tu comprobante de pago'; l.parentNode.classList.toggle('on', !!f); };
     m.querySelector(`#${id}-send`).onclick = async (e) => { const f = m.querySelector(`#${id}-file`).files[0]; if (!f) return M.toast(ERR.proof);
       const b = e.currentTarget; b.disabled = true; b.textContent = '⏳ Enviando…';
       let file; try { file = await shrink(f); } catch (er) { b.disabled = false; b.innerHTML = MRI('send') + ' Enviar comprobante'; return M.toast('No se pudo leer el archivo.'); }
-      const r = await MRAC.call('buyStart', Object.assign({ code: MRAC.code(), method: 'tr', data: file.data, mime: file.mime, fname: file.name }, payload)).catch(() => ({ ok: false }));
+      const r = await MRAC.call('buyStart', Object.assign({ code: CODE(), method: 'tr', data: file.data, mime: file.mime, fname: file.name }, payload)).catch(() => ({ ok: false }));
       if (!r || !r.ok) { b.disabled = false; b.innerHTML = MRI('send') + ' Enviar comprobante'; return M.toast(ERR[r && r.err] || 'No se pudo enviar. Revisa tu conexión.'); }
       m.querySelector('.card').innerHTML = `<div class="center">${M.mascot('mascot', 'thumbs')}</div><h3 class="center">¡Recibimos tu comprobante!</h3><p class="center" style="font-size:16px">Administración lo revisará pronto. <b>Apenas lo apruebe, se habilita de inmediato</b> en tu perfil y te avisamos en la campanita 🔔 y por correo.</p><button class="btn k block" id="by-x">Entendido</button>`;
       m.querySelector('#by-x').onclick = () => m.remove(); };
   }
   async function plan(k) {
-    await cat(); const p = (PLS().PL || {})[k]; if (!p) return;
-    const m = M.modal(`<h3 class="by-h">${MRI('card')} ${esc(p.name)}</h3>
-      <table class="by-sum"><tr><td>Plan</td><td><b>${esc(p.name)}</b></td></tr><tr><td>Precio</td><td><b>${esc(p.price)}</b> COP</td></tr><tr><td>Periodicidad</td><td>Mensual (se renueva solo si vuelves a pagar)</td></tr>
+    await cat(); const p = (PLS().PL || {})[k]; if (!p) return; const nm = (PLS().noEmo || String)(p.name);
+    const m = M.modal(`<h3 class="by-h">${MRI('card')} ${esc(nm)}</h3>
+      <table class="by-sum"><tr><td>Plan</td><td><b>${esc(nm)}</b></td></tr><tr><td>Precio</td><td><b>${esc(p.price)}</b> COP</td></tr><tr><td>Periodicidad</td><td>Mensual (se renueva solo si vuelves a pagar)</td></tr>
         <tr><td>Clases incluidas</td><td>${p.classes ? p.classes + ' clases individuales de 50 minutos por mes' : 'No incluye clases individuales'}</td></tr><tr id="by-disc" class="hidden"><td>Descuento referido</td><td id="by-dv"></td></tr><tr><td><b>Total a pagar</b></td><td><b id="by-tot">${esc(p.price)} COP</b></td></tr></table>
       <div class="${firstBuy() ? '' : 'hidden'}"><label class="ad-lab" style="display:block;margin-top:8px"><b>¿Te recomendó un amigo?</b> Código de referido (opcional)</label><div class="by-ref"><input class="inp" id="by-ref" placeholder="Ej.: LAURA-123" value="${esc(refSaved())}"><button class="btn w" id="by-refok">Aplicar</button></div><p class="muted" id="by-refmsg" style="font-size:13px;margin:0 0 6px"></p></div>
       ${p.classes ? '<p class="muted" style="font-size:13.5px">Las clases incluidas son del periodo mensual y no se acumulan. Reserva con mínimo 4 horas de anticipación; cancela gratis hasta 2 horas antes.</p>' : ''}
@@ -53,7 +54,7 @@
     const pay = { kind: 'plan', plan: k }; wire(m, 'bp', pay);
     const apply = async () => { const v = m.querySelector('#by-ref').value.trim().toUpperCase(), msg = m.querySelector('#by-refmsg');
       if (!v) { delete pay.ref; m.querySelector('#by-disc').classList.add('hidden'); m.querySelector('#by-tot').textContent = fmt(p.n) + ' COP'; msg.textContent = ''; return; }
-      msg.textContent = '⏳ Revisando…'; const r = await MRAC.call('refCheck', { code: MRAC.code(), ref: v }).catch(() => null);
+      msg.textContent = '⏳ Revisando…'; const r = await MRAC.call('refCheck', { code: CODE(), ref: v }).catch(() => null);
       if (r && r.ok) { const d = Math.round(p.n * r.pct / 100 / 100) * 100; pay.ref = v; m.querySelector('#by-disc').classList.remove('hidden'); m.querySelector('#by-dv').textContent = '−' + fmt(d) + ' COP (' + r.pct + '%)'; m.querySelector('#by-tot').textContent = fmt(p.n - d) + ' COP'; msg.innerHTML = '✅ Código de <b>' + esc(r.name) + '</b> aplicado. Paga el total con descuento.'; }
       else { delete pay.ref; m.querySelector('#by-disc').classList.add('hidden'); m.querySelector('#by-tot').textContent = fmt(p.n) + ' COP'; msg.textContent = '⚠️ Código no válido. El descuento aplica solo en tu primer mes y no con tu propio código.'; } };
     m.querySelector('#by-refok').onclick = apply; if (refSaved() && firstBuy()) apply();
@@ -76,14 +77,14 @@
   }
   // al volver de Mercado Pago (index.html?compra=ID): confirmar el pago y habilitar de una
   async function back() {
-    const q = new URLSearchParams(location.search); const id = q.get('compra'); if (!id || !window.MRAC || !MRAC.code()) return;
+    const q = new URLSearchParams(location.search); const id = q.get('compra'); if (!id || !window.MRAC || !CODE()) return;
     history.replaceState(null, '', location.pathname);
     const w = M.modal(`<div class="center">${M.mascot('mascot', 'watch')}</div><h3 class="center">⏳ Confirmando tu pago…</h3><p class="center muted">Un momento, estamos verificando con Mercado Pago.</p>`, {});
     let st = 'pendiente';
-    for (let i = 0; i < 6 && st === 'pendiente'; i++) { const r = await MRAC.call('buyCheck', { code: MRAC.code(), id }).catch(() => null); st = r && r.ok ? r.status : st; if (st === 'pendiente') await M.sleep(3000); }
+    for (let i = 0; i < 6 && st === 'pendiente'; i++) { const r = await MRAC.call('buyCheck', { code: CODE(), id }).catch(() => null); st = r && r.ok ? r.status : st; if (st === 'pendiente') await M.sleep(3000); }
     w.remove();
     if (st === 'aprobado') { try { sessionStorage.removeItem('mra_me_cache'); } catch (e) { } M.confetti && M.confetti(1800);
-      const m = M.modal(`<div class="center">${M.mascot('mascot bounce', 'celebrate')}</div><h3 class="center">🎉 ¡Pago confirmado!</h3><p class="center" style="font-size:16px">Ya está todo habilitado en tu perfil.</p><button class="btn k block lg" id="by-ok">¡Vamos!</button>`, { x: true });
+      const m = M.modal(`<div class="center">${M.mascot('mascot bounce', 'celebrate')}</div><h3 class="center">🎉 ¡Pago confirmado!</h3><p class="center" style="font-size:16px">Ya está todo habilitado en tu perfil.${MRAC.code() ? '' : ' Ingresa con tu código <b>' + esc(CODE()) + '</b>.'}</p><button class="btn k block lg" id="by-ok">¡Vamos!</button>`, { x: true });
       m.querySelector('#by-ok').onclick = () => location.reload(); return; }
     M.modal(`<h3 class="center">${st === 'pendiente' ? '⏳ Tu pago está en proceso' : '⚠️ El pago no se completó'}</h3><p class="center">${st === 'pendiente' ? 'Mercado Pago aún no lo confirma. Apenas lo haga, se habilita solo (lo revisamos cada hora) y te avisamos.' : 'No se realizó el cobro. Puedes intentarlo de nuevo o pagar por transferencia.'}</p>`, { x: true });
   }

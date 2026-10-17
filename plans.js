@@ -30,7 +30,7 @@
   const IC = { free: 'gift', membership: 'monitor', premium: 'crown', premium8: 'gem' };
   const ico = (k) => window.MRI ? MRI(IC[k] || 'gift') : '';
   const noEmo = (t) => String(t).replace(/^[^A-Za-zÁÉÍÓÚÑáéíóúñ0-9]+/, '');
-  const canBuy = () => !!(window.MRAC && MRAC.code && MRAC.code() && window.MRBUY);
+  const canBuy = () => !!(window.MRBUY && ((window.MRAC && MRAC.code && MRAC.code()) || window.__buyCode));
   function card(k, opt) {
     opt = opt || {}; const p = PL[k]; const cur = opt.current === k; const top = k === 'premium8';
     return `<div class="pl-card ${k === 'membership' ? 'membership' : 'premium'}${cur ? ' cur' : ''}">${top ? `<span class="pl-rib">${window.MRI ? MRI('award') : ''} Más práctica</span>` : ''}

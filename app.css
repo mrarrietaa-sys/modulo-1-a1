@@ -3890,3 +3890,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--blue)!im
 .pl-mine.premium .pl-mine-ic{background:#ffe8ea!important;color:#E3242B}.pl-mine.exp .pl-mine-ic{color:#b91c1c}
 .pl-mh{display:flex;align-items:center;justify-content:center;gap:8px}.pl-mh .mri{color:#E3242B}
 .pl-note .mri{color:#1D5FD1;margin-right:4px}
+/* el título del modal no queda debajo de la X */
+.modal .card>.mx+h3,.modal .card>.mx+h2,.modal .card>.mx+.by-h{padding-right:52px}
+/* "Meta final de tu ruta" cabe en el celular */
+.pt-course .lbl{white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:520px){.pt-course .lbl{font-size:10px;letter-spacing:.08em;padding:5px 10px}.pt-course{gap:10px}.pt-course-ic{font-size:36px}}

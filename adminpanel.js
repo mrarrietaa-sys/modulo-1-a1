@@ -180,7 +180,7 @@
     };
   }
   // sin emojis: WhatsApp Web los muestra como signos negros (�) cuando llegan por enlace
-  const accessMsg = (s) => `¡Hola ${s.first}! Bienvenido(a) a la plataforma de mrarrieta.com.\n\n*Tu código de acceso:* ${s.code}\n*Entra aquí:* ${BASE}\n\nEscribe tu código en la plataforma y empieza a aprender.${/^premium/.test(s.plan) ? '\n\n*Importante:* tus clases individuales no son acumulables. Resérvalas durante tu periodo mensual; las que no uses antes del vencimiento se pierden.\n\n*POLÍTICA DE RESERVAS Y CANCELACIONES*\nReserva mínimo 4 horas antes. Cancelación sin penalización mínimo 2 horas antes. Cancelación tardía o inasistencia: la clase se descuenta de tu plan y no será repuesta.' : ''}`;
+  const accessMsg = (s) => `¡Hola ${s.first}! Bienvenido(a) a la plataforma de mrarrieta.com.\n\n*Tu código de acceso:* ${s.code}\n*Entra aquí:* ${BASE}\n\nEscribe tu código en la plataforma y empieza a aprender.${/^premium/.test(s.plan) ? '\n\n*Importante:* tus clases individuales no son acumulables. Resérvalas durante tu periodo mensual; las que no uses antes del vencimiento se vencen y no se recuperan.\n\n*POLÍTICA DE RESERVAS Y CANCELACIONES*\nReserva mínimo 4 horas antes. Cancelación sin penalización mínimo 2 horas antes. Cancelación tardía o inasistencia: la clase se descuenta de tu plan y no será repuesta.' : ''}`;
   function shareCode(s) {
     const msg = accessMsg(s);
     const m = modal(`<div class="center"><div style="font-size:44px">🔑</div><h2>Código de ${esc(s.first)}</h2><div class="ad-code">${esc(s.code)}</div><p class="muted">Envíaselo por WhatsApp o cópialo.</p>

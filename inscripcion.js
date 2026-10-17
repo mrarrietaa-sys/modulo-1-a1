@@ -37,8 +37,10 @@
 
   /* ---------------- vista principal ---------------- */
   function render() {
+    const DIRECT = !!st.plan && st.plan !== 'free' && !st.pickAll; const SP = planOf(st.plan) || {};
     app.innerHTML = `
-    <section class="in-hero">
+    ${DIRECT ? `<section class="card in-direct"><span class="in-plan-ic" aria-hidden="true">${SP.icon}</span><div class="grow"><span class="lbl">Tu plan</span><h1>${esc(SP.name)}</h1><p><b>${esc(SP.price)}</b> ${esc(SP.per || '')} · ${esc(SP.tag || '')}</p></div><button type="button" class="btn w sm" id="in-chg">Cambiar plan</button></section>` : ''}
+    <section class="in-hero"${DIRECT ? ' hidden' : ''}>
       <div class="in-hero-txt">
         <span class="lbl">Inscripciones abiertas</span>
         <h1>Aprende inglés <span class="in-hl">HABLANDO</span>, a tu ritmo y con tu propia ruta.</h1>
@@ -50,7 +52,7 @@
 
     <form id="in-form" class="in-form" novalidate>
       ${REF ? `<p class="pt-ann" style="margin:0 0 14px">🎁 Te invitó un amigo (código <b>${esc(REF)}</b>): tienes <b>10% de descuento</b> en tu primer mes de cualquier plan pago.</p>` : ''}
-      <h2 class="in-step"><span>1</span> Elige tu plan</h2>
+      <div${DIRECT ? ' hidden' : ''}><h2 class="in-step"><span>1</span> Elige tu plan</h2>
       <div class="in-plans" role="radiogroup" aria-label="Plan">
         ${PLANS.map((p) => `
         <button type="button" class="in-plan${p.best ? ' best' : ''}${st.plan === p.id ? ' on' : ''}" role="radio" aria-checked="${st.plan === p.id}" data-plan="${p.id}">
@@ -64,9 +66,9 @@
           <span class="in-plan-pick">${st.plan === p.id ? '✓ Seleccionado' : 'Elegir este plan'}</span>
         </button>`).join('')}
       </div>
-      <p class="in-err" id="err-plan" hidden>Elige un plan para continuar.</p>
+      <p class="in-err" id="err-plan" hidden>Elige un plan para continuar.</p></div>
 
-      <h2 class="in-step"><span>2</span> Tus datos</h2>
+      <h2 class="in-step"><span>${DIRECT ? 1 : 2}</span> Tus datos</h2>
       <div class="card in-card">
         <div class="in-grid">
           ${field('first', 'Nombre', 'text', 'given-name', 'Ej: Laura')}
@@ -139,6 +141,7 @@
 
   function bind() {
     $$('.in-plan').forEach((b) => b.onclick = () => { st.plan = b.dataset.plan; syncPlan(); $('#err-plan').hidden = true; });
+    if ($('#in-chg')) $('#in-chg').onclick = () => { st.pickAll = true; render(); setTimeout(() => { const g = $('.in-plans'); if (g) g.scrollIntoView({ behavior: 'smooth' }); }, 50); };
     $$('.in-chip').forEach((b) => b.onclick = () => {
       const g = b.dataset.g, v = b.dataset.v;
       if (g === 'days') { const i = st.days.indexOf(v); i >= 0 ? st.days.splice(i, 1) : st.days.push(v); }

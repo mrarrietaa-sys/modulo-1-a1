@@ -95,29 +95,65 @@
   // 🌟 página de entrada: hero con el ingreso, planes, testimonios, beneficios y cómo funciona
   function landing() {
     const card = $('.pt-login'); if (!card || !window.MRI) return;
-    const tb = $('#topbar .tb-tag'); if (tb) tb.outerHTML = `<nav class="ld-nav"><a href="#ld-planes">Planes</a><a href="#ld-beneficios">Beneficios</a><a href="#ld-como">Cómo funciona</a><a class="btn r sm" href="#ld-gratis">Empieza gratis</a></nav>`;
-    const PL = window.MRPLANS || {}; const T = window.MRTESTIMONIOS || [];
-    const noE = PL.noEmo || String; const plan = (k, ic, top) => { const p = (PL.PL || {})[k]; if (!p) return ''; return `<div class="card ld-p${top ? ' top' : ''}">${top ? '<span class="ld-rib">Más elegido</span>' : ''}<span class="ld-ic ${k === 'membership' ? 'b' : 'r'}">${MRI(ic)}</span><h3>${esc(noE(p.name))}</h3><div class="ld-pr">${esc(p.price)} <small>/mes</small></div><ul>${(PL.BEN[k] || []).filter(b => !/^No incluye/.test(b)).slice(0, 4).map(b => `<li>${MRI('check')}<span>${esc(noE(b))}</span></li>`).join('')}</ul><a class="btn ${top ? 'r' : 'k'} block" href="inscripcion.html?plan=${k}">Elegir</a></div>`; };
+    const tb = $('#topbar .tb-tag'); if (tb) tb.outerHTML = `<nav class="ld-nav"><a href="#ld-planes">Planes</a><a href="#ld-ganas">Beneficios</a><a href="#ld-testimonios">Testimonios</a><button class="btn r sm" data-trial>Empieza gratis</button></nav>`;
+    const PL = window.MRPLANS || {}; const T = window.MRTESTIMONIOS || []; const pp = (k) => (PL.PL || {})[k] || {};
+    const CARDS = [
+      { id: 'free', icon: '🎁', name: 'ACCESO GRATUITO', price: '$0', per: 'sin costo', tag: 'Para empezar · 5 días', perks: ['Acceso temporal a la plataforma', 'Prueba de clasificación y tu ruta de aprendizaje', 'Los 2 primeros temas de tu ruta'], note: 'No incluye clases individuales.', btn: 'Empezar gratis' },
+      { id: 'membership', icon: '🖥️', name: 'PLATAFORMA', price: pp('membership').price || '$59.900', per: '/mes', tag: 'Toda la plataforma', perks: (PL.BEN || {}).membership ? PL.BEN.membership.filter(b => !/^No incluye/.test(b)) : [], note: 'No incluye clases individuales.' },
+      { id: 'premium', icon: '🎓', name: 'PREMIUM · 4 CLASES', price: pp('premium').price || '$169.900', per: '/mes', tag: 'Plataforma + 4 clases', perks: (PL.BEN || {}).premium || [], best: true },
+      { id: 'premium8', icon: '🏅', name: 'PREMIUM · 8 CLASES', price: pp('premium8').price || '$289.900', per: '/mes', tag: 'Plataforma + 8 clases', perks: (PL.BEN || {}).premium8 || [] }];
+    const GAN = [['mra-present.webp', 'r', 'Clases 1 a 1', 'Con profes reales, a tu ritmo'], ['mra-x-laptop.webp', 'b', '100% online', 'Desde tu celular o computador'], ['mra-celebrate.webp', 'g', 'Certificados', 'Al terminar cada módulo'], ['mra-watch.webp', 'y', 'A tu ritmo', 'Estudia cuando quieras'], ['mra-x-travel.webp', 'b', 'Ruta A1 → B2+', 'Sabes qué estudiar cada día'], ['mra-wow.webp', 'r', 'Te escucha y te corrige', 'La plataforma escucha tu pronunciación y te corrige al instante']];
     const wrap = document.createElement('div'); wrap.className = 'ld';
     wrap.innerHTML = `<section class="ld-hero"><div class="ld-copy"><span class="lbl ld-red">Metodología RealTalk®</span><h1>Aprende inglés <em>HABLANDO</em></h1><p class="ld-lead">Plataforma que escucha tu pronunciación, ruta personalizada del A1 al B2+ y clases individuales con profes reales. 100% online.</p>
-        <div class="ld-cta"><a class="btn r lg" href="#ld-gratis">${MRI('gift')} Prueba gratis 5 días</a><a class="btn w lg" href="#ld-planes">${MRI('crown')} Ver planes</a></div>
+        <div class="ld-cta"><button class="btn r lg" data-trial>${MRI('gift')} Prueba gratis 5 días</button><a class="btn w lg" href="#ld-planes">${MRI('crown')} Ver planes</a></div>
         <div class="ld-badges"><span>${MRI('check')} Voces americanas</span><span>${MRI('check')} Certificado por módulo</span><span>${MRI('check')} Clases de 50 min</span></div></div><div class="ld-login"></div></section>
-      <section class="ld-photos"><div style="background-image:url('${U('photo-1522202176988-66273c2fd55f', 900, 600)}')"></div><div style="background-image:url('${U('photo-1552664730-d307ca884978', 700, 600)}')"></div><div style="background-image:url('${U('photo-1517048676732-d65bc937f952', 700, 600)}')"></div></section>
-      <section class="ld-sec" id="ld-planes"><h2>Elige tu plan</h2><p class="ld-sub">Pagos mes a mes · tarjeta o transferencia</p><div class="ld-pl">
-        <div class="card ld-p"><span class="ld-ic y">${MRI('gift')}</span><h3>Acceso gratuito</h3><div class="ld-pr">$0 <small>5 días</small></div><ul><li>${MRI('check')}<span>Prueba de clasificación</span></li><li>${MRI('check')}<span>Tu ruta de aprendizaje</span></li><li>${MRI('check')}<span>Los 2 primeros temas</span></li></ul><a class="btn w block" href="#ld-gratis">Empezar gratis</a></div>
-        ${plan('membership', 'monitor')}${plan('premium', 'crown', true)}${plan('premium8', 'gem')}</div></section>
-      ${T.length ? `<section class="ld-sec" id="ld-testimonios"><h2>Lo que dicen nuestros estudiantes</h2><p class="ld-sub">Testimonios reales en video</p><div class="ld-tes">${T.map(t => `<div class="card ld-t"><video src="${esc(t.video)}" ${t.poster ? `poster="${esc(t.poster)}"` : ''} controls preload="none" playsinline></video><div class="ld-tq">${t.quote ? `<p>“${esc(t.quote)}”</p>` : ''}<b>${esc(t.name)}</b>${t.level ? `<small>${esc(t.level)}</small>` : ''}</div></div>`).join('')}</div></section>` : ''}
-      <section class="ld-sec" id="ld-beneficios"><h2>¿Por qué mrarrieta.com?</h2><div class="ld-ben">${[['user', 'r', 'Clases 1 a 1', 'Con profes reales, a tu ritmo'], ['video', 'b', '100% online', 'Desde tu celular o computador'], ['award', 'g', 'Certificados', 'Al terminar cada módulo'], ['clock', 'y', 'A tu ritmo', 'Estudia cuando quieras'], ['compass', 'b', 'Ruta A1 → B2+', 'Sabes qué estudiar cada día'], ['check', 'r', 'Te escucha', 'Corrige tu pronunciación']].map(([i, c, t, d]) => `<div class="card ld-be"><span class="ld-ic ${c}">${MRI(i)}</span><b>${t}</b><small>${d}</small></div>`).join('')}</div></section>
-      <section class="ld-sec" id="ld-como"><h2>Cómo funciona</h2><div class="ld-steps">${[['Pide tu acceso gratuito', 'Te enviamos tu código por WhatsApp.'], ['Haz tu prueba de clasificación', '10 minutos para conocer tu nivel.'], ['Sigue tu ruta', 'Un tema nuevo cada pocos días, con audios y juegos.'], ['Elige tu plan', 'Plataforma o Premium con clases individuales.']].map(([t, d], n) => `<div class="card"><b class="ld-n">${n + 1}</b><h3>${t}</h3><p class="muted">${d}</p></div>`).join('')}</div></section>`;
+      <section class="ld-sec" id="ld-planes"><h2>Elige tu plan</h2><p class="ld-sub">Pagos mes a mes · tarjeta o transferencia</p><div class="in-plans ld-inplans">
+        ${CARDS.map(c => `<a class="in-plan${c.best ? ' best' : ''}" ${c.id === 'free' ? 'href="#" data-trial' : `href="inscripcion.html?plan=${c.id}"`}>${c.best ? '<span class="in-ribbon">⭐ Más completo</span>' : ''}<span class="in-plan-ic" aria-hidden="true">${c.icon}</span><span class="in-plan-name">${esc(c.name)}</span><span class="in-plan-price"><b>${esc(c.price)}</b><small>${esc(c.per)}</small></span><span class="in-plan-tag">${esc(c.tag)}</span><ul>${c.perks.map(k => `<li>${esc(k)}</li>`).join('')}</ul>${c.note ? `<span class="in-plan-note">${esc(c.note)}</span>` : ''}<span class="in-plan-pick">${c.btn || 'Elegir este plan'}</span></a>`).join('')}</div></section>
+      ${T.length ? `<section class="ld-sec" id="ld-testimonios"><h2>Lo que dicen nuestros estudiantes</h2><p class="ld-sub">Testimonios reales en video</p><div class="ld-tes">${T.map(t => `<div class="card ld-t"><video src="${esc(t.video)}" ${t.poster ? `poster="${esc(t.poster)}"` : ''} controls preload="none" playsinline></video><b>${esc(t.name)} 🙏💙</b></div>`).join('')}</div></section>` : ''}
+      <section class="ld-sec" id="ld-ganas"><h2>¿Qué ganas con nosotros?</h2><p class="ld-sub">Todo lo que necesitas para hablar inglés con confianza</p><div class="ld-ben">${GAN.map(([img, c, t, d]) => `<div class="card ld-be"><div class="ld-be-img ${c}"><img src="${img}" alt="" loading="lazy"></div><b>${t}</b><small>${d}</small></div>`).join('')}</div></section>
+      <section class="ld-sec" id="ld-como"><h2>Cómo funciona</h2><div class="ld-steps">${['Pide tu acceso gratuito', 'Haz tu prueba de clasificación', 'Sigue tu ruta', 'Elige tu plan'].map((t, n) => `<div class="card"><b class="ld-n">${n + 1}</b><h3>${t}</h3></div>`).join('')}</div></section>
+      <section class="ld-final card"><div><h2>¿Listo para hablar inglés?</h2><p>Empieza hoy tu prueba gratis de 5 días. Sin tarjeta, sin compromiso.</p></div><button class="btn r lg" data-trial>${MRI('gift')} Empezar gratis</button></section>`;
     const pw = card.closest('.pt-wrap'); if (pw) pw.classList.add('ld-on');
     card.parentNode.insertBefore(wrap, card); wrap.querySelector('.ld-login').appendChild(card);
-    const free = $('.pt-free'); if (free) free.id = 'ld-gratis';
+    const free = $('.pt-free'); if (free) free.remove();
+    const or = $('.pt-or'); if (or) or.innerHTML = `<span>¿Aún no eres estudiante? <a href="#" data-trial>Prueba gratis 5 días</a></span>`;
+    const links = $('.pt-links'); if (links) links.remove();
+    const WAN = (C.WHATSAPP || '573017810841');
+    wrap.insertAdjacentHTML('afterend', `<footer class="ld-foot"><div class="ld-foot-in"><div><img src="mra-brand.png" alt="mrarrieta.com" class="ld-foot-logo"><p>Aprende inglés HABLANDO con la metodología RealTalk®. Clases 100% online.</p></div>
+      <div><h4>Escuela</h4><a href="#ld-planes">Planes</a><a href="recomienda.html">Recomienda y gana</a><a href="politica.html">Política de reservas</a></div>
+      <div><h4>Equipo</h4><a href="reclutamiento.html">Trabaja con nosotros</a><a href="profesores.html">Soy profesor</a><a href="administracion.html">Administración</a></div>
+      <div><h4>Contacto</h4><a target="_blank" rel="noopener" href="https://wa.me/${WAN}">WhatsApp ${esc(WAN.replace(/^57/, '').replace(/(\d{3})(\d{3})(\d{4})/, '$1 $2 $3'))}</a><span>Lun–vie 7 a. m.–9 p. m. · Sáb 7 a. m.–5 p. m.</span><span>Pagos: tarjeta (Mercado Pago), Nequi y Llave (Breve-B)</span></div></div>
+      <p class="ld-copy-r">© ${new Date().getFullYear()} mrarrieta.com · Todos los derechos reservados</p></footer>
+      <a class="ld-wa" target="_blank" rel="noopener" aria-label="Escríbenos por WhatsApp" href="${WA('¡Hola! Quiero información sobre las clases de inglés de mrarrieta.com')}"><svg viewBox="0 0 32 32" width="30" height="30" aria-hidden="true"><path fill="#fff" d="M16 3C8.8 3 3 8.6 3 15.6c0 2.5.8 4.9 2.1 6.9L3.6 28l5.7-1.5c2 1.1 4.3 1.7 6.7 1.7 7.2 0 13-5.6 13-12.6S23.2 3 16 3zm6.3 17.6c-.3.8-1.6 1.5-2.2 1.6-.6.1-1.3.1-2.1-.1-.5-.2-1.1-.4-1.9-.7-3.3-1.4-5.5-4.7-5.6-4.9-.2-.2-1.3-1.8-1.3-3.4s.8-2.4 1.1-2.7c.3-.3.6-.4.8-.4h.6c.2 0 .5-.1.7.6.3.7.9 2.3 1 2.5.1.2.1.4 0 .6-.1.2-.2.4-.3.6l-.5.6c-.2.2-.3.4-.1.7.2.3.9 1.5 2 2.4 1.4 1.2 2.5 1.6 2.9 1.8.4.2.6.1.8-.1.2-.2.9-1 1.1-1.4.2-.4.5-.3.8-.2.3.1 2 .9 2.3 1.1.3.2.6.3.7.4.1.3.1 1-.2 1.8z"/></svg></a>`);
+    if (!window.__trialWired) { window.__trialWired = true; document.addEventListener('click', trialClick); }
+  }
+  function trialClick(e) { const b = e.target.closest && e.target.closest('[data-trial]'); if (!b || !$('.ld')) return; e.preventDefault(); trialForm(); }
+  // 🎁 acceso gratuito automático: nombre, WhatsApp y correo → se crea el código y entra de una
+  function trialForm() {
+    const m = M.modal(`<div class="center"><div class="to-ic">${MRI('gift')}</div><h3>Prueba gratis 5 días</h3><p class="muted">Crea tu acceso en segundos. Sin tarjeta, sin compromiso.</p></div>
+      <div class="tf"><input class="inp" id="tf-n" placeholder="Tu nombre y apellido" autocomplete="name"><input class="inp" id="tf-w" type="tel" placeholder="Tu WhatsApp (ej: 300 123 4567)" autocomplete="tel"><input class="inp" id="tf-e" type="email" placeholder="Tu correo" autocomplete="email">
+      <label class="tf-ok"><input type="checkbox" id="tf-c"> Acepto recibir mi código e información de mrarrieta.com por correo y WhatsApp.</label>
+      <button class="btn r block lg" id="tf-go">Crear mi acceso gratis →</button><p class="muted center" id="tf-msg" style="font-size:13.5px;margin:0"></p></div>`, { x: true });
+    const msg = (t) => { $('#tf-msg', m).textContent = t; };
+    $('#tf-go', m).onclick = async () => {
+      const name = $('#tf-n', m).value.trim(), whatsapp = $('#tf-w', m).value.trim(), email = $('#tf-e', m).value.trim();
+      if (name.split(/\s+/).length < 2) return msg('Escribe tu nombre y apellido.');
+      if (whatsapp.replace(/\D/g, '').length < 7) return msg('Revisa tu número de WhatsApp.');
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return msg('Revisa tu correo.');
+      if (!$('#tf-c', m).checked) return msg('Marca la casilla para continuar.');
+      const b = $('#tf-go', m); b.disabled = true; b.textContent = '⏳ Creando tu acceso…';
+      const r = await MRAC.call('trialSignup', { name, whatsapp, email }).catch(() => null);
+      if (!r || !r.ok) { b.disabled = false; b.textContent = 'Crear mi acceso gratis →'; return msg(r && r.err === 'busy' ? 'Hay muchas solicitudes en este momento. Inténtalo en unos minutos.' : 'No se pudo crear tu acceso. Revisa tus datos e inténtalo de nuevo.'); }
+      if (r.exists) { m.querySelector('.card').innerHTML = `<div class="center"><div class="to-ic">${MRI('check')}</div><h3>¡Ya tienes una cuenta, ${esc(r.first || '')}!</h3><p>Te enviamos tu código de acceso a tu correo. Escríbelo en "Ingresa a tu perfil" para entrar.</p><button class="btn k block" id="tf-x">Entendido</button></div>`; $('#tf-x', m).onclick = () => m.remove(); return; }
+      m.querySelector('.card').innerHTML = `<div class="center">${M.mascot('mascot bounce', 'celebrate')}<h3>¡Listo, ${esc(r.first)}! 🎉</h3><p>Tu código de acceso es</p><div class="rc-code" style="font:800 28px Poppins,sans-serif;color:#0B2A5B;letter-spacing:.06em;background:#EEF3FB;border:2px dashed #9fb3d6;border-radius:14px;padding:8px 18px;display:inline-block;margin:6px 0">${esc(r.code)}</div><p class="muted">También te lo enviamos al correo. Guárdalo para entrar después.</p><button class="btn r block lg" id="tf-in">Entrar a mi prueba gratis →</button></div>`;
+      $('#tf-in', m).onclick = () => { m.remove(); const i = $('#cd'); if (i) { i.value = r.code; $('#ok').click(); } };
+    };
   }
   function login() {
     app.innerHTML = `<div class="wrap pt-wrap"><div class="card pt-login">
       
-      ${(() => { const lu = P.lastUser(); return lu && lu.first ? `<div class="pt-hello">${lu.pic ? `<span class="pt-av big pt-lu has"><img src="${lu.pic}" alt=""></span>` : M.mascot('pt-mra', 'wink')}<div class="bubble">Welcome, ${esc(lu.first)}! 👋</div></div>`
-        : `<div class="pt-hello">${M.mascot('pt-mra', 'welcome')}<div class="bubble">Welcome, my friend! 👋<small>Bienvenido(a) a tu plataforma de inglés</small></div></div>`; })()}
+      ${(() => { const lu = P.lastUser(); return lu && lu.first ? `<div class="pt-hello">${lu.pic ? `<span class="pt-av big pt-lu has"><img src="${lu.pic}" alt=""></span>` : M.mascot('pt-mra', 'wink')}<div class="bubble">Welcome! 👋</div></div>`
+        : `<div class="pt-hello">${M.mascot('pt-mra', 'welcome')}<div class="bubble">Welcome! 👋</div></div>`; })()}
       <h1>Ingresa a tu perfil</h1><p class="muted">Escribe el código que te entregó administración.</p>
       <input class="inp" id="cd" placeholder="Ej: ABC-123" autocapitalize="characters" autocomplete="off">
       <button class="btn k block lg" id="ok">Entrar →</button>

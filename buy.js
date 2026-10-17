@@ -81,12 +81,12 @@
     const q = new URLSearchParams(location.search); const id = q.get('compra'); if (!id || !window.MRAC || !CODE()) return;
     history.replaceState(null, '', location.pathname);
     const w = M.modal(`<div class="center">${M.mascot('mascot', 'watch')}</div><h3 class="center">⏳ Confirmando tu pago…</h3><p class="center muted">Un momento, estamos verificando con Mercado Pago.</p>`, {});
-    let st = 'pendiente';
-    for (let i = 0; i < 6 && st === 'pendiente'; i++) { const r = await MRAC.call('buyCheck', { code: CODE(), id }).catch(() => null); st = r && r.ok ? r.status : st; if (st === 'pendiente') await M.sleep(3000); }
+    let st = 'pendiente', mv = false;
+    for (let i = 0; i < 6 && st === 'pendiente'; i++) { const r = await MRAC.call('buyCheck', { code: CODE(), id }).catch(() => null); st = r && r.ok ? r.status : st; if (r && r.moved) mv = true; if (st === 'pendiente') await M.sleep(3000); }
     w.remove();
     if (st === 'aprobado') { try { sessionStorage.removeItem('mra_me_cache'); } catch (e) { } M.confetti && M.confetti(1800);
-      const m = M.modal(`<div class="center">${M.mascot('mascot bounce', 'celebrate')}</div><h3 class="center">🎉 ¡Pago confirmado!</h3><p class="center" style="font-size:16px">Ya está todo habilitado en tu perfil.${MRAC.code() ? '' : ' Ingresa con tu código <b>' + esc(CODE()) + '</b>.'}</p><button class="btn k block lg" id="by-ok">¡Vamos!</button>`, { x: true });
-      m.querySelector('#by-ok').onclick = () => location.reload(); return; }
+      const m = M.modal(`<div class="center">${M.mascot('mascot bounce', 'celebrate')}</div><h3 class="center">🎉 ¡Pago confirmado!</h3><p class="center" style="font-size:16px">Ya está todo habilitado.${mv ? ' Te enviamos tu <b>código de acceso nuevo</b> a tu correo: entra con ese.' : MRAC.code() ? '' : /^PG-/.test(CODE()) ? ' Te enviamos tu código de acceso a tu correo.' : ' Ingresa con tu código <b>' + esc(CODE()) + '</b>.'}</p><button class="btn k block lg" id="by-ok">¡Vamos!</button>`, { x: true });
+      m.querySelector('#by-ok').onclick = () => { if (mv && window.MRAC && MRAC.code()) { try { MRAC.wipeLocal(true); localStorage.removeItem('mra_profile_v1'); localStorage.removeItem('mra_buy_code'); sessionStorage.removeItem('mra_me_cache'); } catch (e) { } } location.href = 'index.html'; }; return; }
     M.modal(`<h3 class="center">${st === 'pendiente' ? '⏳ Tu pago está en proceso' : '⚠️ El pago no se completó'}</h3><p class="center">${st === 'pendiente' ? 'Mercado Pago aún no lo confirma. Apenas lo haga, se habilita solo (lo revisamos cada hora) y te avisamos.' : 'No se realizó el cobro. Puedes intentarlo de nuevo o pagar por transferencia.'}</p>`, { x: true });
   }
   window.MRBUY = { plan, extra, back };

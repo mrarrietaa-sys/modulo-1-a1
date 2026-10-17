@@ -179,7 +179,7 @@
     let r = { ok: false, err: 'offline' };
     if (MR.on) { try { r = await MR.call('enroll', d); } catch (e) { r = { ok: false, err: 'network' }; } }
     st.busy = false; btn.disabled = false; syncPlan();
-    if (r && r.ok) success(d, r.code, r.dup); else fallback(d, r && r.err);
+    if (r && r.ok) success(d, r.code || r.pay, r.dup && !r.pay); else fallback(d, r && r.err);
   }
   function fallback(d, err) {
     const box = document.createElement('div'); box.className = 'in-modal'; box.setAttribute('role', 'dialog'); box.setAttribute('aria-modal', 'true');
@@ -197,9 +197,9 @@
     if (paid && code) { try { localStorage.setItem('mra_buy_code', code); if (d.ref) localStorage.setItem('mra_ref', d.ref); } catch (e) { } location.href = 'index.html?pagar=' + encodeURIComponent(code) + '&plan=' + encodeURIComponent(d.plan); return; }
     app.innerHTML = `<section class="card in-done center">
       <img src="mra-celebrate.webp" alt="Mr. Arrieta celebrando" class="in-done-img" width="240" height="240">
-      <span class="lbl">Inscripción recibida</span>
-      <h1>¡Bienvenido(a), ${esc(d.first)}! 🎉</h1>
-      ${dup ? `<p>Ya estás registrado(a) en mrarrieta.com con estos datos. Entra con tu código en la plataforma y elige tu plan desde <b>Mi plan</b>. Si no lo recuerdas, escríbenos.</p><a class="btn k lg block" href="index.html">Ir a la plataforma →</a>` : code ? `<p>Tu código de acceso es</p><div class="in-code" style="font:800 28px Poppins,sans-serif;color:#0B2A5B;letter-spacing:.06em;background:#EEF3FB;border:2px dashed #9fb3d6;border-radius:14px;padding:8px 18px;display:inline-block;margin:6px 0">${esc(code)}</div><p class="muted">También te lo enviamos a <b>${esc(d.email)}</b>.</p>
+      <span class="lbl">${dup ? 'Ya estás en nuestra base' : 'Inscripción recibida'}</span>
+      <h1>${dup ? 'Hola, ' + esc(d.first) : '¡Bienvenido(a), ' + esc(d.first) + '! 🎉'}</h1>
+      ${dup ? `<p>${paid ? 'Estos datos ya están en mrarrieta.com. Para elegir tu plan y pagar, <b>escríbenos por WhatsApp</b> y te ayudamos.' : 'Estos datos ya están en mrarrieta.com y el acceso gratuito se da <b>una sola vez</b> por persona. Si quieres continuar, escríbenos y te ayudamos a elegir tu plan.'}</p><a class="btn k lg block" target="_blank" rel="noopener" href="${waQ}">Escribir por WhatsApp →</a>` : code ? `<p>Tu código de acceso es</p><div class="in-code" style="font:800 28px Poppins,sans-serif;color:#0B2A5B;letter-spacing:.06em;background:#EEF3FB;border:2px dashed #9fb3d6;border-radius:14px;padding:8px 18px;display:inline-block;margin:6px 0">${esc(code)}</div><p class="muted">También te lo enviamos a <b>${esc(d.email)}</b>.</p>
       <a class="btn k lg block" href="index.html" style="margin-top:10px">Entrar a la plataforma →</a>` : `<p>Recibimos tus datos para el plan <b>${esc(p.name)}</b>. Te enviamos un correo de confirmación a <b>${esc(d.email)}</b>.</p><a class="btn k lg block" href="index.html">Ir a la plataforma</a>`}
       <p style="margin-top:14px;font-size:14px"><a href="${waQ}" target="_blank" rel="noopener" style="color:#16A34A;font-weight:800">¿Dudas? Escríbenos por WhatsApp</a></p>
     </section>`;

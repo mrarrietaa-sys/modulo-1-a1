@@ -223,6 +223,7 @@
         const r = await MRAC.login(v); b.disabled = false; b.textContent = 'Entrar →';
         if (r.ok) { sfx('win'); M.confetti(1500); try { sessionStorage.removeItem('mra_back'); } catch (e) { } greetVoice(); return route('home'); }
         if (r.err === 'inactive') return bad('Tu acceso está inactivo. Escríbenos por WhatsApp 🙏');
+        if (r.err === 'moved') return bad('Este código gratuito ya no funciona: al activar tu plan te enviamos un código nuevo a tu correo. Entra con ese.');
         if (r.err === 'trial_over') { b.disabled = false; return trialOver(v); }
         if (r.err === 'network' || r.err === 'offline') return bad('No hay conexión con la nube. Revisa tu internet e inténtalo de nuevo.');
         return bad();
@@ -584,6 +585,7 @@
     if (box && P.plan().premium) box.innerHTML = '<div class="sect-title"><h2>' + MRI('video') + ' Mis clases con profes</h2></div><div class="card lv-load">⏳ Cargando tus clases…</div>';
     const r = await MRAC.me(); if (!r || (box && !document.body.contains(box)) || !$('#pt-ann')) return;
     if (r.ok === false && r.err === 'trial_over') { const c = MRAC.code(); P.clear(); try { sessionStorage.removeItem('mra_me_cache'); } catch (e) { } route('home'); return trialOver(c); }
+    if (r.ok === false && r.err === 'moved') { P.clear(); try { sessionStorage.removeItem('mra_me_cache'); } catch (e) { } M.modal(`<div class="center"><div class="to-ic">${MRI('check')}</div><h3>¡Tu plan ya está activo!</h3><p>Te enviamos un <b>código de acceso nuevo</b> a tu correo. El código gratuito ya no funciona: entra con el nuevo.</p><button class="btn k block lg" onclick="location.reload()">Entendido</button></div>`, { x: false }); return; }
     if (r.ok === false && (r.err === 'notfound' || r.err === 'inactive')) { M.toast('Tu acceso ya no está activo. Escríbenos por WhatsApp.'); return; }
     if (before !== sig()) { topbar(); return home(); } // el plan cambió en la nube → actualizar perfil
     const ann = r.conf && r.conf.announcement; if (ann && $('#pt-ann')) $('#pt-ann').innerHTML = `<div class="pt-ann">📣 ${esc(ann)}</div>`;

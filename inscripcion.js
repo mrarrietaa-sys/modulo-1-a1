@@ -18,9 +18,9 @@
       perks: ['Acceso temporal a la plataforma', 'Prueba de clasificación y tu ruta de aprendizaje', 'Los 2 primeros temas de tu ruta'], note: 'No incluye clases individuales.' },
     Object.assign({ id: 'membership', tag: 'Toda la plataforma', icon: '🖥️',
       perks: ['🌐 Plataforma disponible 24/7', '📚 Ruta de aprendizaje por niveles y módulos', 'Materiales, videos y ejercicios', '📈 Seguimiento de tu progreso'], note: 'No incluye clases individuales.' }, pp('membership', '🖥️ PLATAFORMA', '$59.900')),
-    Object.assign({ id: 'premium', tag: 'Plataforma + 4 clases', icon: '🎓', best: true,
+    Object.assign({ id: 'premium', tag: 'Plataforma + 4 clases', icon: '🎓',
       perks: ['Todo lo incluido en Plataforma', '🎯 4 clases individuales de 50 minutos al mes', '🗓️ Reservas según la disponibilidad de los profes', '⚠️ Clases no acumulables: úsalas en tu periodo mensual'] }, pp('premium', '🎓 PREMIUM · 4 CLASES', '$169.900')),
-    Object.assign({ id: 'premium8', tag: 'Plataforma + 8 clases', icon: '🏅',
+    Object.assign({ id: 'premium8', tag: 'Plataforma + 8 clases', icon: '🏅', best: true,
       perks: ['Todo lo incluido en Plataforma', '🎯 8 clases individuales de 50 minutos al mes', '🗣️ Más práctica de comunicación cada semana', '⚠️ Clases no acumulables: úsalas en tu periodo mensual'] }, pp('premium8', '🏅 PREMIUM · 8 CLASES', '$289.900')),
   ];
   const DAYS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];

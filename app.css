@@ -4038,3 +4038,25 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--blue)!im
 @media (max-width:980px){.ld-cta{position:relative;z-index:2;max-width:74%}.ld-hero-mra{height:165px;bottom:-4px}}
 @media (max-width:420px){.ld-cta{max-width:72%}.ld-cta .btn{font-size:15px}}
 @media (max-width:560px){.ld-login .pt-login h1{font-size:30px}}
+/* v102: propuesta A (fondo blanco), testimonios en recuadro */
+.db-hero{background:#fff!important;color:var(--navy,#0B2A5B)!important;border:1px solid #e3e9f3!important;box-shadow:0 8px 22px rgba(11,42,91,.06)}
+.db-hero:after{background:#ffe8ea}
+.db-hero h2,.db-hero .pt-here{color:#0B2A5B!important}.db-sub{color:#5a6a86!important}
+.db-bar{background:#eef1f6}.db-bar i{background:#E3242B}
+.btn.db-wbtn{background:linear-gradient(135deg,#0B2A5B,#1D4A9A);color:#fff}
+.btn.db-gbtn{background:#fff;color:#0B2A5B;border:1px solid #d5deeb}
+@media (max-width:980px){
+  .ld-hero{background:#fff!important;border:1px solid #e3e9f3}.ld-hero:before{background:#ffe8ea;opacity:1}
+  .ld-copy h1{color:#0B2A5B!important}.ld-lead{color:#3E4E6A!important}
+  .ld-hero h1 em{background:#E3242B!important;color:#fff!important}
+  .ld-cta .btn.w{background:#fff!important;color:#0B2A5B!important;border:1px solid #d5deeb!important}
+  .ld-badges span{background:#fff!important;color:#0B2A5B!important;border-color:#e3e9f3!important}.ld-badges .mri{color:#16A34A!important}
+  .ld-login .pt-login{border-top:1px solid #e3e9f3}
+}
+.ld-cta .btn.k{background:linear-gradient(135deg,#0B2A5B,#1D4A9A);color:#fff;border:0}
+.ld-tesbox{padding:30px 24px!important;margin-top:34px;background:linear-gradient(180deg,#fff,#f6f9ff)!important;border:1px solid #e3e9f3!important}
+.ld-tesbox.ld-sec{padding-top:30px}
+.ld-tes{grid-template-columns:repeat(4,minmax(0,180px))!important;gap:18px}
+.ld-t{border-radius:16px;box-shadow:0 6px 16px rgba(11,42,91,.08)}.ld-t video{max-height:290px}.ld-t>b{font-size:14.5px;padding:8px 6px}
+@media (max-width:980px){.ld-tes{grid-template-columns:repeat(2,minmax(0,180px))!important}}
+@media (max-width:560px){.ld-tes{display:flex!important}.ld-t{flex:0 0 55%}.ld-tesbox{padding:22px 14px!important}}

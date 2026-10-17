@@ -4113,3 +4113,4 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--blue)!im
 .db-hero-mra{height:205px;right:24px;bottom:14px;filter:drop-shadow(0 14px 14px rgba(11,42,91,.18))}
 @media(max-width:980px){.ld-login .pt-hello .pt-mra{height:120px}.db-hero-mra{height:80px;right:6px;top:22px;bottom:auto}}
 @media(prefers-reduced-motion:reduce){.ld-login .pt-hello .pt-mra,.ld-hero-mra,.db-hero-mra{animation:none}}
+@media(max-width:980px){.ld-hero-mra{height:172px}}

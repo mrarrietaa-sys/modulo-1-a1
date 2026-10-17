@@ -4,13 +4,13 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>mrarrieta.com</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="app.css?v=161">
+<link rel="stylesheet" href="app.css?v=162">
 </head>
 <body>
 <header class="topbar"><a class="brand" href="index.html"><span class="logo-pill"><img class="logo" src="mra-brand.png" alt="mrarrieta.com"></span></a><div class="sp"></div></header>
 <main class="wrap" style="max-width:560px"><div class="card center" id="box" style="margin-top:30px"><img src="mra-welcome.webp" alt="" style="height:170px"><h2 style="margin:10px 0">Un momento… ⏳</h2></div></main>
-<script src="config.js?v=161"></script>
-<script src="cloud.js?v=161"></script>
+<script src="config.js?v=162"></script>
+<script src="cloud.js?v=162"></script>
 <script>
 (async function () {
   const q = new URLSearchParams(location.search), l = q.get('l') || '', a = q.get('a') === 'baja' ? 'baja' : 'click', box = document.getElementById('box');
@@ -19,6 +19,7 @@
   let r = { ok: false };
   try { if (l && window.MRAC) r = await MRAC.call(a === 'baja' ? 'leadUnsub' : 'leadClick', { l, m: q.get('m') || '' }); } catch (e) { }
   const name = r && r.name ? String(r.name).trim() : '';
+  if (name && a !== 'baja') { try { const f = name.split(/\s+/)[0].replace(/[^A-Za-zÀ-ÿ'-]/g, '').slice(0, 20); if (f) localStorage.setItem('mra_vname', f.charAt(0).toUpperCase() + f.slice(1).toLowerCase()); } catch (e) { } } // 👋 la entrada lo saluda por su nombre
   if (a === 'baja') { box.innerHTML = `<img src="mra-smile.webp" alt="" style="height:170px"><h2 style="margin:10px 0">Listo${name ? ', ' + esc(name.split(' ')[0]) : ''} 👋</h2><p class="muted">Ya no te enviaremos más correos. Si algún día quieres aprender inglés HABLANDO, aquí estaremos.</p><a class="btn k" href="index.html">Ir a mrarrieta.com</a>`; return; }
   const ins = q.get('t') === '1';
   const base = location.href.replace(/[^/]*$/, '');

@@ -44,6 +44,13 @@
       go(); // de inmediato, dentro del mismo toque de "Entrar" (necesario en iPhone)
     } catch (e) { }
   }
+  // 👋 nombre de quien visita: estudiante que ya entró en este equipo, formulario que llenó aquí, o enlace de nuestros correos (?hi=)
+  const vName = () => { try { return localStorage.getItem('mra_vname') || ''; } catch (e) { return ''; } };
+  const setVName = (full) => { const f = String(full || '').trim().split(/\s+/)[0].replace(/[^A-Za-zÀ-ÿ'-]/g, '').slice(0, 20); if (f) try { localStorage.setItem('mra_vname', f.charAt(0).toUpperCase() + f.slice(1).toLowerCase()); } catch (e) { } };
+  (function () { try { const q = new URLSearchParams(location.search), hi = q.get('hi'); if (!hi) return;
+    const b = atob(hi.replace(/-/g, '+').replace(/_/g, '/')); setVName(new TextDecoder().decode(Uint8Array.from(b, c => c.charCodeAt(0))));
+    q.delete('hi'); history.replaceState(null, '', location.pathname + (q.toString() ? '?' + q : '') + location.hash); } catch (e) { } })();
+  const hiGreet = (nm) => { const hr = new Date().getHours(), w = hr < 12 ? 'Good morning' : hr < 18 ? 'Good afternoon' : 'Good evening', e = hr < 12 ? '☀️' : hr < 18 ? '👋' : '🌙'; return nm ? `<span class="hg">${w},</span> <span class="hg">${esc(nm)}! ${e}</span>` : `${w}! ${e}`; };
   const hiName = () => { const p = P.get() || {}; const lu = P.lastUser() || {}; return (p.look && p.look.nick) || p.first || lu.first || ''; };
   // saludo en voz natural (voz masculina americana pregrabada): "Good morning / afternoon / evening, Nombre!"
   const VKEY = 'mra_voice_off';
@@ -85,7 +92,7 @@
         if (!name) return M.toast('Escribe tu nombre 🙂'); if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return M.toast('Revisa tu correo 🙂');
         if (!$('#ld-c', m).checked) return M.toast('Marca la casilla para poder enviarte la información');
         const b = $('#ld-ok', m); b.disabled = true; b.textContent = 'Guardando…';
-        const r = await MRAC.call('leadAdd', { name, email, consent: true }).catch(() => ({ ok: false }));
+        setVName(name); const r = await MRAC.call('leadAdd', { name, email, consent: true }).catch(() => ({ ok: false }));
         if (!r || !r.ok) { b.disabled = false; b.textContent = 'Quiero conocerlos →'; return M.toast('No se pudo guardar. Revisa tu conexión e inténtalo de nuevo.'); }
         mark('ok'); m.querySelector('.card').innerHTML = `<div class="center">${M.mascot('mascot', 'celebrate')}</div><h3 class="center">¡Gracias, ${esc(name.split(' ')[0])}! 🎉</h3><p class="center" style="font-size:16px">Revisa tu correo: te enviamos la bienvenida. Si quieres empezar ya, pide tu acceso gratuito.</p><a class="btn block lg pt-wa" href="#" data-trial>Pedir mi acceso gratuito</a><button class="btn w block" style="margin-top:8px" id="ld-x">Cerrar</button>`;
         $('#ld-x', m).onclick = () => m.remove();
@@ -139,7 +146,7 @@
     const nf = $('#ld-newsf'); if (nf) nf.onsubmit = async (e) => { e.preventDefault(); const n = $('#nw-n').value.trim(), em = $('#nw-e').value.trim(), msg = (t) => { $('#nw-m').textContent = t; };
       if (n.length < 2) return msg('Escribe tu nombre.'); if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) return msg('Revisa tu correo.'); if (!$('#nw-c').checked) return msg('Marca la casilla para continuar.');
       const b = nf.querySelector('button'); b.disabled = true; b.textContent = 'Guardando…';
-      const r = await MRAC.call('leadAdd', { name: n, email: em, consent: true }).catch(() => null);
+      setVName(n); const r = await MRAC.call('leadAdd', { name: n, email: em, consent: true }).catch(() => null);
       if (r && r.ok) { nf.innerHTML = `<p class="ld-newsok">${MRI('check')} ¡Listo, ${esc(n.split(' ')[0])}! Revisa tu correo: te enviamos la bienvenida.</p>`; try { localStorage.setItem('mra_lead', 'ok'); } catch (er) { } }
       else { b.disabled = false; b.textContent = 'Quiero recibirlos'; msg('No se pudo guardar. Inténtalo de nuevo.'); } };
     profReviews();
@@ -194,7 +201,7 @@
       if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return msg('Revisa tu correo.');
       if (!$('#tf-c', m).checked) return msg('Marca la casilla para continuar.');
       const b = $('#tf-go', m); b.disabled = true; b.textContent = '⏳ Creando tu acceso…';
-      const r = await MRAC.call('trialSignup', { name, whatsapp, email }).catch(() => null);
+      setVName(name); const r = await MRAC.call('trialSignup', { name, whatsapp, email }).catch(() => null);
       if (!r || !r.ok) { b.disabled = false; b.textContent = 'Crear mi acceso gratis →'; return msg(r && r.err === 'busy' ? 'Hay muchas solicitudes en este momento. Inténtalo en unos minutos.' : 'No se pudo crear tu acceso. Revisa tus datos e inténtalo de nuevo.'); }
       if (r.exists) { m.querySelector('.card').innerHTML = `<div class="center"><div class="to-ic">${MRI('clock')}</div><h3>Estos datos ya están registrados</h3><p>El acceso gratuito de 5 días es <b>solo una vez por persona</b>. Si ya eres estudiante, entra con tu código en "Ingresa a tu perfil". Si quieres continuar, elige tu plan.</p><a class="btn k block lg" href="#ld-planes" id="tf-pl">Ver planes →</a></div>`; $('#tf-pl', m).onclick = () => m.remove(); return; }
       m.querySelector('.card').innerHTML = `<div class="center">${M.mascot('mascot bounce', 'celebrate')}<h3>¡Listo, ${esc(r.first)}! 🎉</h3><p>Tu código de acceso es</p><div class="rc-code" style="font:800 28px Poppins,sans-serif;color:#0B2A5B;letter-spacing:.06em;background:#EEF3FB;border:2px dashed #9fb3d6;border-radius:14px;padding:8px 18px;display:inline-block;margin:6px 0">${esc(r.code)}</div><p class="muted">También te lo enviamos al correo. Guárdalo para entrar después.</p><button class="btn r block lg" id="tf-in">Entrar a mi prueba gratis →</button></div>`;
@@ -204,8 +211,8 @@
   function login() {
     app.innerHTML = `<div class="wrap pt-wrap"><div class="card pt-login">
       
-      ${(() => { const lu = P.lastUser(); return lu && lu.first ? `<div class="pt-hello">${lu.pic ? `<span class="pt-av big pt-lu has"><img src="${lu.pic}" alt=""></span>` : '<img class="pt-mra pt-rkt" src="mra-x-rocket2.webp" alt="Mr. Arrieta" draggable="false">'}<div class="bubble">${(() => { const hr = new Date().getHours(); return hr < 12 ? 'Good morning! ☀️' : hr < 18 ? 'Good afternoon! 👋' : 'Good evening! 🌙'; })()}</div></div>`
-        : `<div class="pt-hello"><img class="pt-mra pt-rkt" src="mra-x-rocket2.webp" alt="Mr. Arrieta" draggable="false"><div class="bubble">${(() => { const hr = new Date().getHours(); return hr < 12 ? 'Good morning! ☀️' : hr < 18 ? 'Good afternoon! 👋' : 'Good evening! 🌙'; })()}</div></div>`; })()}
+      ${(() => { const lu = P.lastUser(); const vn = (lu && lu.first) || vName(); return lu && lu.first ? `<div class="pt-hello">${lu.pic ? `<span class="pt-av big pt-lu has"><img src="${lu.pic}" alt=""></span>` : '<img class="pt-mra pt-rkt" src="mra-x-rocket2.webp" alt="Mr. Arrieta" draggable="false">'}<div class="bubble">${hiGreet(vn)}</div></div>`
+        : `<div class="pt-hello"><img class="pt-mra pt-rkt" src="mra-x-rocket2.webp" alt="Mr. Arrieta" draggable="false"><div class="bubble">${hiGreet(vn)}</div></div>`; })()}
       <h1>Ingresa a tu perfil</h1><p class="muted">Escribe el código que te llegó a tu correo o WhatsApp.</p>
       <input class="inp" id="cd" placeholder="Ej: ABC-123" autocapitalize="characters" autocomplete="off">
       <button class="btn k block lg" id="ok">Entrar →</button>

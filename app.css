@@ -4122,3 +4122,6 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--blue)!im
 .vb-av.has{padding:0;overflow:hidden;background:none}.vb-av.has img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block}
 .lv-tpic{width:22px;height:22px;border-radius:50%;object-fit:cover;vertical-align:-6px;margin-right:5px;border:1.5px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.2)}
 .vb-av.has{width:56px;height:56px}
+/* v162: saludo con el nombre de quien visita */
+.ld-login .pt-hello .bubble{white-space:normal;text-align:center}.ld-login .pt-hello .bubble .hg{white-space:nowrap;display:inline-block}
+@media(max-width:980px){.ld-hero-mra{position:relative!important;display:block;top:auto!important;bottom:auto!important;right:auto!important;left:auto;margin:14px auto -4px;height:150px!important;z-index:1}}

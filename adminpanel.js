@@ -167,7 +167,7 @@
       if (w) w.document.write('<p style="font:18px sans-serif;text-align:center;margin-top:40px">⏳ Preparando el mensaje de WhatsApp…</p>');
       $('#np-ok', m).disabled = true; $('#np-ok', m).textContent = 'Creando…';
       const r = await api('aSave', { table: 'Estudiantes', row: Object.assign(d, { code: d.code ? d.code.toUpperCase() : '', source: 'admin' }) });
-      if (!r.ok) { if (w) w.close(); $('#np-ok', m).disabled = false; $('#np-ok', m).textContent = 'Crear estudiante'; return toast(r.err === 'code_exists' ? '⚠️ Ese código ya está en uso por otro estudiante o profe. Escribe otro.' : 'No se pudo crear'); }
+      if (!r.ok) { if (w) w.close(); $('#np-ok', m).disabled = false; $('#np-ok', m).textContent = 'Crear estudiante'; return toast(r.err === 'dup_student' ? `⚠️ Esa persona ya existe: ${r.name} (${r.code}). El acceso gratuito es una sola vez por persona.` : r.err === 'code_exists' ? '⚠️ Ese código ya está en uso por otro estudiante o profe. Escribe otro.' : 'No se pudo crear'); }
       if (plan !== 'free') await api('aPlan', { code: r.row.code, plan, months: +$('#np-mo', m).value, amount: $('#np-amt', m).value.replace(/\D/g, '') || undefined });
       m.remove(); if (TAB === 'students') students();
       if (!send) return shareCode(r.row);

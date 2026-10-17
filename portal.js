@@ -50,7 +50,7 @@
   (function () { try { const q = new URLSearchParams(location.search), hi = q.get('hi'); if (!hi) return;
     const b = atob(hi.replace(/-/g, '+').replace(/_/g, '/')); setVName(new TextDecoder().decode(Uint8Array.from(b, c => c.charCodeAt(0))));
     q.delete('hi'); history.replaceState(null, '', location.pathname + (q.toString() ? '?' + q : '') + location.hash); } catch (e) { } })();
-  const hiGreet = (nm) => { const hr = new Date().getHours(), w = hr < 12 ? 'Good morning' : hr < 18 ? 'Good afternoon' : 'Good evening', e = hr < 12 ? '☀️' : hr < 18 ? '👋' : '🌙'; return nm ? `<span class="hg">${w},</span> <span class="hg">${esc(nm)}! ${e}</span>` : `${w}! ${e}`; };
+  const hiGreet = (nm) => { const hr = new Date().getHours(), w = hr < 12 ? 'Good morning' : hr < 18 ? 'Good afternoon' : 'Good evening', e = hr < 12 ? '☀️' : hr < 18 ? '👋' : '🌙'; return nm ? `<span class="hg">${w},</span> <span class="hg">${esc(nm)}! ${e}</span>` : `<span class="hg">${w}! ${e}</span>`; };
   const hiName = () => { const p = P.get() || {}; const lu = P.lastUser() || {}; return (p.look && p.look.nick) || p.first || lu.first || ''; };
   // saludo en voz natural (voz masculina americana pregrabada): "Good morning / afternoon / evening, Nombre!"
   const VKEY = 'mra_voice_off';
@@ -121,7 +121,7 @@
     const wrap = document.createElement('div'); wrap.className = 'ld';
     wrap.innerHTML = `<section class="ld-hero"><div class="ld-copy"><h1>Aprende inglés <em>HABLANDO</em></h1><p class="ld-lead">Plataforma que escucha tu pronunciación, ruta personalizada del A1 al B2+ y clases individuales con profes reales. 100% online.</p>
         <div class="ld-cta"><button class="btn k lg" data-trial>${MRI('gift')} Prueba gratis 5 días</button><a class="btn w lg" href="#ld-planes">${MRI('crown')} Ver planes</a></div>
-        <img class="ld-hero-mra" src="mra-x-rocket4.webp" alt="Mr. Arrieta"></div><div class="ld-login"></div></section>
+        <img class="ld-hero-mra" src="mra-x-rocket4.webp?v=2" alt="Mr. Arrieta"></div><div class="ld-login"></div></section>
       <section class="ld-sec" id="ld-planes"><h2>Elige tu plan</h2><p class="ld-sub">Pagos mes a mes · tarjeta o transferencia</p><div class="in-plans ld-inplans">
         ${CARDS.map(c => `<a class="in-plan${c.best ? ' best' : ''}" ${c.id === 'free' ? 'href="#" data-trial' : `href="inscripcion.html?plan=${c.id}"`}>${c.best ? '<span class="in-ribbon">⭐ Más completo</span>' : ''}<span class="in-plan-ic" aria-hidden="true">${c.icon}</span><span class="in-plan-name">${esc(c.name)}</span><span class="in-plan-price"><b>${esc(c.price)}</b><small>${esc(c.per)}</small></span><span class="in-plan-tag">${esc(c.tag)}</span><ul>${c.perks.map(k => `<li>${esc(String(k).replace(/^[^A-Za-zÁÉÍÓÚÑáéíóúñ0-9]+/, ''))}</li>`).join('')}</ul>${c.note ? `<span class="in-plan-note">${esc(c.note)}</span>` : ''}<span class="in-plan-pick">${c.btn || 'Elegir este plan'}</span></a>`).join('')}</div></section>
       ${T.length ? `<section class="ld-sec ld-tesbox card" id="ld-testimonios"><h2>Lo que dicen nuestros estudiantes</h2><p class="ld-sub">Testimonios reales en video</p><div class="ld-tes">${T.map(t => `<div class="card ld-t"><video src="${esc(t.video)}" ${t.poster ? `poster="${esc(t.poster)}"` : ''} controls preload="none" playsinline></video><b>${esc(t.name)} 🙏💙</b></div>`).join('')}</div></section>` : ''}
@@ -214,8 +214,8 @@
   function login() {
     app.innerHTML = `<div class="wrap pt-wrap"><div class="card pt-login">
       
-      ${(() => { const lu = P.lastUser(); const vn = (lu && lu.first) || vName(); return lu && lu.first ? `<div class="pt-hello">${lu.pic ? `<span class="pt-av big pt-lu has"><img src="${lu.pic}" alt=""></span>` : '<img class="pt-mra pt-rkt" src="mra-x-rocket2.webp" alt="Mr. Arrieta" draggable="false">'}<div class="bubble">${hiGreet(vn)}</div></div>`
-        : `<div class="pt-hello"><img class="pt-mra pt-rkt" src="mra-x-rocket2.webp" alt="Mr. Arrieta" draggable="false"><div class="bubble">${hiGreet(vn)}</div></div>`; })()}
+      ${(() => { const lu = P.lastUser(); const vn = (lu && lu.first) || vName(); return lu && lu.first ? `<div class="pt-hello">${lu.pic ? `<span class="pt-av big pt-lu has"><img src="${lu.pic}" alt=""></span>` : '<img class="pt-mra pt-rkt" src="mra-x-rocket2.webp?v=2" alt="Mr. Arrieta" draggable="false">'}<div class="bubble">${hiGreet(vn)}</div></div>`
+        : `<div class="pt-hello"><img class="pt-mra pt-rkt" src="mra-x-rocket2.webp?v=2" alt="Mr. Arrieta" draggable="false"><div class="bubble">${hiGreet(vn)}</div></div>`; })()}
       <h1>Ingresa a tu perfil</h1><p class="muted">Escribe el código que te llegó a tu correo o WhatsApp.</p>
       <input class="inp" id="cd" placeholder="Ej: ABC-123" autocapitalize="characters" autocomplete="off">
       <button class="btn k block lg" id="ok">Entrar →</button>

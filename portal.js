@@ -92,6 +92,27 @@
       };
     }, 1500);
   }
+  // 🌟 página de entrada: hero con el ingreso, planes, testimonios, beneficios y cómo funciona
+  function landing() {
+    const card = $('.pt-login'); if (!card || !window.MRI) return;
+    const tb = $('#topbar .tb-tag'); if (tb) tb.outerHTML = `<nav class="ld-nav"><a href="#ld-planes">Planes</a><a href="#ld-beneficios">Beneficios</a><a href="#ld-como">Cómo funciona</a><a class="btn r sm" href="#ld-gratis">Empieza gratis</a></nav>`;
+    const PL = window.MRPLANS || {}; const T = window.MRTESTIMONIOS || [];
+    const noE = PL.noEmo || String; const plan = (k, ic, top) => { const p = (PL.PL || {})[k]; if (!p) return ''; return `<div class="card ld-p${top ? ' top' : ''}">${top ? '<span class="ld-rib">Más elegido</span>' : ''}<span class="ld-ic ${k === 'membership' ? 'b' : 'r'}">${MRI(ic)}</span><h3>${esc(noE(p.name))}</h3><div class="ld-pr">${esc(p.price)} <small>/mes</small></div><ul>${(PL.BEN[k] || []).filter(b => !/^No incluye/.test(b)).slice(0, 4).map(b => `<li>${MRI('check')}<span>${esc(noE(b))}</span></li>`).join('')}</ul><a class="btn ${top ? 'r' : 'k'} block" href="inscripcion.html?plan=${k}">Elegir</a></div>`; };
+    const wrap = document.createElement('div'); wrap.className = 'ld';
+    wrap.innerHTML = `<section class="ld-hero"><div class="ld-copy"><span class="lbl ld-red">Metodología RealTalk®</span><h1>Aprende inglés <em>HABLANDO</em></h1><p class="ld-lead">Plataforma que escucha tu pronunciación, ruta personalizada del A1 al B2+ y clases individuales con profes reales. 100% online.</p>
+        <div class="ld-cta"><a class="btn r lg" href="#ld-gratis">${MRI('gift')} Prueba gratis 5 días</a><a class="btn w lg" href="#ld-planes">${MRI('crown')} Ver planes</a></div>
+        <div class="ld-badges"><span>${MRI('check')} Voces americanas</span><span>${MRI('check')} Certificado por módulo</span><span>${MRI('check')} Clases de 50 min</span></div></div><div class="ld-login"></div></section>
+      <section class="ld-photos"><div style="background-image:url('${U('photo-1522202176988-66273c2fd55f', 900, 600)}')"></div><div style="background-image:url('${U('photo-1552664730-d307ca884978', 700, 600)}')"></div><div style="background-image:url('${U('photo-1517048676732-d65bc937f952', 700, 600)}')"></div></section>
+      <section class="ld-sec" id="ld-planes"><h2>Elige tu plan</h2><p class="ld-sub">Pagos mes a mes · tarjeta o transferencia</p><div class="ld-pl">
+        <div class="card ld-p"><span class="ld-ic y">${MRI('gift')}</span><h3>Acceso gratuito</h3><div class="ld-pr">$0 <small>5 días</small></div><ul><li>${MRI('check')}<span>Prueba de clasificación</span></li><li>${MRI('check')}<span>Tu ruta de aprendizaje</span></li><li>${MRI('check')}<span>Los 2 primeros temas</span></li></ul><a class="btn w block" href="#ld-gratis">Empezar gratis</a></div>
+        ${plan('membership', 'monitor')}${plan('premium', 'crown', true)}${plan('premium8', 'gem')}</div></section>
+      ${T.length ? `<section class="ld-sec" id="ld-testimonios"><h2>Lo que dicen nuestros estudiantes</h2><p class="ld-sub">Testimonios reales en video</p><div class="ld-tes">${T.map(t => `<div class="card ld-t"><video src="${esc(t.video)}" ${t.poster ? `poster="${esc(t.poster)}"` : ''} controls preload="none" playsinline></video><div class="ld-tq">${t.quote ? `<p>“${esc(t.quote)}”</p>` : ''}<b>${esc(t.name)}</b>${t.level ? `<small>${esc(t.level)}</small>` : ''}</div></div>`).join('')}</div></section>` : ''}
+      <section class="ld-sec" id="ld-beneficios"><h2>¿Por qué mrarrieta.com?</h2><div class="ld-ben">${[['user', 'r', 'Clases 1 a 1', 'Con profes reales, a tu ritmo'], ['video', 'b', '100% online', 'Desde tu celular o computador'], ['award', 'g', 'Certificados', 'Al terminar cada módulo'], ['clock', 'y', 'A tu ritmo', 'Estudia cuando quieras'], ['compass', 'b', 'Ruta A1 → B2+', 'Sabes qué estudiar cada día'], ['check', 'r', 'Te escucha', 'Corrige tu pronunciación']].map(([i, c, t, d]) => `<div class="card ld-be"><span class="ld-ic ${c}">${MRI(i)}</span><b>${t}</b><small>${d}</small></div>`).join('')}</div></section>
+      <section class="ld-sec" id="ld-como"><h2>Cómo funciona</h2><div class="ld-steps">${[['Pide tu acceso gratuito', 'Te enviamos tu código por WhatsApp.'], ['Haz tu prueba de clasificación', '10 minutos para conocer tu nivel.'], ['Sigue tu ruta', 'Un tema nuevo cada pocos días, con audios y juegos.'], ['Elige tu plan', 'Plataforma o Premium con clases individuales.']].map(([t, d], n) => `<div class="card"><b class="ld-n">${n + 1}</b><h3>${t}</h3><p class="muted">${d}</p></div>`).join('')}</div></section>`;
+    const pw = card.closest('.pt-wrap'); if (pw) pw.classList.add('ld-on');
+    card.parentNode.insertBefore(wrap, card); wrap.querySelector('.ld-login').appendChild(card);
+    const free = $('.pt-free'); if (free) free.id = 'ld-gratis';
+  }
   function login() {
     app.innerHTML = `<div class="wrap pt-wrap"><div class="card pt-login">
       
@@ -106,8 +127,9 @@
         <p class="muted">Realiza nuestra prueba de clasificación y explora los primeros temas de tu módulo.</p>
         <a class="btn block lg pt-wa" target="_blank" rel="noopener" href="${WA('¡Hola! 👋 Quiero EMPEZAR GRATIS en la plataforma de mrarrieta.com y descubrir mi ruta de aprendizaje. ¿Me envían mi código de acceso gratuito? 🟢')}">EMPEZAR GRATIS →</a>
         <a class="btn w block pt-insc" href="inscripcion.html">📝 Formulario de inscripción</a></div></div>
-      <p class="center pt-links"><a href="reclutamiento.html">👩‍🏫 Trabaja con nosotros</a> · <a href="profesores.html">🧑‍🏫 Soy profesor</a> · <a href="administracion.html">🔐 Administración</a></p></div>`;
-    const i = $('#cd'); setTimeout(() => i.focus(), 200);
+      <p class="center pt-links"><a href="recomienda.html"><b>🤝 Recomienda y gana</b></a> · <a href="reclutamiento.html">👩‍🏫 Trabaja con nosotros</a> · <a href="profesores.html">🧑‍🏫 Soy profesor</a> · <a href="administracion.html">🔐 Administración</a></p></div>`;
+    landing();
+    const i = $('#cd'); setTimeout(() => { if (window.innerWidth > 900) i.focus(); }, 200);
     leadPop();
     const bad = (msg) => { i.classList.add('wrong'); sfx('bad'); setTimeout(() => i.classList.remove('wrong'), 500); M.toast(msg || 'Código no válido 😕'); };
     const go = async () => { try { if (window.speechSynthesis) { const w = new SpeechSynthesisUtterance(' '); w.volume = 0; speechSynthesis.speak(w); } } catch (e) { } // desbloquea la voz en iPhone

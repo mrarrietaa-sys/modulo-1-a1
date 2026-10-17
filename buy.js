@@ -58,6 +58,7 @@
       if (r && r.ok) { const d = Math.round(p.n * r.pct / 100 / 100) * 100; pay.ref = v; m.querySelector('#by-disc').classList.remove('hidden'); m.querySelector('#by-dv').textContent = '−' + fmt(d) + ' COP (' + r.pct + '%)'; m.querySelector('#by-tot').textContent = fmt(p.n - d) + ' COP'; msg.innerHTML = '✅ Código de <b>' + esc(r.name) + '</b> aplicado. Paga el total con descuento.'; }
       else { delete pay.ref; m.querySelector('#by-disc').classList.add('hidden'); m.querySelector('#by-tot').textContent = fmt(p.n) + ' COP'; msg.textContent = '⚠️ Código no válido. El descuento aplica solo en tu primer mes y no con tu propio código.'; } };
     m.querySelector('#by-refok').onclick = apply; if (refSaved() && firstBuy()) apply();
+    else MRAC.call('myCoupon', { code: CODE() }).then(r => { if (!r || !r.pct || pay.ref) return; const d = Math.round(p.n * r.pct / 100 / 100) * 100; m.querySelector('#by-disc').classList.remove('hidden'); m.querySelector('#by-disc td').textContent = 'Descuento por recomendar amigos'; m.querySelector('#by-dv').textContent = '−' + fmt(d) + ' COP (' + r.pct + '%)'; m.querySelector('#by-tot').textContent = fmt(p.n - d) + ' COP'; const f = m.querySelector('#by-ref'); if (f) f.closest('div.by-ref').parentNode.classList.add('hidden'); }).catch(() => { });
   }
   function firstBuy() { const q = (window.MRAP && MRAP.get()) || {}; return !q.planStart; }
   function refSaved() { try { return localStorage.getItem('mra_ref') || ''; } catch (e) { return ''; } }

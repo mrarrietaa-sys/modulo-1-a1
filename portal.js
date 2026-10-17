@@ -96,6 +96,11 @@
   function landing() {
     const card = $('.pt-login'); if (!card || !window.MRI) return;
     const tb = $('#topbar .tb-tag'); if (tb) tb.outerHTML = `<nav class="ld-nav"><a href="#ld-planes">Planes</a><a href="#ld-ganas">Beneficios</a><a href="#ld-profes">Profes</a><a href="#ld-testimonios">Testimonios</a><button class="btn r sm" data-trial>Empieza gratis</button></nav>`;
+    if (!window.__ldNav) { window.__ldNav = 1; document.addEventListener('click', (e) => { // 🧭 el menú muestra la sección completa (sin quedar tapada por la barra de arriba)
+      const a = e.target.closest('a[href^="#ld-"]'); if (!a) return; const sec = document.querySelector(a.getAttribute('href')); if (!sec) return; e.preventDefault();
+      const bar = (document.getElementById('topbar') || { offsetHeight: 0 }).offsetHeight, vh = innerHeight - bar, r = sec.getBoundingClientRect();
+      const y = scrollY + r.top - bar - (r.height < vh ? Math.max(12, (vh - r.height) / 2) : 12);
+      scrollTo({ top: Math.max(0, y), behavior: 'smooth' }); }); }
     const PL = window.MRPLANS || {}; const T = window.MRTESTIMONIOS || []; const pp = (k) => (PL.PL || {})[k] || {};
     const CARDS = [
       { id: 'free', icon: '🎁', name: 'ACCESO GRATUITO', price: '$0', per: 'sin costo', tag: 'Para empezar · 5 días', perks: ['Acceso temporal a la plataforma', 'Prueba de clasificación y tu ruta de aprendizaje', 'Los 2 primeros temas de tu ruta'], note: 'No incluye clases individuales.', btn: 'Empezar gratis' },

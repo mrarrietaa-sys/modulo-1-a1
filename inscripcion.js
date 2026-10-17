@@ -74,41 +74,21 @@
           ${field('first', 'Nombre', 'text', 'given-name', 'Ej: Laura')}
           ${field('last', 'Apellido', 'text', 'family-name', 'Ej: Gómez')}
           ${field('email', 'Correo electrónico', 'email', 'email', 'tucorreo@ejemplo.com')}
-          ${field('whatsapp', 'WhatsApp (con indicativo)', 'tel', 'tel', 'Ej: +1 305 555 0123')}
-          <div class="in-f">
+          ${field('whatsapp', 'WhatsApp (con indicativo)', 'tel', 'tel', 'Ej: +57 300 123 4567')}
+          <div class="in-f in-xtra">
             <label for="in-birth">Fecha de nacimiento</label>
             <input class="inp" id="in-birth" name="birth" type="date" autocomplete="bday" required max="${isoToday()}" min="1930-01-01">
             <small class="muted">🎂 ¡Para felicitarte en tu cumpleaños!</small>
             <p class="in-err" hidden>Escribe tu fecha de nacimiento.</p>
           </div>
-          ${field('city', 'Ciudad y país', 'text', 'address-level2', 'Ej: Miami, Estados Unidos')}
+          <div class="in-xtra">${field('city', 'Ciudad y país', 'text', 'address-level2', 'Ej: Bogotá, Colombia')}</div>
         </div>
 
-        <fieldset class="in-fs">
+        <div class="in-xtra"><fieldset class="in-fs">
           <legend>¿Cuál crees que es tu nivel de inglés?</legend>
           <div class="in-chips" data-group="level">${LEVELS.map(([v, t]) => chip('level', v, t)).join('')}</div>
           <small class="muted">No te preocupes: con la prueba de clasificación confirmamos tu nivel.</small>
         </fieldset>
-
-        <div id="in-premium" class="in-cond" hidden>
-          <fieldset class="in-fs">
-            <legend>Horario preferido para tus clases <small class="muted">(hora Colombia)</small></legend>
-            <div class="in-chips" data-group="schedule">${SCHED.map(([v, i, h]) => chip('schedule', v, `${i} ${v}<small>${h}</small>`)).join('')}</div>
-          </fieldset>
-          <fieldset class="in-fs">
-            <legend>Días que te funcionan <small class="muted">(puedes elegir varios)</small></legend>
-            <div class="in-chips" data-group="days">${DAYS.map((d) => chip('days', d, d)).join('')}</div>
-          </fieldset>
-          <p class="in-tip">💡 Tus clases individuales las reservas tú desde tu perfil, según la disponibilidad de los profes. Este horario nos ayuda a asignarte profe.</p>
-        </div>
-
-        <div id="in-pay" class="in-f in-cond" hidden>
-          <label for="in-payment">Medio de pago preferido</label>
-          <select class="inp" id="in-payment" name="payment">
-            <option value="">Selecciona una opción</option>${PAY.map((x) => `<option>${x}</option>`).join('')}
-          </select>
-          <small class="muted">No pagas nada ahora: te escribimos por WhatsApp para activar tu plan.</small>
-        </div>
 
         <fieldset class="in-fs">
           <legend>¿Cómo nos conociste?</legend>
@@ -118,14 +98,15 @@
         <div class="in-f">
           <label for="in-comments">Comentarios o preguntas <small class="muted">(opcional)</small></label>
           <textarea class="inp" id="in-comments" name="comments" rows="3" maxlength="1500" placeholder="Cuéntanos tus metas: viajar, trabajo, entrevistas…"></textarea>
-        </div>
+        </div></div>
 
         <label class="in-consent"><input type="checkbox" id="in-ok" required>
           <span>Autorizo a <b>mrarrieta.com</b> a tratar mis datos personales para gestionar mi inscripción y comunicarse conmigo por WhatsApp y correo, conforme a la <b>Ley 1581 de 2012</b> (Colombia). Puedo consultar, actualizar o pedir la eliminación de mis datos en cualquier momento.</span></label>
         <p class="in-err" id="err-ok" hidden>Debes autorizar el tratamiento de datos para continuar.</p>
 
         <div class="in-summary" id="in-summary"></div>
-        <button class="btn k lg block" id="in-send" type="submit">Enviar mi inscripción 🚀</button>
+        <button class="btn k lg block" id="in-send" type="submit">Enviar mi inscripción</button>
+        <p class="muted center in-small" id="in-paynote" hidden>Al continuar verás las formas de pago (tarjeta o transferencia). Apenas se confirme tu pago te llegan tus datos de acceso al correo.</p>
         <p class="muted center in-small">¿Prefieres hablar con alguien? <a href="https://wa.me/${WA}?text=${encodeURIComponent((window.MRNE || String)('¡Hola! Quiero información sobre los planes de mrarrieta.com'))}" target="_blank" rel="noopener">Escríbenos por WhatsApp</a></p>
       </div>
     </form>`;
@@ -154,8 +135,9 @@
   }
   function syncPlan() {
     $$('.in-plan').forEach((b) => { const on = b.dataset.plan === st.plan; b.classList.toggle('on', on); b.setAttribute('aria-checked', on); b.querySelector('.in-plan-pick').textContent = on ? '✓ Seleccionado' : 'Elegir este plan'; });
-    $('#in-premium').hidden = !/^premium/.test(st.plan);
-    $('#in-pay').hidden = !(st.plan === 'membership' || /^premium/.test(st.plan));
+    const free = st.plan === 'free' || !st.plan; $$('.in-xtra').forEach(x => x.hidden = st.plan === 'free');
+    const sb = $('#in-send'); if (sb) sb.textContent = st.plan === 'free' ? 'Crear mi acceso gratis →' : st.plan ? 'Continuar al pago →' : 'Enviar mi inscripción';
+    const pn = $('#in-paynote'); if (pn) pn.hidden = free;
     summary();
   }
   function syncChips() {
@@ -171,7 +153,7 @@
     const v = (id) => ($('#in-' + id) ? $('#in-' + id).value.trim() : '');
     const premium = /^premium/.test(st.plan), paid = premium || st.plan === 'membership';
     return { first: v('first'), last: v('last'), email: v('email'), whatsapp: v('whatsapp'), birth: v('birth'), city: v('city'), plan: st.plan, level: st.level,
-      schedule: premium ? st.schedule : '', days: premium ? DAYS.filter((d) => st.days.indexOf(d) >= 0).join(', ') : '', payment: paid ? v('payment') : '', source: st.source, comments: v('comments'), ref: REF };
+      schedule: '', days: '', payment: '', source: st.source, comments: v('comments'), ref: REF };
   }
   function validate(d) {
     let first = null;
@@ -180,8 +162,7 @@
     bad('first', d.first.length >= 2); bad('last', d.last.length >= 2);
     bad('email', /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(d.email));
     bad('whatsapp', d.whatsapp.replace(/\D/g, '').length >= 7);
-    bad('birth', /^\d{4}-\d{2}-\d{2}$/.test(d.birth) && d.birth <= isoToday() && d.birth >= '1930-01-01');
-    bad('city', d.city.length >= 2);
+    if (d.plan !== 'free') { bad('birth', /^\d{4}-\d{2}-\d{2}$/.test(d.birth) && d.birth <= isoToday() && d.birth >= '1930-01-01'); bad('city', d.city.length >= 2); }
     const ok = $('#in-ok').checked; $('#err-ok').hidden = ok; if (!ok && !first) first = $('#in-ok');
     if (first) { first.scrollIntoView({ behavior: 'smooth', block: 'center' }); if (first.focus) setTimeout(() => first.focus({ preventScroll: true }), 300); }
     return !first;
@@ -197,7 +178,7 @@
     const btn = $('#in-send'); st.busy = true; btn.disabled = true; btn.textContent = 'Enviando…';
     let r = { ok: false, err: 'offline' };
     if (MR.on) { try { r = await MR.call('enroll', d); } catch (e) { r = { ok: false, err: 'network' }; } }
-    st.busy = false; btn.disabled = false; btn.textContent = 'Enviar mi inscripción 🚀';
+    st.busy = false; btn.disabled = false; syncPlan();
     if (r && r.ok) success(d, r.code, r.dup); else fallback(d, r && r.err);
   }
   function fallback(d, err) {

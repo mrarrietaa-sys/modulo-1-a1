@@ -4129,3 +4129,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--blue)!im
 /* v164: en celular la portada ocupa toda la pantalla; el saludo aparece al bajar */
 @media(max-width:980px){.ld-copy{min-height:calc(100svh - 92px);display:flex;flex-direction:column;justify-content:space-evenly;box-sizing:border-box}.ld-copy .ld-hero-mra{height:clamp(150px,27svh,240px)!important;margin:10px auto 0!important}}
 .ld-nav a.btn{display:inline-flex!important;align-items:center}
+.wa-av.has{padding:0;overflow:hidden;background:#fff}.wa-av.has img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block}
+/* v169: fotos de profes en administración */
+.ad-av.has,#te-pv{overflow:hidden;padding:0}.ad-av img,#te-pv img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block}
+.ad-photo{display:flex;gap:14px;align-items:center;background:#f6f8fc;border-radius:14px;padding:10px 12px}
+.ad-photo label.btn{display:inline-flex!important;width:auto!important;padding:6px 14px}

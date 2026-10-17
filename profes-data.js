@@ -7,3 +7,10 @@ window.MRPROFES = [
   { name: 'Yolizeth Coneo', title: 'Mrs.', img: 'prof-yolizeth.jpg', info: ['Licenciada en educación con énfasis en inglés', 'Liderazgo y compromiso'] },
   { name: 'Jennifer Vargas', title: 'Mrs.', img: 'prof-jennifer.jpg', info: ['Licenciada con nivel C1 en todas las habilidades del idioma'] },
 ];
+/* 📸 foto del profe por su nombre (para que el estudiante reconozca a su profe) */
+window.MRPROFPIC = function (name) {
+  const n = (t) => String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/^(mr|mrs|ms|teacher)\.?\s+/, '').trim();
+  const t = n(name); if (!t) return '';
+  const p = (window.MRPROFES || []).find(x => { const k = n(x.name), f = k.split(' ')[0], l = k.split(' ').slice(-1)[0]; return t === k || (t.indexOf(f) >= 0 && t.indexOf(l) >= 0) || t.split(' ')[0] === f; });
+  return p ? p.img : '';
+};

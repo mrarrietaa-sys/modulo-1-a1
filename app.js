@@ -411,10 +411,10 @@
 
   /* ---------- transición divertida entre secciones de la clase ---------- */
   const SCENES = { rocket: { a: 'up', say: 'Blast off!' }, broom: { a: 'fly', say: 'Abracadabra!' }, drums: { a: 'stage', say: 'Rock on!' }, guitar: { a: 'stage', say: "Let's rock!" },
-    surf: { a: 'surf', say: 'Catch the wave!' }, hero: { a: 'fly', say: 'Super English!' }, books: { a: 'pop', say: "Let's read!" }, laptop: { a: 'pop', say: 'Homework time!' }, travel: { a: 'walk', say: "Let's go!" }, wave: { a: 'pop', say: 'Hello!' } };
+    surf: { a: 'surf', say: 'Catch the wave!' }, hero: { a: 'fly', say: 'Super English!' }, books: { a: 'pop', say: "Let's read!" }, laptop: { a: 'pop', say: 'Homework time!' }, travel: { a: 'walk', say: "Let's go!" }, wave: { a: 'pop', say: 'Hello!' }, rocket3: { a: 'up', say: 'Full speed!' }, rocket5: { a: 'up', say: 'To the moon!' } };
   const SEC_IC = { Goal: '🎯', Speaking: '🗣️', Reading: '📖', Review: '🔁', Explanation: '💡', 'Listen & practice': '🎧', Practice: '🎮', 'Oral task': '🎤', Music: '🎵', Homework: '📝' };
   const SEC_SC = { Reading: 'books', Homework: 'laptop', Music: 'guitar', Review: 'travel' };
-  const FREE = ['rocket', 'broom', 'drums', 'surf', 'hero'];
+  const FREE = ['rocket', 'broom', 'rocket3', 'drums', 'surf', 'rocket5', 'hero'];
   const ITL_ON = true;
   let sceneN = Math.floor(Math.random() * FREE.length);
   const preloadScenes = () => Object.keys(SCENES).forEach(k => { const i = new Image(); i.src = 'mra-x-' + k + '.webp'; });

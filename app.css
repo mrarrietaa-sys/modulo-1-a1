@@ -4114,3 +4114,11 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--blue)!im
 @media(max-width:980px){.ld-login .pt-hello .pt-mra{height:120px}.db-hero-mra{height:80px;right:6px;top:22px;bottom:auto}}
 @media(prefers-reduced-motion:reduce){.ld-login .pt-hello .pt-mra,.ld-hero-mra,.db-hero-mra{animation:none}}
 @media(max-width:980px){.ld-hero-mra{height:172px}}
+/* v161: Mr. Arrieta en cohete (entrada) */
+.ld-login .pt-hello .pt-rkt{height:170px;width:auto;filter:drop-shadow(0 12px 14px rgba(11,42,91,.16))}
+@media(max-width:980px){.ld-hero-mra{height:128px;right:0;filter:drop-shadow(0 10px 12px rgba(11,42,91,.16))}}
+/* v161: fotos de los profes */
+.rv-pic{width:96px;height:96px;border-radius:50%;object-fit:cover;border:3px solid #fde2e4;box-shadow:0 6px 16px rgba(11,42,91,.15);display:block;margin:0 auto 6px}
+.vb-av.has{padding:0;overflow:hidden;background:none}.vb-av.has img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block}
+.lv-tpic{width:22px;height:22px;border-radius:50%;object-fit:cover;vertical-align:-6px;margin-right:5px;border:1.5px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.vb-av.has{width:56px;height:56px}

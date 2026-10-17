@@ -216,7 +216,7 @@
   function login() {
     app.innerHTML = `<div class="wrap pt-wrap"><div class="card pt-login">
       
-      ${(() => { const lu = P.lastUser(); const vn = (lu && lu.first) || vName(); return lu && lu.first ? `<div class="pt-hello">${lu.pic ? `<span class="pt-av big pt-lu has"><img src="${lu.pic}" alt=""></span>` : '<img class="pt-mra pt-rkt" src="mra-x-rocket2.webp?v=2" alt="Mr. Arrieta" draggable="false">'}<div class="bubble">${hiGreet(vn)}</div></div>`
+      ${(() => { const lu = P.lastUser(); const vn = (lu && lu.first) || vName(); return lu && lu.first ? `<div class="pt-hello"><img class="pt-mra pt-rkt" src="mra-x-rocket2.webp?v=2" alt="Mr. Arrieta" draggable="false" data-noguide><div class="bubble">${hiGreet(vn)}</div></div>`
         : `<div class="pt-hello"><img class="pt-mra pt-rkt" src="mra-x-rocket2.webp?v=2" alt="Mr. Arrieta" draggable="false"><div class="bubble">${hiGreet(vn)}</div></div>`; })()}
       <h1>Ingresa a tu perfil</h1><p class="muted">Escribe el código que te llegó a tu correo o WhatsApp.</p>
       <input class="inp" id="cd" placeholder="Ej: ABC-123" autocapitalize="characters" autocomplete="off">

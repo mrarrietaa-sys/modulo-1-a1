@@ -6,8 +6,8 @@
 (function () {
   const POSES = ['welcome', 'smile', 'thumbs', 'celebrate', 'wink', 'wow', 'idea', 'point', 'pointside', 'present', 'shrug', 'think', 'watch'];
   // ancla del sombrero por pose (x, y en px de la imagen de 800 px de alto; rot en grados)
-  const HEAD = { celebrate: [243, 46, 15], idea: [183, 46, 0], point: [182, 44, -3], pointside: [144, 46, 15], present: [95, 46, -10], shrug: [253, 46, 16], smile: [170, 45, 3],
-    think: [251, 48, 22], thumbs: [208, 47, 4], watch: [165, 45, 0], welcome: [231, 46, 17], wink: [174, 44, -2], wow: [229, 46, 10] };
+  const HEAD = { celebrate: [234, 46, 15], idea: [191, 46, 0], point: [182, 44, -3], pointside: [155, 46, 15], present: [102, 46, -10], shrug: [260, 46, 16], smile: [174, 45, 3],
+    think: [240, 48, 22], thumbs: [208, 47, 4], watch: [167, 45, 0], welcome: [243, 46, 17], wink: [185, 44, -2], wow: [226, 46, 10] };
   const SHIRTS = [['', 'Negra (original)', '#1b1b1b'], ['#E3242B', 'Roja', '#E3242B'], ['#0B2A5B', 'Azul navy', '#0B2A5B'], ['#f2f2f2', 'Blanca', '#f2f2f2'], ['#FFC21A', 'Amarilla', '#FFC21A'],
     ['#2E9E5B', 'Verde', '#2E9E5B'], ['#3AA0E8', 'Azul cielo', '#3AA0E8'], ['#7B4BC4', 'Morada', '#7B4BC4'], ['#F07AB0', 'Rosada', '#F07AB0'], ['#8A8F98', 'Gris', '#8A8F98'], ['#F27A1A', 'Naranja', '#F27A1A']];
   const PANTS = [['', 'Jean azul (original)', '#3f6fb0'], ['#2a2a2a', 'Negro', '#2a2a2a'], ['#c8a97a', 'Caqui', '#c8a97a'], ['#8a8f98', 'Gris', '#8a8f98'], ['#ececec', 'Blanco', '#ececec'], ['#0B2A5B', 'Navy', '#0B2A5B'], ['#6b4a2e', 'Café', '#6b4a2e']];
@@ -19,8 +19,8 @@
     grad: { cw: 60, f: 1.02, y: 62, es: 'Birrete de graduado', p: [['#0B2A5B', 'M20 34 L20 58 C20 66 80 66 80 58 L80 34 L50 44 Z'], ['#13396f', 'M50 8 L104 28 L50 48 L-4 28 Z'], ['#FFC21A', 'M50 27 L88 34 L88 58 L84 58 L84 37 L50 30 Z'], ['#FFC21A', 'M80 56 h12 v12 h-12 z']] },
     beanie: { cw: 76, f: 1.08, y: 70, es: 'Gorro de lana', p: [['#E3242B', 'M12 62 C8 10 92 10 88 62 Z'], ['#0B2A5B', 'M8 50 H92 V64 H8 Z'], ['#ffffff', 'M38 8 a12 12 0 1 0 24 0 a12 12 0 1 0 -24 0'], ['#ffffff', 'M8 55 H92 V58 H8 Z']] },
     cowboy: { cw: 52, f: 0.98, y: 66, es: 'Sombrero vaquero', p: [['#8B5A2B', 'M24 54 C20 20 34 8 50 16 C66 8 80 20 76 54 Z'], ['#5a3a1a', 'M24 46 H76 V54 H24 Z'], ['#9c6633', 'M-14 50 C0 70 100 70 114 50 C104 56 90 58 76 54 L24 54 C10 58 -4 56 -14 50 Z']] },
-    crown: { cw: 80, f: 0.82, y: 56, es: 'Corona', p: [['#FFC21A', 'M10 62 L8 18 L29 38 L50 6 L71 38 L92 18 L90 62 Z'], ['#e0a400', 'M10 52 H90 V62 H10 Z'], ['#E3242B', 'M44 46 a6 6 0 1 0 12 0 a6 6 0 1 0 -12 0'], ['#3AA0E8', 'M22 48 a4 4 0 1 0 8 0 a4 4 0 1 0 -8 0'], ['#2E9E5B', 'M70 48 a4 4 0 1 0 8 0 a4 4 0 1 0 -8 0']] },
-    party: { cw: 60, f: 0.56, y: 50, es: 'Gorro de fiesta', p: [['#3AA0E8', 'M50 -18 L80 62 L20 62 Z'], ['#FFC21A', 'M41 6 L59 6 L63 18 L37 18 Z'], ['#FFC21A', 'M30 36 L70 36 L74 48 L26 48 Z'], ['#E3242B', 'M42 -20 a8 8 0 1 0 16 0 a8 8 0 1 0 -16 0']] },
+    crown: { cw: 80, f: 0.96, y: 62, es: 'Corona', p: [['#FFC21A', 'M10 62 L8 18 L29 38 L50 6 L71 38 L92 18 L90 62 Z'], ['#e0a400', 'M10 52 H90 V62 H10 Z'], ['#E3242B', 'M44 46 a6 6 0 1 0 12 0 a6 6 0 1 0 -12 0'], ['#3AA0E8', 'M22 48 a4 4 0 1 0 8 0 a4 4 0 1 0 -8 0'], ['#2E9E5B', 'M70 48 a4 4 0 1 0 8 0 a4 4 0 1 0 -8 0']] },
+    party: { cw: 60, f: 0.8, y: 60, es: 'Gorro de fiesta', p: [['#3AA0E8', 'M50 -18 L80 62 L20 62 Z'], ['#FFC21A', 'M41 6 L59 6 L63 18 L37 18 Z'], ['#FFC21A', 'M30 36 L70 36 L74 48 L26 48 Z'], ['#E3242B', 'M42 -20 a8 8 0 1 0 16 0 a8 8 0 1 0 -16 0']] },
     tophat: { cw: 52, f: 0.86, y: 62, es: 'Sombrero de copa', p: [['#1b1b1b', 'M24 -16 H76 V56 H24 Z'], ['#E3242B', 'M24 38 H76 V48 H24 Z'], ['#1b1b1b', 'M2 54 C2 66 98 66 98 54 C98 50 2 50 2 54 Z']] },
     chef: { cw: 56, f: 0.98, y: 62, es: 'Gorro de chef', p: [['#ffffff', 'M22 62 V36 C0 38 0 6 24 10 C30 -10 70 -10 76 10 C100 6 100 38 78 36 V62 Z'], ['#dddddd', 'M22 50 H78 V62 H22 Z'], ['#cfcfcf', 'M36 36 V50 M50 34 V50 M64 36 V50']] },
     helmet: { cw: 80, f: 1.12, y: 66, es: 'Casco de obra', p: [['#FFC21A', 'M10 60 C8 6 92 6 90 60 Z'], ['#e0a400', 'M44 8 H56 V60 H44 Z'], ['#FFC21A', 'M-2 56 H102 V64 H-2 Z']] },

@@ -12,12 +12,12 @@
   async function cat() { if (catOk) return; try { const r = await MRAC.call('plans', {}); if (r && r.ok) { PLS().applyCat && PLS().applyCat(r.cat); window.__mpOn = !!r.mp; catOk = true; } } catch (e) { } }
   function payBlock(id) {
     return `<div class="by-pay"><p class="by-st"><b>¿Cómo quieres pagar?</b></p>
-      <button class="btn k block lg" data-m="mp" id="${id}-mp">💳 Pagar con tarjeta (Mercado Pago)</button>
-      <p class="muted center" style="font-size:13px;margin:4px 0 10px">Débito o crédito · se habilita apenas se apruebe el pago</p>
-      <button class="btn w block" data-m="tr" id="${id}-tr">🏦 Pagar por transferencia</button>
-      <div class="by-tr hidden" id="${id}-trbox"><p style="padding:10px 12px;background:#f4f6fa;border-radius:12px;margin:10px 0">✅ <b>Paga en cualquiera de estas cuentas:</b><br>• <b>NEQUI:</b> 3017810841<br>• <b>LLAVE (BREVE-B):</b> 1047374279</p>
-        <label class="ad-lab"><b>Sube tu comprobante</b> (foto o PDF)</label><input type="file" id="${id}-file" accept="image/*,application/pdf" class="inp">
-        <button class="btn k block lg" id="${id}-send" style="margin-top:10px">📤 Enviar comprobante</button>
+      <button class="btn k block lg by-paybtn" data-m="mp" id="${id}-mp">${MRI('card')}<span><b>Pagar con tarjeta</b><small>Mercado Pago · débito o crédito</small></span></button>
+      <p class="muted center" style="font-size:13px;margin:4px 0 10px">Se habilita apenas se apruebe el pago</p>
+      <button class="btn w block by-paybtn" data-m="tr" id="${id}-tr">${MRI('bank')}<span><b>Pagar por transferencia</b><small>Nequi o Llave (Breve-B)</small></span></button>
+      <div class="by-tr hidden" id="${id}-trbox"><div class="by-acc"><b>Paga en cualquiera de estas cuentas:</b><div><span>NEQUI</span><b>3017810841</b></div><div><span>LLAVE (BREVE-B)</span><b>1047374279</b></div></div>
+        <label class="by-file" for="${id}-file">${MRI('clip')}<span id="${id}-fn">Adjunta tu comprobante de pago</span><small>Foto o PDF</small></label><input type="file" id="${id}-file" accept="image/*,application/pdf" class="by-filein">
+        <button class="btn k block lg" id="${id}-send" style="margin-top:10px">${MRI('send')} Enviar comprobante</button>
         <p class="muted center" style="font-size:13px">Administración lo revisa y, al aprobarlo, se habilita de inmediato en tu perfil.</p></div></div>`;
   }
   function readFile(f) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(f); }); }
@@ -31,22 +31,23 @@
     m.querySelector(`#${id}-mp`).onclick = async (e) => { const b = e.currentTarget; b.disabled = true; b.textContent = '⏳ Abriendo Mercado Pago…';
       const r = await MRAC.call('buyStart', Object.assign({ code: MRAC.code(), method: 'mp' }, payload)).catch(() => ({ ok: false }));
       if (r && r.ok && r.url) { try { localStorage.setItem('mra_buy_last', r.id); } catch (er) { } location.href = r.url; return; }
-      b.disabled = false; b.textContent = '💳 Pagar con tarjeta (Mercado Pago)'; M.toast(ERR[r && r.err] || 'No se pudo iniciar el pago.'); };
+      b.disabled = false; b.innerHTML = MRI('card') + '<span><b>Pagar con tarjeta</b><small>Mercado Pago · débito o crédito</small></span>'; M.toast(ERR[r && r.err] || 'No se pudo iniciar el pago.'); };
     m.querySelector(`#${id}-tr`).onclick = () => m.querySelector(`#${id}-trbox`).classList.remove('hidden');
+    m.querySelector(`#${id}-file`).onchange = (e) => { const f = e.target.files[0]; const l = m.querySelector(`#${id}-fn`); l.textContent = f ? f.name : 'Adjunta tu comprobante de pago'; l.parentNode.classList.toggle('on', !!f); };
     m.querySelector(`#${id}-send`).onclick = async (e) => { const f = m.querySelector(`#${id}-file`).files[0]; if (!f) return M.toast(ERR.proof);
       const b = e.currentTarget; b.disabled = true; b.textContent = '⏳ Enviando…';
-      let file; try { file = await shrink(f); } catch (er) { b.disabled = false; b.textContent = '📤 Enviar comprobante'; return M.toast('No se pudo leer el archivo.'); }
+      let file; try { file = await shrink(f); } catch (er) { b.disabled = false; b.innerHTML = MRI('send') + ' Enviar comprobante'; return M.toast('No se pudo leer el archivo.'); }
       const r = await MRAC.call('buyStart', Object.assign({ code: MRAC.code(), method: 'tr', data: file.data, mime: file.mime, fname: file.name }, payload)).catch(() => ({ ok: false }));
-      if (!r || !r.ok) { b.disabled = false; b.textContent = '📤 Enviar comprobante'; return M.toast(ERR[r && r.err] || 'No se pudo enviar. Revisa tu conexión.'); }
-      m.querySelector('.card').innerHTML = `<div class="center">${M.mascot('mascot', 'thumbs')}</div><h3 class="center">📤 ¡Recibimos tu comprobante!</h3><p class="center" style="font-size:16px">Administración lo revisará pronto. <b>Apenas lo apruebe, se habilita de inmediato</b> en tu perfil y te avisamos en la campanita 🔔 y por correo.</p><button class="btn k block" id="by-x">Entendido</button>`;
+      if (!r || !r.ok) { b.disabled = false; b.innerHTML = MRI('send') + ' Enviar comprobante'; return M.toast(ERR[r && r.err] || 'No se pudo enviar. Revisa tu conexión.'); }
+      m.querySelector('.card').innerHTML = `<div class="center">${M.mascot('mascot', 'thumbs')}</div><h3 class="center">¡Recibimos tu comprobante!</h3><p class="center" style="font-size:16px">Administración lo revisará pronto. <b>Apenas lo apruebe, se habilita de inmediato</b> en tu perfil y te avisamos en la campanita 🔔 y por correo.</p><button class="btn k block" id="by-x">Entendido</button>`;
       m.querySelector('#by-x').onclick = () => m.remove(); };
   }
   async function plan(k) {
     await cat(); const p = (PLS().PL || {})[k]; if (!p) return;
-    const m = M.modal(`<h3>💳 ${esc(p.name)}</h3>
+    const m = M.modal(`<h3 class="by-h">${MRI('card')} ${esc(p.name)}</h3>
       <table class="by-sum"><tr><td>Plan</td><td><b>${esc(p.name)}</b></td></tr><tr><td>Precio</td><td><b>${esc(p.price)}</b> COP</td></tr><tr><td>Periodicidad</td><td>Mensual (se renueva solo si vuelves a pagar)</td></tr>
-        <tr><td>Clases incluidas</td><td>${p.classes ? p.classes + ' clases individuales de 50 minutos por mes' : 'No incluye clases individuales'}</td></tr><tr id="by-disc" class="hidden"><td>🎁 Descuento referido</td><td id="by-dv"></td></tr><tr><td><b>Total a pagar</b></td><td><b id="by-tot">${esc(p.price)} COP</b></td></tr></table>
-      <div class="${firstBuy() ? '' : 'hidden'}"><label class="ad-lab" style="display:block;margin-top:8px"><b>🎁 ¿Te recomendó un amigo?</b> Código de referido (opcional)</label><div class="by-ref"><input class="inp" id="by-ref" placeholder="Ej.: LAURA-123" value="${esc(refSaved())}"><button class="btn w" id="by-refok">Aplicar</button></div><p class="muted" id="by-refmsg" style="font-size:13px;margin:0 0 6px"></p></div>
+        <tr><td>Clases incluidas</td><td>${p.classes ? p.classes + ' clases individuales de 50 minutos por mes' : 'No incluye clases individuales'}</td></tr><tr id="by-disc" class="hidden"><td>Descuento referido</td><td id="by-dv"></td></tr><tr><td><b>Total a pagar</b></td><td><b id="by-tot">${esc(p.price)} COP</b></td></tr></table>
+      <div class="${firstBuy() ? '' : 'hidden'}"><label class="ad-lab" style="display:block;margin-top:8px"><b>¿Te recomendó un amigo?</b> Código de referido (opcional)</label><div class="by-ref"><input class="inp" id="by-ref" placeholder="Ej.: LAURA-123" value="${esc(refSaved())}"><button class="btn w" id="by-refok">Aplicar</button></div><p class="muted" id="by-refmsg" style="font-size:13px;margin:0 0 6px"></p></div>
       ${p.classes ? '<p class="muted" style="font-size:13.5px">Las clases incluidas son del periodo mensual y no se acumulan. Reserva con mínimo 4 horas de anticipación; cancela gratis hasta 2 horas antes.</p>' : ''}
       ${payBlock('bp')}`, { x: true });
     const pay = { kind: 'plan', plan: k }; wire(m, 'bp', pay);
@@ -61,9 +62,9 @@
   function refSaved() { try { return localStorage.getItem('mra_ref') || ''; } catch (e) { return ''; } }
   async function extra(cycleEnd) {
     await cat(); const unit = PLS().extra ? PLS().extra() : 39900;
-    const m = M.modal(`<h3>➕ Clases individuales adicionales</h3>
+    const m = M.modal(`<h3 class="by-h">${MRI('plus')} Clases individuales adicionales</h3>
       <p class="muted">Cada clase dura 50 minutos y se reserva igual que las de tu plan.</p>
-      <div class="by-qty"><button class="btn w" id="bq-m">−</button><b id="bq-n">1</b><button class="btn w" id="bq-p">+</button></div>
+      <div class="by-qty"><span>Cantidad de clases</span><div class="by-step"><button type="button" id="bq-m" aria-label="Quitar una">${MRI('minus')}</button><b id="bq-n">1</b><button type="button" id="bq-p" aria-label="Agregar una">${MRI('plus')}</button></div></div>
       <table class="by-sum"><tr><td>Precio por clase</td><td><b>${fmt(unit)}</b> COP</td></tr><tr><td>Cantidad</td><td id="bq-c">1</td></tr><tr><td><b>Total</b></td><td><b id="bq-t">${fmt(unit)}</b> COP</td></tr>
         <tr><td>Vigencia</td><td>Dentro de tu plan vigente${cycleEnd ? ' (hasta el ' + new Date(cycleEnd + 'T12:00:00').toLocaleDateString('es-CO', { day: 'numeric', month: 'long' }) + ')' : ''}. No acumulables.</td></tr></table>
       <p class="muted" style="font-size:13.5px">Comprar clases adicionales no cambia ni renueva tu membresía. Se suman a tu saldo solo cuando el pago queda confirmado.</p>

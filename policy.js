@@ -2,7 +2,7 @@
 (function () {
   const HTML = `<div class="pol">
   <p class="pol-k">MRARRIETA.COM – RealTalk®</p>
-  <h2 class="pol-t">📌 Política de reservas y cancelaciones</h2>
+  <h2 class="pol-t">Política de reservas y cancelaciones</h2>
   <p class="pol-only">Aplica para estudiantes <b>Premium</b> (4 u 8 clases al mes): las clases individuales son exclusivas de estos planes.</p>
   <section><h3>1. Reservas</h3><ul>
     <li><b>Reserva:</b> mínimo <b>4 horas</b> antes de la clase, eligiendo profe, fecha y hora desde tu perfil.</li>
@@ -14,9 +14,9 @@
   <section><h3>3. Si tu profe no se conecta</h3><ul>
     <li>Desde 15 minutos después de la hora de inicio y hasta 24 horas después, puedes reportarlo desde tu perfil.</li>
     <li>Administración lo revisa en máximo 24 horas y, si se confirma, <b>la clase vuelve a tu saldo</b>.</li></ul></section>
-  <section><h3>Horario de la escuela</h3><p><b>Lunes a viernes:</b> 7:00 a. m. a 9:00 p. m. (jornada continua) · <b>Sábados:</b> 7:00 a. m. a 5:00 p. m. · <b>Domingos y festivos de Colombia:</b> no hay clases ni atención por chat. (Hora Colombia)</p></section>
-  <section><h3>4. Duración de las clases</h3><p>Todas las clases individuales duran <b>50 minutos</b>.</p></section>
-  <section><h3>5. Cancelaciones por parte de MRARRIETA.COM</h3>
+  <section><h3>4. Horario de la escuela</h3><p><b>Lunes a viernes:</b> 7:00 a. m. a 9:00 p. m. (jornada continua) · <b>Sábados:</b> 7:00 a. m. a 5:00 p. m. · <b>Domingos y festivos de Colombia:</b> no hay clases ni atención por chat. (Hora Colombia)</p></section>
+  <section><h3>5. Duración de las clases</h3><p>Todas las clases individuales duran <b>50 minutos</b>.</p></section>
+  <section><h3>6. Cancelaciones por parte de MRARRIETA.COM</h3>
     <p>Si MRARRIETA.COM cancela una clase, esta será reprogramada sin costo para el estudiante.</p></section>
   <p class="pol-imp"><b>Importante:</b> los tiempos mínimos de reserva y cancelación se cuentan hacia atrás desde la hora de inicio de cada clase.</p>
 </div>`;

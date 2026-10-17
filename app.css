@@ -3829,3 +3829,64 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--blue)!im
 .pt-refcode>b{font:800 22px Poppins,sans-serif;color:var(--navy,#0B2A5B);letter-spacing:.06em;background:#EEF3FB;border:2px dashed #9fb3d6;border-radius:12px;padding:6px 14px}
 .pt-refgoal .bar{height:10px;border-radius:9px;background:#E3E9F3;overflow:hidden;margin:8px 0 4px}.pt-refgoal .bar i{display:block;height:100%;background:#E3242B;border-radius:9px}
 .by-ref{display:flex;gap:8px;margin:6px 0 4px}.by-ref .inp{flex:1;text-transform:uppercase}
+/* ✨ íconos de línea + botones compactos (oct 2026) */
+.mri{width:1.15em;height:1.15em;flex:none;vertical-align:-.2em}
+.btn .mri{margin-right:2px}
+.lv-ic .mri{width:28px;height:28px;color:var(--navy,#0B2A5B)}
+.lv-ic.ic-vip{background:linear-gradient(135deg,#ffe3e5,#ffc2c6)}.lv-ic.ic-vip .mri{color:#E3242B}
+.lv-ic.ic-flag{background:linear-gradient(135deg,#ffe3e5,#ffc2c6);animation-delay:.8s}.lv-ic.ic-flag .mri{color:#E3242B}
+.pt-refc h2 .mri,.sect-title h2 .mri{color:#E3242B}
+@media (min-width:721px){
+  .lv-card .btn:not(.sm):not(.block){width:auto;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-width:280px;max-width:420px;padding-left:26px;padding-right:26px}
+  .lv-vip #lv-book,.lv-vip #lv-extra{margin:6px 8px 0 0}
+  .lv-duo{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+  .lv-duo>.card{margin:0}
+}
+.lv-duo{display:grid;gap:14px}
+.lv-hist summary{display:flex;align-items:center;gap:8px}
+.lv-hist summary .mri{color:#E3242B}
+/* compra: botones de pago, adjuntar comprobante y contador */
+.by-h{display:flex;align-items:center;gap:8px}.by-h .mri{color:#E3242B;width:26px;height:26px}
+.btn.by-paybtn{display:flex;align-items:center;justify-content:center;gap:12px;text-align:left}
+.by-paybtn .mri{width:26px;height:26px}
+.by-paybtn span{display:flex;flex-direction:column;line-height:1.2}.by-paybtn small{font:600 13px var(--fb,Inter),sans-serif;opacity:.85}
+.by-acc{background:#f4f6fa;border-radius:14px;padding:12px 14px;margin:10px 0;display:grid;gap:6px}
+.by-acc div{display:flex;justify-content:space-between;gap:10px;background:#fff;border:1px solid #e3e9f3;border-radius:10px;padding:8px 12px}.by-acc div span{font-weight:700;color:#5a6a86;font-size:13px;letter-spacing:.04em}
+.by-filein{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.by-file{display:flex;align-items:center;gap:10px;border:2px dashed #9fb3d6;border-radius:14px;padding:14px 16px;cursor:pointer;background:#f8faff;color:var(--navy,#0B2A5B);font-weight:800;transition:.15s}
+.by-file:hover{border-color:#E3242B;background:#fff5f5}.by-file .mri{width:24px;height:24px;color:#E3242B}
+.by-file span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.by-file small{color:#5a6a86;font-weight:600}
+.by-file.on{border-style:solid;border-color:#16A34A;background:#effaf3}.by-file.on .mri{color:#16A34A}
+.by-qty{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:12px 0}
+.by-qty>span{font-weight:700;color:var(--navy,#0B2A5B)}
+.by-step{display:inline-flex;align-items:center;border:1.5px solid #d5deeb;border-radius:999px;background:#fff;overflow:hidden;box-shadow:0 2px 6px rgba(11,42,91,.06)}
+.by-step button{width:44px;height:42px;border:0;background:transparent;display:grid;place-items:center;cursor:pointer;color:var(--navy,#0B2A5B);transition:.15s}
+.by-step button:hover{background:#eef3fb;color:#E3242B}.by-step button .mri{width:18px;height:18px}
+.by-step b{min-width:44px;text-align:center;font:800 20px var(--fh,Poppins),sans-serif;color:var(--navy,#0B2A5B);border-left:1.5px solid #e3e9f3;border-right:1.5px solid #e3e9f3;line-height:42px}
+/* 📊 tarjetas de clases (diseño profesional) */
+.lv-stats2{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.lv-s2{display:flex;gap:14px;align-items:flex-start;background:#fff;border:1px solid #e3e9f3;border-radius:18px;padding:18px;box-shadow:0 6px 18px rgba(11,42,91,.06);position:relative;overflow:hidden}
+.lv-s2:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--ac)}
+.lv-s2.s-red{--ac:#E3242B;--bg:#ffe8ea}.lv-s2.s-blue{--ac:#1D5FD1;--bg:#e6efff}.lv-s2.s-green{--ac:#16A34A;--bg:#e3f7ea}
+.lv-s2i{width:46px;height:46px;border-radius:14px;background:var(--bg);color:var(--ac);display:grid;place-items:center;flex:none}.lv-s2i .mri{width:24px;height:24px}
+.lv-s2t{display:flex;flex-direction:column;min-width:0;flex:1}
+.lv-s2t small{font:700 12.5px var(--fb,Inter),sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#5a6a86}
+.lv-s2t b{font:800 34px/1.1 var(--fh,Poppins),sans-serif;color:var(--navy,#0B2A5B);margin:4px 0 2px}.lv-s2t b em{font-style:normal;font-size:18px;color:#8a96ab;margin-left:4px}
+.lv-s2t>span{font-size:13px;color:#5a6a86}
+.lv-s2bar{height:6px;border-radius:9px;background:#eef1f6;overflow:hidden;margin:4px 0 6px}.lv-s2bar i{display:block;height:100%;background:var(--ac);border-radius:9px}
+.sect-title h2 .mri{width:1em;height:1em}
+@media (max-width:720px){.lv-stats2{grid-template-columns:1fr}.lv-s2t b{font-size:28px}}
+.lv-ic.ic-vip,.lv-ic.ic-flag{background:linear-gradient(135deg,#ffe3e5,#ffc2c6)!important}.lv-ic.ic-cal{background:linear-gradient(135deg,#e7efff,#bcd2ff)!important}
+.by-sum td:first-child{white-space:nowrap;padding-right:14px;color:#5a6a86}
+@media (min-width:721px){.lv-vip #lv-book,.lv-vip #lv-extra{display:inline-flex;vertical-align:middle}}
+/* planes con íconos de línea */
+.pl-h{display:flex;align-items:center;gap:10px}
+.pl-hi{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:#e6efff;color:#1D5FD1;flex:none}.pl-hi .mri{width:22px;height:22px}
+.pl-card.premium .pl-hi{background:#ffe8ea;color:#E3242B}
+.pl-rib{display:inline-flex;align-items:center;gap:5px;background:#E3242B!important;border-color:#E3242B!important}.pl-rib .mri{width:14px;height:14px}
+.pl-card li.pl-warnli{color:#8a5a00}.pl-card li.pl-warnli:before{content:'!';color:#d97706}
+.pl-on{display:flex;align-items:center;justify-content:center;gap:6px}
+.pl-mine-ic{background:#e6efff!important;color:#1D5FD1}.pl-mine-ic .mri{width:32px;height:32px}
+.pl-mine.premium .pl-mine-ic{background:#ffe8ea!important;color:#E3242B}.pl-mine.exp .pl-mine-ic{color:#b91c1c}
+.pl-mh{display:flex;align-items:center;justify-content:center;gap:8px}.pl-mh .mri{color:#E3242B}
+.pl-note .mri{color:#1D5FD1;margin-right:4px}

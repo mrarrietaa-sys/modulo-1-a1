@@ -27,13 +27,16 @@
     premium8: ['Todo lo incluido en Plataforma', '🎯 8 clases individuales de 50 minutos al mes', '🗣️ Más práctica de comunicación cada semana', '⚠️ Clases no acumulables: úsalas en tu periodo mensual'],
   };
   const waMsg = (k, renew) => `¡Hola! Soy ${who() || 'un estudiante'}. Quiero ${renew ? 'renovar' : 'activar'} el plan ${PL[k].name} (${PL[k].price} ${PL[k].per}) en mrarrieta.com`;
+  const IC = { free: 'gift', membership: 'monitor', premium: 'crown', premium8: 'gem' };
+  const ico = (k) => window.MRI ? MRI(IC[k] || 'gift') : '';
+  const noEmo = (t) => String(t).replace(/^[^A-Za-zÁÉÍÓÚÑáéíóúñ0-9]+/, '');
   const canBuy = () => !!(window.MRAC && MRAC.code && MRAC.code() && window.MRBUY);
   function card(k, opt) {
     opt = opt || {}; const p = PL[k]; const cur = opt.current === k; const top = k === 'premium8';
-    return `<div class="pl-card ${k === 'membership' ? 'membership' : 'premium'}${cur ? ' cur' : ''}">${top ? '<span class="pl-rib">🏅 Más práctica</span>' : ''}
-      <h3>${esc(p.name)}</h3><div class="pl-price"><b>${esc(p.price)}</b><small>${esc(p.per)}</small></div>
-      <ul>${BEN[k].map(b => `<li>${esc(b)}</li>`).join('')}</ul>
-      ${cur && !opt.renew ? '<div class="pl-on">✅ Tu plan actual</div>' : canBuy() ? `<button class="btn ${k === 'membership' ? 'w' : 'k'} block pl-go" data-buy="${k}">${opt.renew && cur ? '🔁 Renovar' : 'Elegir este plan'} →</button>`
+    return `<div class="pl-card ${k === 'membership' ? 'membership' : 'premium'}${cur ? ' cur' : ''}">${top ? `<span class="pl-rib">${window.MRI ? MRI('award') : ''} Más práctica</span>` : ''}
+      <h3 class="pl-h"><span class="pl-hi">${ico(k)}</span>${esc(noEmo(p.name))}</h3><div class="pl-price"><b>${esc(p.price)}</b><small>${esc(p.per)}</small></div>
+      <ul>${BEN[k].map(b => `<li${/^⚠️/.test(b) ? ' class="pl-warnli"' : ''}>${esc(noEmo(b))}</li>`).join('')}</ul>
+      ${cur && !opt.renew ? `<div class="pl-on">${window.MRI ? MRI('check') : ''} Tu plan actual</div>` : canBuy() ? `<button class="btn ${k === 'membership' ? 'w' : 'k'} block pl-go" data-buy="${k}">${opt.renew && cur ? 'Renovar' : 'Elegir este plan'} →</button>`
         : `<a class="btn ${k === 'membership' ? 'w' : 'k'} block pl-go" target="_blank" rel="noopener" href="${WA(waMsg(k, opt.renew && cur))}">${opt.renew && cur ? '🔁 Renovar' : 'Quiero este plan'} →</a>`}</div>`;
   }
   // tarjetas de planes (muestra los superiores al plan actual; al renovar, también el actual)
@@ -41,7 +44,7 @@
     const order = ['membership', 'premium', 'premium8'], i = order.indexOf(current);
     const ks = order.filter((k, j) => j > i || (renew && j === i));
     if (!ks.length) return '';
-    return `<div class="pl-grid n${ks.length}">${ks.map(k => card(k, { current, renew })).join('')}</div><p class="pl-note">💳 Paga con tarjeta (Mercado Pago) o por transferencia (Nequi / Llave Breve-B). Todas las membresías se cobran mes a mes. <a href="politica.html" target="_blank" rel="noopener">📌 Política de reservas y cancelaciones</a></p>`;
+    return `<div class="pl-grid n${ks.length}">${ks.map(k => card(k, { current, renew })).join('')}</div><p class="pl-note">${window.MRI ? MRI('card') : ''} Paga con tarjeta (Mercado Pago) o por transferencia (Nequi / Llave Breve-B). Todas las membresías se cobran mes a mes. <a href="politica.html" target="_blank" rel="noopener">Política de reservas y cancelaciones</a></p>`;
   }
   // los botones "Elegir este plan" abren la compra
   document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('[data-buy]'); if (!b || !window.MRBUY) return; e.preventDefault(); const mo = b.closest('.modal'); if (mo) mo.remove(); MRBUY.plan(b.dataset.buy); });
@@ -50,12 +53,12 @@
     const pl = window.MRAP && MRAP.plan ? MRAP.plan() : {};
     const exp = pl.expired;
     const m = M.modal(`<div class="center">${M.mascot('mascot', 'present')}</div>
-      <h3 class="center">${exp ? '⏰ Tu plan venció' : '🔓 Desbloquea toda tu ruta'}</h3>
+      <h3 class="center pl-mh">${window.MRI ? MRI(exp ? 'clock' : 'unlock') : ''} ${exp ? 'Tu plan venció' : 'Desbloquea toda tu ruta'}</h3>
       <p class="center" style="font-size:16.5px">${exp ? `Tu plan <b>${esc(PL[pl.plan] ? PL[pl.plan].name : '')}</b> venció${pl.end ? ' el ' + new Date(pl.end + 'T12:00:00').toLocaleDateString('es-CO', { day: 'numeric', month: 'long' }) : ''}. <b>Tu progreso sigue guardado</b>: renueva y continúa justo donde ibas.` : (why || 'Tu acceso gratuito incluye los <b>2 primeros temas</b> de tu ruta. Elige tu plan y sigue aprendiendo con todos los temas, exámenes y certificados 🎓')}</p>
       ${cards(exp ? pl.plan : 'free', exp)}<button class="btn w block" style="margin-top:8px" id="pl-cl">Seguir explorando</button>`, { x: true });
     const b = m.querySelector('#pl-cl'); if (b) b.onclick = () => m.remove();
     return m;
   }
   function badge() { const pl = window.MRAP && MRAP.plan ? MRAP.plan() : {}; if (pl.eff === 'staff') return '👨‍🏫 Profe'; if (pl.expired) return '⏰ Plan vencido'; return { premium: '🎓 Premium · 4', premium8: '🏅 Premium · 8', membership: '🖥️ Plataforma', free: '🎁 Acceso gratuito', legacy: '🎓 Estudiante' }[pl.plan === 'premium8' && pl.eff !== 'free' ? 'premium8' : pl.eff] || '🎁 Acceso gratuito'; }
-  window.MRPLANS = { PL, FREE, BEN, card, cards, modal, badge, WA, waMsg, applyCat, extra: () => EXTRA, fmt };
+  window.MRPLANS = { PL, FREE, BEN, IC, noEmo, card, cards, modal, badge, WA, waMsg, applyCat, extra: () => EXTRA, fmt };
 })();

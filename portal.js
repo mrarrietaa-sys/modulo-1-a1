@@ -95,7 +95,7 @@
   // 🌟 página de entrada: hero con el ingreso, planes, testimonios, beneficios y cómo funciona
   function landing() {
     const card = $('.pt-login'); if (!card || !window.MRI) return;
-    const tb = $('#topbar .tb-tag'); if (tb) tb.outerHTML = `<nav class="ld-nav"><a href="#ld-planes">Planes</a><a href="#ld-ganas">Beneficios</a><a href="#ld-testimonios">Testimonios</a><button class="btn r sm" data-trial>Empieza gratis</button></nav>`;
+    const tb = $('#topbar .tb-tag'); if (tb) tb.outerHTML = `<nav class="ld-nav"><a href="#ld-planes">Planes</a><a href="#ld-ganas">Beneficios</a><a href="#ld-profes">Profes</a><a href="#ld-testimonios">Testimonios</a><button class="btn r sm" data-trial>Empieza gratis</button></nav>`;
     const PL = window.MRPLANS || {}; const T = window.MRTESTIMONIOS || []; const pp = (k) => (PL.PL || {})[k] || {};
     const CARDS = [
       { id: 'free', icon: '🎁', name: 'ACCESO GRATUITO', price: '$0', per: 'sin costo', tag: 'Para empezar · 5 días', perks: ['Acceso temporal a la plataforma', 'Prueba de clasificación y tu ruta de aprendizaje', 'Los 2 primeros temas de tu ruta'], note: 'No incluye clases individuales.', btn: 'Empezar gratis' },
@@ -110,6 +110,7 @@
       <section class="ld-sec" id="ld-planes"><h2>Elige tu plan</h2><p class="ld-sub">Pagos mes a mes · tarjeta o transferencia</p><div class="in-plans ld-inplans">
         ${CARDS.map(c => `<a class="in-plan${c.best ? ' best' : ''}" ${c.id === 'free' ? 'href="#" data-trial' : `href="inscripcion.html?plan=${c.id}"`}>${c.best ? '<span class="in-ribbon">⭐ Más completo</span>' : ''}<span class="in-plan-ic" aria-hidden="true">${c.icon}</span><span class="in-plan-name">${esc(c.name)}</span><span class="in-plan-price"><b>${esc(c.price)}</b><small>${esc(c.per)}</small></span><span class="in-plan-tag">${esc(c.tag)}</span><ul>${c.perks.map(k => `<li>${esc(String(k).replace(/^[^A-Za-zÁÉÍÓÚÑáéíóúñ0-9]+/, ''))}</li>`).join('')}</ul>${c.note ? `<span class="in-plan-note">${esc(c.note)}</span>` : ''}<span class="in-plan-pick">${c.btn || 'Elegir este plan'}</span></a>`).join('')}</div></section>
       ${T.length ? `<section class="ld-sec ld-tesbox card" id="ld-testimonios"><h2>Lo que dicen nuestros estudiantes</h2><p class="ld-sub">Testimonios reales en video</p><div class="ld-tes">${T.map(t => `<div class="card ld-t"><video src="${esc(t.video)}" ${t.poster ? `poster="${esc(t.poster)}"` : ''} controls preload="none" playsinline></video><b>${esc(t.name)} 🙏💙</b></div>`).join('')}</div></section>` : ''}
+      ${(window.MRPROFES || []).length ? `<section class="ld-sec" id="ld-profes"><h2>Conoce a tus profes</h2><p class="ld-sub">Profesionales bilingües · opiniones reales de nuestros estudiantes</p><div class="ld-pf">${MRPROFES.map((p, i) => `<div class="card ld-pc"><img src="${esc(p.img)}" alt="${esc(p.name)}" loading="lazy"><b>${p.title === 'Director' ? 'Director' : esc(p.title)} ${esc(p.name)}</b><div class="ld-stars" data-pf="${i}"></div><ul>${p.info.map(x => `<li>${MRI('check')}<span>${esc(x)}</span></li>`).join('')}</ul><button class="btn w sm" data-pfr="${i}">Ver opiniones</button></div>`).join('')}</div></section>` : ''}
       <section class="ld-sec" id="ld-ganas"><h2>¿Qué ganas con nosotros?</h2><p class="ld-sub">Todo lo que necesitas para hablar inglés con confianza</p><div class="card ld-glist">${GAN.map(([i, c, t, d]) => `<div class="ld-gi"><span class="ld-ic ${c}">${MRI(i)}</span><div><b>${t}</b><small>${d}</small></div></div>`).join('')}</div></section>
       <section class="ld-sec" id="ld-como"><h2>Cómo funciona</h2><div class="ld-steps">${['Pide tu acceso gratuito', 'Haz tu prueba de clasificación', 'Sigue tu ruta', 'Elige tu plan'].map((t, n) => `<div class="card"><b class="ld-n">${n + 1}</b><h3>${t}</h3></div>`).join('')}</div>
         <div class="card ld-note">${MRI('calendar')}<p><b>Tú eliges cuándo tomar tus clases.</b> Con Premium reservas tus clases individuales desde tu perfil, eligiendo profe, día y hora según la disponibilidad de los profes. Sin horarios fijos.</p></div></section>
@@ -136,6 +137,7 @@
       const r = await MRAC.call('leadAdd', { name: n, email: em, consent: true }).catch(() => null);
       if (r && r.ok) { nf.innerHTML = `<p class="ld-newsok">${MRI('check')} ¡Listo, ${esc(n.split(' ')[0])}! Revisa tu correo: te enviamos la bienvenida.</p>`; try { localStorage.setItem('mra_lead', 'ok'); } catch (er) { } }
       else { b.disabled = false; b.textContent = 'Quiero recibirlos'; msg('No se pudo guardar. Inténtalo de nuevo.'); } };
+    profReviews();
     if (!window.__trialWired) { window.__trialWired = true; document.addEventListener('click', trialClick); }
   }
   // 💬 botón flotante de WhatsApp: se puede arrastrar a cualquier lado y ocultar con la X
@@ -160,6 +162,18 @@
     const pk = q.get('plan');
     if (pc) { if (window.MRAC && MRAC.code && MRAC.code() && MRAC.code().toUpperCase() === pc) { if (window.MRPLANS) MRPLANS.modal(M); } else { trialOver(pc, true); if (pk && window.MRBUY && /^(membership|premium|premium8)$/.test(pk)) setTimeout(() => { document.querySelectorAll('.modal').forEach(m => m.remove()); MRBUY.plan(pk); }, 300); } }
     else if (gr && $('.ld')) trialForm(); } catch (er) { } }, 1600);
+  // ⭐ opiniones públicas de los profes en la página de entrada
+  const nrm = (t) => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/^(mr|mrs|ms|teacher)\.?\s+/, '').trim();
+  const starsHTML = (n) => '<span class="st5">' + [1, 2, 3, 4, 5].map(k => `<i class="${k <= Math.round(n) ? 'on' : ''}">★</i>`).join('') + '</span>';
+  async function profReviews() {
+    if (!window.MRPROFES || !$('#ld-profes')) return;
+    const r = await MRAC.call('reviews', {}).catch(() => null); const all = (r && r.reviews) || [];
+    const by = MRPROFES.map(p => { const k = nrm(p.name), f = k.split(' ')[0], l = k.split(' ').slice(-1)[0]; return all.filter(x => { const t = nrm(x.teacher); return t === k || (t.indexOf(f) >= 0 && t.indexOf(l) >= 0); }); });
+    $$('[data-pf]').forEach(el => { const L = by[+el.dataset.pf]; if (!L.length) { el.innerHTML = '<small class="muted">Aún sin opiniones</small>'; return; } const avg = L.reduce((a, x) => a + x.stars, 0) / L.length; el.innerHTML = starsHTML(avg) + ` <small><b>${avg.toFixed(1)}</b> (${L.length})</small>`; });
+    $$('[data-pfr]').forEach(b => b.onclick = () => { const p = MRPROFES[+b.dataset.pfr], L = by[+b.dataset.pfr];
+      M.modal(`<div class="center"><img src="${esc(p.img)}" alt="" style="width:84px;height:84px;border-radius:50%;object-fit:cover"><h3 style="margin:8px 0 2px">${p.title === 'Director' ? 'Director' : esc(p.title)} ${esc(p.name)}</h3>${L.length ? starsHTML(L.reduce((a, x) => a + x.stars, 0) / L.length) + ` <small>${L.length} opinión(es)</small>` : ''}</div>
+        <div class="ld-revs">${L.length ? L.slice(0, 40).map(x => `<div class="ld-rev">${starsHTML(x.stars)}${x.text ? `<p>“${esc(x.text)}”</p>` : ''}<small>${esc(x.student)} · ${esc(x.date)}</small></div>`).join('') : '<p class="muted center">Todavía no hay opiniones. ¡Sé el primero en tomar clase y opinar!</p>'}</div>`, { x: true }); });
+  }
   function trialClick(e) { const b = e.target.closest && e.target.closest('[data-trial]'); if (!b) return; e.preventDefault(); trialForm(); }
   // 🎁 acceso gratuito automático: nombre, WhatsApp y correo → se crea el código y entra de una
   function trialForm() {
@@ -577,6 +591,7 @@
     refCard();
     if (!r.premium) { if (box) box.innerHTML = ''; return; }
     if (box) renderLive(box, r);
+    askReview(r.premium && r.premium.reviewDue);
   }
   const ICO = { cam: '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 6h11a2 2 0 0 1 2 2v1.6l3.4-2.3A1 1 0 0 1 22 8.1v7.8a1 1 0 0 1-1.6.8L17 14.4V16a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z"/></svg>', mic: '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.9V21h2v-3.1A7 7 0 0 0 19 11z"/></svg>' };
   const TOPICS = {"1":[["The Greetings","Los saludos"],["The Alphabet","El abecedario"],["The Nationalities","Países y nacionalidades"],["Numbers and Colors","Números y colores"],["Verb To Be and A / An","Verbo To Be y A / An"],["Jobs and Occupations","Profesiones y ocupaciones"],["Family and Animals","La familia y los animales"],["The Food vs. The Fruit and Vegetables","Comida, frutas y verduras"],["Weekdays and Months of the Year","Días de la semana y meses"],["The Weather Forecast and the Clothes","El clima y la ropa"],["School Supplies and Parts of the House","Útiles escolares y partes de la casa"],["The Singular and the Plural Nouns","Singular y plural"],["Demonstrative Pronouns","This, that, these, those"],["There is and There are","Hay (singular vs. plural)"]],"2":[["Telling the Time","Decir la hora"],["The Simple Present","El presente simple"],["The Human Body","El cuerpo humano"],["Physical Appearance Vocabulary","La apariencia física"],["Personalities Adjectives","Adjetivos de personalidad"],["The Simple Past Tense (She was... I went...)","El pasado simple"],["Present/Past Continuous","Presente y pasado continuo"],["Adverbs of Frequency","Adverbios de frecuencia"],["Modal Verbs","Verbos modales"],["Reflexive Pronouns","Pronombres reflexivos"],["Phrasal Verbs","Verbos frasales"]],"3":[["Will and Going To","Will y going to"],["Possessive Adjectives","Adjetivos posesivos"],["Possessive Pronouns","Pronombres posesivos"],["The Present Perfect","El presente perfecto"],["The Past Perfect","El pasado perfecto"],["Prepositions of Time","Preposiciones de tiempo"],["Prepositions of Place","Preposiciones de lugar"],["Comparatives and Superlatives","Comparativos y superlativos"],["Used To and Be/Get Used To","Used to y be/get used to"],["Enough and Wish","Enough y wish"],["Un/Countable Nouns","Sustantivos contables e incontables"],["A Few / Few / Little / A Little","A few, few, little, a little"],["Linking Words","Conectores"]],"4":[["First Conditionals","Primer condicional"],["Second Conditionals","Segundo condicional"],["Third Conditionals","Tercer condicional"],["Verbs + Infinitive or Gerund","Verbos + infinitivo o gerundio"],["So, Neither, Either","So, neither, either"],["Present/Past Perfect Continuous","Presente y pasado perfecto continuo"],["Relative Clauses","Cláusulas relativas"],["Tag Questions","Preguntas coletilla"],["Reported Speech","Estilo indirecto"],["Direct and Indirect Questions","Preguntas directas e indirectas"],["Passive and Active Voice","Voz pasiva y activa"],["Have Something Done","Have/get something done"],["Future Perfect and Continuous","Futuro perfecto y futuro continuo"],["The Future Perfect Continuous","El futuro perfecto continuo"],["Artificial Intelligence and Employment","La inteligencia artificial y el empleo"],["Globalization: Benefits vs. Drawbacks","Globalización: beneficios y desventajas"],["The Impact of Social Media on Mental Health","El impacto de las redes sociales en la salud mental"],["Justice and Fairness (Are we in a fair society?)","Justicia y equidad: ¿vivimos en una sociedad justa?"],["Traditional Education vs. Online Learning","Educación tradicional vs. aprendizaje en línea"],["The Future of Democracy","El futuro de la democracia"],["Space Exploration: Progress or Vanity?","Exploración espacial: ¿progreso o vanidad?"]]};
@@ -606,6 +621,21 @@
     const r = await MRAC.call('myBuys', { code: MRAC.code() }).catch(() => null); if (!r || !r.ok || !(r.buys || []).length || !document.body.contains(el)) return;
     const ST = { pendiente: '⏳ Pendiente', aprobado: '✅ Aprobado', rechazado: '❌ Rechazado', cancelado: '🚫 Cancelado' };
     el.innerHTML = `<details class="lv-buys" style="margin-top:12px"><summary><b>${MRI('receipt')} Mis compras</b></summary><div class="lv-list">${r.buys.slice(0, 8).map(b => `<div class="lv-cl"><div class="grow"><b>${b.kind === 'extra' ? '➕ ' + b.n + ' clase' + (b.n == 1 ? '' : 's') + ' adicional' + (b.n == 1 ? '' : 'es') : esc((window.MRPLANS && MRPLANS.PL[b.plan] || {}).name || b.plan)}</b><small>${fmtD(String(b.date).slice(0, 10))} · ${window.MRPLANS ? MRPLANS.fmt(b.amount) : b.amount} COP · ${b.method === 'mercadopago' ? 'Mercado Pago' : 'Transferencia'}</small></div><span class="lv-${b.status === 'aprobado' ? 'ok' : 'pend'}">${ST[b.status] || esc(b.status)}</span></div>`).join('')}</div></details>`;
+  }
+  // ⭐ al terminar una clase individual: pedirle su opinión del profe (pública)
+  function askReview(list) {
+    if (!list || !list.length || document.querySelector('.modal')) return; const c = list[list.length - 1];
+    try { if (sessionStorage.getItem('mra_rv_' + c.id)) return; sessionStorage.setItem('mra_rv_' + c.id, '1'); } catch (e) { }
+    let st = 0;
+    const m = M.modal(`<div class="center"><div class="to-ic">${MRI('award')}</div><h3>¿Cómo te fue en tu clase?</h3><p>Califica tu clase con <b>${esc(c.teacher || 'tu profe')}</b> del ${fmtD(c.date, { day: 'numeric', month: 'long' })}. Tu opinión es pública y ayuda a otros estudiantes.</p>
+      <div class="rv-st">${[1, 2, 3, 4, 5].map(k => `<button type="button" data-s="${k}" aria-label="${k} estrellas">★</button>`).join('')}</div>
+      <textarea class="inp" id="rv-t" rows="3" maxlength="600" placeholder="Cuéntanos qué te gustó de la clase (opcional)"></textarea>
+      <button class="btn k block lg" id="rv-go" style="margin-top:10px">Enviar mi opinión</button><button class="btn w block" id="rv-no" style="margin-top:8px">Más tarde</button></div>`, { x: true });
+    $$('.rv-st button', m).forEach(b => b.onclick = () => { st = +b.dataset.s; $$('.rv-st button', m).forEach(x => x.classList.toggle('on', +x.dataset.s <= st)); });
+    $('#rv-no', m).onclick = () => m.remove();
+    $('#rv-go', m).onclick = async (e) => { if (!st) return M.toast('Elige de 1 a 5 estrellas'); e.currentTarget.disabled = true;
+      const r = await MRAC.call('reviewAdd', { code: MRAC.code(), classId: c.id, stars: st, text: $('#rv-t', m).value }).catch(() => null); m.remove();
+      M.toast(r && r.ok ? '⭐ ¡Gracias por tu opinión!' : 'No se pudo enviar. Inténtalo más tarde.'); };
   }
   function renderLive(box, r) {
     const pr = r.premium, cr = pr.credits, g = pr.group;

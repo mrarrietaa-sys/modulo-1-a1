@@ -57,7 +57,7 @@
   }
 
   /* ======================= ESTRUCTURA ======================= */
-  const TABS = [['home', '📊', 'Resumen'], ['students', '🎓', 'Estudiantes'], ['enroll', '📝', 'Inscripciones'], ['buys', '💳', 'Pagos'], ['claims', '🚩', 'Reclamos'], ['leads', '📣', 'Interesados'], ['placement', '🧭', 'Placement'], ['recruit', '👩‍🏫', 'Reclutamiento'], ['teachers', '🧑‍🏫', 'Profesores'], ['classes', '📅', 'Clases'], ['requests', '🔁', 'Solicitudes'], ['chats', '💬', 'Chats'], ['settings', '⚙️', 'Ajustes']];
+  const TABS = [['home', '📊', 'Resumen'], ['students', '🎓', 'Estudiantes'], ['enroll', '📝', 'Inscripciones'], ['buys', '💳', 'Pagos'], ['claims', '🚩', 'Reclamos'], ['reviews', '⭐', 'Opiniones'], ['leads', '📣', 'Interesados'], ['placement', '🧭', 'Placement'], ['recruit', '👩‍🏫', 'Reclutamiento'], ['teachers', '🧑‍🏫', 'Profesores'], ['classes', '📅', 'Clases'], ['requests', '🔁', 'Solicitudes'], ['chats', '💬', 'Chats'], ['settings', '⚙️', 'Ajustes']];
   let TAB = 'home', STATS = null;
   // "Atrás": dentro del panel vuelve al Resumen (nunca saca a otra página por error)
   document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('.tb-back'); if (!b || !key()) return; if (document.querySelector('.modal, .wa-wrap')) return; e.preventDefault(); e.stopImmediatePropagation(); if (TAB !== 'home') go('home'); else window.scrollTo(0, 0); }, true);
@@ -480,6 +480,16 @@
     $$('[data-no]').forEach(b => b.onclick = async () => { const note = prompt('Motivo del rechazo (lo verá el estudiante):', 'No encontramos el pago con ese comprobante.'); if (note === null) return; b.disabled = true; const x = await api('aBuyDecide', { id: b.dataset.no, ok: false, note }); toast(x.ok ? 'Pago rechazado · le avisamos al estudiante' : 'No se pudo rechazar'); buys(); });
   }
 
+  /* ======================= ⭐ OPINIONES (públicas en la página de entrada) ======================= */
+  async function reviews() {
+    view().innerHTML = '<div class="ad-loading">⏳ Cargando opiniones…</div>';
+    const r = await api('aReviews'); if (!r.ok) return view().innerHTML = '<p class="ad-err">No se pudieron cargar las opiniones.</p>';
+    const st = (n) => '★'.repeat(+n || 0) + '☆'.repeat(5 - (+n || 0));
+    view().innerHTML = `<div class="ad-head"><h1>⭐ Opiniones de los profes</h1><p class="muted">Las escriben los estudiantes al terminar una clase individual. Son públicas en la página de entrada. Puedes ocultar una si es inapropiada.</p></div>
+      <div class="card">${r.reviews.length ? `<div class="ad-mini">${r.reviews.map(x => `<div class="ad-mrow" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><div style="flex:1;min-width:220px"><b style="color:#f5a623">${st(x.stars)}</b> · profe <b>${esc(x.teacherName)}</b><br>${x.text ? '“' + esc(x.text) + '”<br>' : ''}<small class="muted">${esc(x.studentName)} (${esc(x.code)}) · ${esc(String(x.date).slice(0, 10))}${x.status === 'oculta' ? ' · 🙈 Oculta' : ''}</small></div><button class="btn w sm" data-rv="${esc(x.id)}" data-h="${x.status === 'oculta' ? '' : '1'}">${x.status === 'oculta' ? 'Mostrar' : 'Ocultar'}</button></div>`).join('')}</div>` : '<p class="muted">Aún no hay opiniones.</p>'}</div>`;
+    $$('[data-rv]').forEach(b => b.onclick = async () => { b.disabled = true; await api('aReviewSet', { id: b.dataset.rv, hide: !!b.dataset.h }); reviews(); });
+  }
+
   /* ======================= 🚩 RECLAMOS (profe no se conectó) ======================= */
   async function claims() {
     view().innerHTML = '<div class="ad-loading">⏳ Cargando reclamos…</div>';
@@ -524,6 +534,6 @@
     const go = () => window.MRLIVE && MRLIVE.open({ title: 'Chats (solo lectura)', roomsAction: 'aChats', getAction: 'aChatGet', readOnly: true, empty: 'Todavía no hay conversaciones.', call: (a, d) => api(a, d) });
     $('#ch-open').onclick = go; go();
   }
-  const VIEWS = { buys, claims, home, students, enroll, leads, placement, recruit, teachers, classes, requests, chats, settings };
+  const VIEWS = { buys, claims, reviews, home, students, enroll, leads, placement, recruit, teachers, classes, requests, chats, settings };
   key() && MRAC.on ? boot() : login();
 })();

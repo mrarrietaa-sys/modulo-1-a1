@@ -22,9 +22,9 @@
   const who = () => { const p = prof(); return (p.name || p.first || '') + (p.code ? ` (código ${p.code})` : ''); };
   const BEN = {
     free: ['Acceso temporal a la plataforma', 'Los 2 primeros temas de tu ruta', 'No incluye clases individuales'],
-    membership: ['🌐 Plataforma disponible 24/7', '📚 Ruta de aprendizaje por niveles y módulos', 'Materiales, videos y ejercicios', '📈 Seguimiento de tu progreso', 'No incluye clases individuales'],
-    premium: ['Todo lo incluido en Plataforma', '🎯 4 clases individuales de 50 minutos al mes', '🗓️ Reservas según la disponibilidad de los profes', '⚠️ Clases no acumulables: úsalas en tu periodo mensual'],
-    premium8: ['Todo lo incluido en Plataforma', '🎯 8 clases individuales de 50 minutos al mes', '🗣️ Más práctica de comunicación cada semana', '⚠️ Clases no acumulables: úsalas en tu periodo mensual'],
+    membership: ['Plataforma disponible 24/7', 'Ruta de aprendizaje por niveles y módulos', 'Materiales, videos y ejercicios', 'Seguimiento de tu progreso', 'No incluye clases individuales'],
+    premium: ['Todo lo incluido en Plataforma', '4 clases individuales de 50 minutos al mes', 'Reservas según la disponibilidad de los profes', 'Clases no acumulables: úsalas en tu periodo mensual'],
+    premium8: ['Todo lo incluido en Plataforma', '8 clases individuales de 50 minutos al mes', 'Más práctica de comunicación cada semana', 'Clases no acumulables: úsalas en tu periodo mensual'],
   };
   const waMsg = (k, renew) => `¡Hola! Soy ${who() || 'un estudiante'}. Quiero ${renew ? 'renovar' : 'activar'} el plan ${PL[k].name} (${PL[k].price} ${PL[k].per}) en mrarrieta.com`;
   const IC = { free: 'gift', membership: 'monitor', premium: 'crown', premium8: 'gem' };
@@ -35,7 +35,7 @@
     opt = opt || {}; const p = PL[k]; const cur = opt.current === k; const top = k === 'premium8';
     return `<div class="pl-card ${k === 'membership' ? 'membership' : 'premium'}${cur ? ' cur' : ''}">${top ? `<span class="pl-rib">${window.MRI ? MRI('award') : ''} Más práctica</span>` : ''}
       <h3 class="pl-h"><span class="pl-hi">${ico(k)}</span>${esc(noEmo(p.name))}</h3><div class="pl-price"><b>${esc(p.price)}</b><small>${esc(p.per)}</small></div>
-      <ul>${BEN[k].map(b => `<li${/^⚠️/.test(b) ? ' class="pl-warnli"' : ''}>${esc(noEmo(b))}</li>`).join('')}</ul>
+      <ul>${BEN[k].map(b => `<li${/^Clases no acumulables/.test(b) ? ' class="pl-warnli"' : ''}>${esc(noEmo(b))}</li>`).join('')}</ul>
       ${cur && !opt.renew ? `<div class="pl-on">${window.MRI ? MRI('check') : ''} Tu plan actual</div>` : canBuy() ? `<button class="btn ${k === 'membership' ? 'w' : 'k'} block pl-go" data-buy="${k}">${opt.renew && cur ? 'Renovar' : 'Elegir este plan'} →</button>`
         : `<a class="btn ${k === 'membership' ? 'w' : 'k'} block pl-go" target="_blank" rel="noopener" href="${WA(waMsg(k, opt.renew && cur))}">${opt.renew && cur ? '🔁 Renovar' : 'Quiero este plan'} →</a>`}</div>`;
   }

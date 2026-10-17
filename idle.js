@@ -77,3 +77,17 @@
   window.MRIDLE = { LIMIT, logout, touch: () => set(now()) };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
 })();
+/* 👁 ojito para ver lo que se escribe en los campos de PIN / clave (estudiante, profe y administración) */
+(function () {
+  const EYE = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+  const EYE_OFF = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.7 5.1A10 10 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-2.2 3.1M6.6 6.6A17 17 0 0 0 2 12s3.6 7 10 7a9.7 9.7 0 0 0 5.4-1.6M9.9 9.9a3 3 0 0 0 4.2 4.2M2 2l20 20"/></svg>';
+  function wire(inp) {
+    if (inp.dataset.eye) return; inp.dataset.eye = '1';
+    const w = document.createElement('span'); w.className = 'pw-wrap'; inp.parentNode.insertBefore(w, inp); w.appendChild(inp);
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'pw-eye'; b.setAttribute('aria-label', 'Ver lo que escribí'); b.innerHTML = EYE; w.appendChild(b);
+    b.onclick = (e) => { e.preventDefault(); const show = inp.type === 'password'; inp.type = show ? 'text' : 'password'; b.innerHTML = show ? EYE_OFF : EYE; b.setAttribute('aria-label', show ? 'Ocultar' : 'Ver lo que escribí'); inp.focus(); };
+  }
+  const scan = () => document.querySelectorAll('input[type="password"]:not([data-eye])').forEach(wire);
+  const go = () => { scan(); try { new MutationObserver(scan).observe(document.body, { childList: true, subtree: true }); } catch (e) { } };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go); else go();
+})();

@@ -4136,3 +4136,10 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--blue)!im
 .ad-photo label.btn{display:inline-flex!important;width:auto!important;padding:6px 14px}
 /* v171: presentaciones de los profes centradas */
 .ld-pc ul{text-align:center;justify-items:center;align-content:start}.ld-pc li{display:block;text-align:center;max-width:300px}.ld-pc li .mri{display:inline-block;vertical-align:-3px;margin:0 5px 0 0}
+/* v173: ejemplos (placeholder) de los recuadros de texto más pequeños; botón Reservar más compacto */
+textarea.inp::placeholder{font-size:15px!important;line-height:1.35!important;font-weight:500!important;text-align:left}
+textarea.inp{font-size:15px;line-height:1.4}
+.lv-bookb{padding:10px 18px!important;font-size:15px!important;min-height:0!important}
+/* 👁 ojito en campos de PIN / clave */
+.pw-wrap{position:relative;display:block;width:100%}.pw-wrap>input{width:100%;padding-right:48px!important;box-sizing:border-box}
+.pw-eye{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:0;padding:6px;cursor:pointer;color:#5b6577;display:grid;place-items:center;border-radius:8px}.pw-eye:hover{background:#eef3fb;color:#0B2A5B}

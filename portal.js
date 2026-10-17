@@ -667,8 +667,8 @@
         <div class="lv-s2 s-blue"><span class="lv-s2i">${MRI('check')}</span><div class="lv-s2t"><small>Clases usadas</small><b>${cr.vipUsed}</b><span>Incluidas en tu plan: ${cr.vipIncluded || 0}${cr.vipBonus ? ' · + ' + cr.vipBonus + ' adicional' + (cr.vipBonus === 1 ? '' : 'es') : ''}</span></div></div>
         <div class="lv-s2 s-green"><span class="lv-s2i">${MRI('award')}</span><div class="lv-s2t"><small>Clases asistidas</small><b>${r.attendedTotal || 0}</b><span>Desde que empezaste</span></div></div></div>
       <div class="card lv-card lv-vip"><div class="lv-h"><span class="lv-ic ic-vip">${MRI('user')}</span><div><span class="lbl">Clases individuales · 50 min</span><h3>Reserva tu clase individual</h3></div></div>
-        <p class="muted">Elige <b>profesor, fecha y hora</b> entre los espacios disponibles. Reserva con mínimo <b>4 horas</b> de anticipación.</p><p class="lv-noacum">⚠️ Tus clases <b>no son acumulables</b>: resérvalas antes del <b>${fmtD(cr.cycleEnd, { day: 'numeric', month: 'long' })}</b>: después se vencen y no se recuperan.</p>
-        <button class="btn k lg" id="lv-book" ${cr.vipLeft ? '' : 'disabled'}>${cr.vipLeft ? MRI('calendar') + ' Reservar clase individual' : MRI('check') + ' Ya reservaste todas tus clases de este periodo'}</button>
+        <p class="lv-noacum">⚠️ Tus clases <b>no son acumulables</b>: resérvalas antes del <b>${fmtD(cr.cycleEnd, { day: 'numeric', month: 'long' })}</b>: después se vencen y no se recuperan.</p>
+        <button class="btn k lv-bookb" id="lv-book" ${cr.vipLeft ? '' : 'disabled'}>${cr.vipLeft ? MRI('calendar') + ' Reservar' : MRI('check') + ' Ya reservaste todas tus clases de este periodo'}</button>
         <button class="btn w" id="lv-extra">${MRI('plus')} Comprar clases adicionales</button>
         <div id="lv-buys"></div></div>
       <div class="card lv-card lv-next"><div class="lv-h"><span class="lv-ic ic-cal">${MRI('calendar')}</span><div><span class="lbl">Agenda</span><h3>Mis próximas clases</h3></div></div>
